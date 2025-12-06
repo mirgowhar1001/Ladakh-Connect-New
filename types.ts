@@ -70,7 +70,9 @@ export interface Trip {
   date: string;
   cost: number;
   status: TripStatus;
-  passengerId: string;
+  passengerId: string; // Passenger Name
+  passengerUid?: string; // Auth UID
+  passengerMobile?: string;
   driverName: string;
   driverMobile?: string; // Added for direct access
   vehicleNo: string;
@@ -80,6 +82,7 @@ export interface Trip {
   offerId?: string; // Changed to string
   userRating?: number;
   paymentRequested?: boolean;
+  completedAt?: number;
 }
 
 export interface RouteDef {

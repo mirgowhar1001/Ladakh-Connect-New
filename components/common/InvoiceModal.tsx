@@ -27,15 +27,33 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ trip, onClose }) => 
                         <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Official Receipt</p>
                     </div>
 
-                    <div className="flex justify-between items-start">
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                        {/* Passenger Details */}
                         <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-bold">Billed To</p>
-                            <p className="font-bold text-gray-800 text-lg">{trip.passengerId}</p>
-                            <p className="text-xs text-gray-500">Trip ID: #{trip.id.slice(0, 8).toUpperCase()}</p>
+                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Passenger</p>
+                            <p className="font-bold text-gray-800 text-sm">{trip.passengerId}</p>
+                            <p className="text-xs text-gray-500 font-mono">+91 {trip.passengerMobile || 'N/A'}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">Trip ID: #{trip.id.slice(0, 8).toUpperCase()}</p>
                         </div>
+
+                        {/* Driver Details */}
                         <div className="text-right">
+                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Driver</p>
+                            <p className="font-bold text-gray-800 text-sm">{trip.driverName}</p>
+                            <p className="text-xs text-gray-500 font-mono">+91 {trip.driverMobile || 'N/A'}</p>
+                            <p className="text-[10px] text-gray-500 mt-1">{trip.vehicleType} <span className="font-black text-gray-800">{trip.vehicleNo}</span></p>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                        <div>
                             <p className="text-[10px] text-gray-400 uppercase font-bold">Date</p>
                             <p className="font-bold text-gray-800">{new Date(trip.date).toLocaleDateString()}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] text-gray-400 uppercase font-bold">Time</p>
+                            {/* Assuming trip might have time, else hide */}
+                            <p className="font-bold text-gray-800">{(trip as any).time || 'N/A'}</p>
                         </div>
                     </div>
 
