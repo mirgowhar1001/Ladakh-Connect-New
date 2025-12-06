@@ -109,8 +109,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
     );
 
-    // Listen to Trips
-    const tripsQuery = query(collection(db, 'trips'));
+    // Listen to Trips (ISOLATED QUERY)
+    let tripsQuery;
+
+    if (user.role === 'passenger') {
+      tripsQuery = query(collection(db, 'trips'), where('passengerUid', '==', user.uid));
+    } else if (user.role === 'owner') {
+      tripsQuery = query(collection(db, 'trips'), where('driverId', '==', user.uid));
+    } else {
+      // Admin or unknown: fetch all (or none, strictly speaking)
+      tripsQuery = query(collection(db, 'trips'));
+    }
+
     const unsubTrips = onSnapshot(tripsQuery,
       (snapshot) => {
         const tripsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trip));
@@ -353,6 +363,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           passengerId: user.name,
           passengerUid: user.uid,
           passengerMobile: user.mobile || '',
+          driverId: tripDetails.driverId, // Ensure ID is saved
           driverName: tripDetails.driverName || 'Assigned Driver',
           driverMobile: tripDetails.driverMobile || '',
           vehicleNo: tripDetails.vehicleNo || 'JK-XX-TEMP',
