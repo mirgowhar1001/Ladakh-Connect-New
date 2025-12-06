@@ -47,12 +47,13 @@ export const OwnerDashboard: React.FC = () => {
 
 
     // Handlers
-    const handleBookRide = (rideId: string) => {
+    const handleBookRide = (rideId: string, seats: number) => {
         const newBooking: Booking = {
             id: Math.random().toString(36).substr(2, 9),
             rideId,
             passengerName: 'Current User', // Mocked
-            status: 'PENDING'
+            status: 'PENDING',
+            seats
         };
         setBookings(prev => [...prev, newBooking]);
     };

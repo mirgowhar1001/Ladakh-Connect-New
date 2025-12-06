@@ -20,7 +20,7 @@ export const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ bookin
                     <div className="flex-1">
                         <h4 className="font-bold text-slate-900">New Booking Request</h4>
                         <p className="text-sm text-slate-600 mb-3">
-                            <span className="font-medium text-slate-900">{booking.passengerName}</span> wants to book a seat.
+                            <span className="font-medium text-slate-900">{booking.passengerName}</span> wants to book <span className="font-bold text-slate-900">{booking.seats}</span> {booking.seats > 1 ? 'seats' : 'seat'}.
                         </p>
                         <div className="flex gap-2">
                             <button

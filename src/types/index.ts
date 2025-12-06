@@ -5,6 +5,7 @@ export interface Booking {
     rideId: string;
     passengerName: string;
     status: BookingStatus;
+    seats: number;
 }
 
 export type RideStatus = 'OPEN' | 'COMPLETED';
