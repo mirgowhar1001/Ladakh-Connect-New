@@ -136,7 +136,7 @@ export const OwnerDashboard: React.FC = () => {
       return timeB - timeA;
     });
 
-  const myPostedRides = rideOffers.filter(o => (o.driverId === user?.uid || o.driverName === user?.name) && (o.totalSeats - (o.bookedSeats?.length || 0) > 0));
+  const myPostedRides = rideOffers.filter(o => (o.driverId === user?.uid || o.driverName === user?.name) && (o.totalSeats - (o.bookedSeats?.length || 0) > 0) && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
 
   const handlePublish = () => {
     // if (newRide.price < 500 || newRide.price > 5000) return alert("Price per seat must be between ₹500 and ₹5000.");
@@ -448,7 +448,7 @@ export const OwnerDashboard: React.FC = () => {
 
   const MyRidesView = () => {
     // Filter logic for tabs
-    const postedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length === 0);
+    const postedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length === 0 && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
     const bookedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length > 0);
 
     // For Booked Rides, we need to find the associated trips (passengers)
