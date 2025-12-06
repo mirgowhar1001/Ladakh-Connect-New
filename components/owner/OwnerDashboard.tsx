@@ -680,45 +680,6 @@ export const OwnerDashboard: React.FC = () => {
 
                   return (
                     <div
-                      key={offer.id}
-                      onClick={() => setExpandedTripId(expandedTripId === offer.id ? null : offer.id)}
-                      className="bg-[var(--driver-card)] p-5 rounded-3xl shadow-md border border-gray-800 transition cursor-pointer hover:bg-gray-800 hover:border-green-500/30 group relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 left-0 w-1 h-full bg-green-500/50"></div>
-                      <div className="flex justify-between items-center pl-3">
-                        <div>
-                          <h4 className="font-bold text-white text-lg">{offer.from} → {offer.to}</h4>
-                          <p className="text-sm text-gray-400">{new Date(offer.date).toDateString()} • {offer.time}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-xs bg-green-500 text-black px-4 py-1.5 rounded-xl font-black shadow-lg shadow-green-900/20 tracking-wide">COMPLETED</span>
-                        </div>
-                      </div>
-
-                      {expandedTripId === offer.id && (
-                        <div className="mt-4 pt-4 border-t border-gray-700 animate-in slide-in-from-top-2">
-                          <h5 className="text-xs font-bold text-[var(--driver-primary)] uppercase mb-2">Ride Summary</h5>
-
-                          <div className="space-y-3">
-                            {offerTrips.map(trip => (
-                              <div key={trip.id} className="flex justify-between items-center bg-gray-900/50 p-3 rounded-xl border border-gray-700">
-                                <div>
-                                  <p className="text-white font-bold text-sm">{trip.passengerName || 'Passenger'}</p>
-                                  <p className="text-xs text-gray-400">{trip.seats.length} Seat(s)</p>
-                                </div>
-                                <span className="font-bold text-green-400">+₹{trip.cost}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-4 flex justify-between items-center pt-3 border-t border-gray-700">
-                            <span className="text-gray-400 text-sm font-bold">Total Earnings</span>
-                            <span className="text-xl font-black text-green-400">₹{totalEarned}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
                 })
             )}
           </div>
