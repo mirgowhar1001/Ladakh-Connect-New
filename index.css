@@ -1,0 +1,70 @@
+:root {
+  /* Passenger Palette (Pic 2) */
+  --pass-bg: #F8F9FA;
+  /* Off-White/Very Light Grey */
+  --pass-card: #FFFFFF;
+  /* Pure White for cards/inputs */
+  --pass-text: #232041;
+  /* Dark Grape */
+  --pass-text-sec: #5F5B85;
+  /* Medium Slate-Violet */
+  --pass-primary: #5A4FCF;
+  /* Iris Blue/Violet (Brand) */
+  --pass-cta: #E02E49;
+  /* Crimson Red (Action Buttons) */
+  --pass-accent: #FFC300;
+  /* Sunflower Yellow */
+
+  /* Driver Palette (Pic 1) */
+  --driver-bg: #1A1633;
+  /* Deep Midnight Violet */
+  --driver-card: #2D284D;
+  /* Lighter Violet */
+  --driver-text: #FFFFFF;
+  /* Pure White */
+  --driver-text-sec: #B8B2D6;
+  /* Lavender-Grey */
+  --driver-primary: #FFD700;
+  /* Electric Gold (CTA) */
+  --driver-secondary: #FF4757;
+  /* Vibrant Coral Red */
+
+  /* Login Specific */
+  --login-bg: #F8F9FA;
+  --login-text: #1A1633;
+  /* Deep Midnight Violet */
+  --login-input-bg: #FFFFFF;
+  --login-focus: #5A4FCF;
+  /* Iris Violet */
+  --login-btn-bg: #FFD700;
+  /* Electric Gold */
+  --login-btn-text: #1A1633;
+  /* Deep Midnight Violet */
+  --login-link: #5A4FCF;
+  --login-error: #E02E49;
+}
+
+/* Utility Classes */
+.bg-pass-primary {
+  background-color: var(--pass-primary);
+}
+
+.text-pass-primary {
+  color: var(--pass-primary);
+}
+
+.bg-driver-primary {
+  background-color: var(--driver-primary);
+}
+
+.text-driver-primary {
+  color: var(--driver-primary);
+}
+
+.bg-driver-bg {
+  background-color: var(--driver-bg);
+}
+
+.text-driver-text {
+  color: var(--driver-text);
+}
