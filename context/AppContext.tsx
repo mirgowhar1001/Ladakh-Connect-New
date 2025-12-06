@@ -339,41 +339,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const bookTrip = useCallback(async (tripDetails: Omit<Trip, 'id' | 'status' | 'passengerId' | 'driverName' | 'vehicleNo' | 'messages'> & { driverName?: string; vehicleNo?: string; driverMobile?: string }, cost: number, offerId?: string) => {
     // Payment Check Bypassed for "Booking Only" Mode
     if (user) {
-      // setPassengerBalance(prev => prev - cost);
-      // setAppVault(prev => prev + cost);
+      const seats = tripDetails.seats || [];
+      const costPerSeat = cost / (seats.length || 1);
 
-      // const userRef = doc(db, 'users', user.uid);
-      // await updateDoc(userRef, {
-      //   walletBalance: (user.walletBalance || 0) - cost,
-      //   escrowBalance: (user.escrowBalance || 0) + cost
-      // });
+      // Create a separate trip document for EACH seat requested
+      // This ensures the driver receives separate confirmation requests for each seat.
+      const bookingPromises = seats.map(async (seatNum) => {
+        const newTrip = {
+          ...tripDetails,
+          seats: [seatNum], // Each trip doc covers only 1 seat
+          cost: costPerSeat,
+          status: 'WAITING_CONFIRMATION',
+          passengerId: user.name,
+          passengerUid: user.uid,
+          passengerMobile: user.mobile || '',
+          driverName: tripDetails.driverName || 'Assigned Driver',
+          driverMobile: tripDetails.driverMobile || '',
+          vehicleNo: tripDetails.vehicleNo || 'JK-XX-TEMP',
+          messages: [],
+          offerId: offerId || null,
+          createdAt: Date.now()
+        };
 
-      const newTrip = {
-        ...tripDetails,
-        cost,
-        status: 'WAITING_CONFIRMATION',
-        passengerId: user.name,
-        passengerUid: user.uid,
-        passengerMobile: user.mobile || '', // NEW: Save passenger mobile for driver to see
-        driverName: tripDetails.driverName || 'Assigned Driver',
-        driverMobile: tripDetails.driverMobile || '', // Save driver mobile
-        vehicleNo: tripDetails.vehicleNo || 'JK-XX-TEMP',
-        messages: [],
-        offerId: offerId || null,
-        createdAt: Date.now()
-      };
+        await addDoc(collection(db, 'trips'), newTrip);
+      });
 
-      await addDoc(collection(db, 'trips'), newTrip);
+      await Promise.all(bookingPromises);
 
-      // If booked from a real offer, update the available seats in Firestore
+      // Update RideOffer bookedSeats (Bulk update is fine here)
       if (offerId) {
         const offerRef = doc(db, 'rideOffers', offerId);
-        // We need to fetch current booked seats first or use arrayUnion if strict
-        // Simple update for now:
+        // We fetch current offer to ensure purely additive update
+        // In a real app, use arrayUnion for simpler atomic updates if seat overlap validation is handled via security rules or transactions
         const currentOffer = rideOffers.find(o => o.id === offerId);
         if (currentOffer) {
           await updateDoc(offerRef, {
-            bookedSeats: [...currentOffer.bookedSeats, ...tripDetails.seats]
+            bookedSeats: [...currentOffer.bookedSeats, ...seats]
           });
         }
       }
