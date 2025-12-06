@@ -676,15 +676,16 @@ export const OwnerDashboard: React.FC = () => {
                 <div
                   key={trip.id}
                   onClick={() => setExpandedTripId(expandedTripId === trip.id ? null : trip.id)}
-                  className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 transition cursor-pointer hover:bg-gray-800"
+                  className="bg-[var(--driver-card)] p-5 rounded-3xl shadow-md border border-gray-800 transition cursor-pointer hover:bg-gray-800 hover:border-green-500/30 group relative overflow-hidden"
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-green-500/50"></div>
+                  <div className="flex justify-between items-center pl-3">
                     <div>
-                      <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
-                      <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+                      <h4 className="font-bold text-white text-lg">{trip.from} → {trip.to}</h4>
+                      <p className="text-sm text-gray-400">{new Date(trip.date).toDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
+                      <span className="text-xs bg-green-500 text-black px-4 py-1.5 rounded-xl font-black shadow-lg shadow-green-900/20 tracking-wide">COMPLETED</span>
                     </div>
                   </div>
 
