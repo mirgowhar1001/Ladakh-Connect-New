@@ -121,25 +121,12 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                                     if (window.confirm('Are you sure you want to cancel this booking request?')) {
                                                         updateTripStatus(trip.id, 'CANCELLED');
                                                     }
-                                                }}
-                                                className="w-full bg-red-500 text-white px-4 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-600 transition flex items-center justify-center gap-2"
-                                            >
-                                                <XCircle size={18} /> CANCEL RIDE
-                                            </button>
-                                        ) : (
-                                        ): null}
-                                    </div>
-                                )}
-
-                                {activeTab === 'COMPLETED' && (
-                                    <div className="flex gap-2">
-                                        {!trip.userRating && (
-                                            <button
-                                                onClick={() => setRatingModal({ tripId: trip.id, rating: 5 })}
-                                                className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-yellow-200 transition"
-                                            >
-                                                <Star size={14} fill="currentColor" /> Rate
-                                            </button>
+                                                    <button
+                                                        onClick={() => setRatingModal({ tripId: trip.id, rating: 5 })}
+                                                        className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-yellow-200 transition"
+                                                    >
+                                                        <Star size={14} fill="currentColor" /> Rate
+                                                    </button>
                                         )}
                                         <button
                                             onClick={() => setSelectedInvoiceTrip(trip)}

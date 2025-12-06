@@ -390,49 +390,6 @@ export const OwnerDashboard: React.FC = () => {
         <button onClick={() => setCurrentView('marketplace')} className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700">
           <ArrowRight size={20} className="rotate-180" />
         </button>
-        <h2 className="font-bold text-[var(--driver-text)] flex items-center gap-2 text-lg">
-          All Available Rides
-        </h2>
-      </div>
-
-      {availableRides.length === 0 ? (
-        <div className="text-center py-16 px-8 bg-[var(--driver-card)] rounded-3xl shadow-sm border border-gray-800">
-          <div className="bg-purple-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users size={32} className="text-[var(--driver-primary)]" />
-          </div>
-          <p className="text-white font-bold mb-1">No Rides Available</p>
-          <p className="text-gray-400 text-sm">Check back later for new ride offers.</p>
-        </div>
-    const bookedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length > 0);
-
-    // For Booked Rides, we need to find the associated trips (passengers)
-    const getPassengersForOffer = (offerId: string) => {
-      return trips.filter(t => t.offerId === offerId && t.status !== 'CANCELLED');
-    };
-
-    // Filter bookedRides to only show those that haven't started yet
-    const pendingBookedRides = rideOffers.filter(o => {
-      if (o.driverName !== user?.name) return false;
-      const offersTrips = getPassengersForOffer(o.id);
-
-      // If it has "real" bookings (BOOKED or WAITING), it's pending if not started
-      const hasBookings = offersTrips.some(t => t.status === 'BOOKED' || t.status === 'WAITING_CONFIRMATION');
-      if (!hasBookings && o.bookedSeats.length === 0) return false;
-
-      // If any trip is EN_ROUTE or ARRIVED, this ride is active, not just booked
-      const isStarted = offersTrips.some(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED' || t.status === 'COMPLETED');
-      return !isStarted;
-    });
-
-    // Valid Active Trips for the 'Active' tab (En Route or Arrived)
-    const inProgressTrips = activeTrips.filter(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED');
-
-      return (
-      <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
-        <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-          <Calendar size={18} className="text-[var(--driver-primary)]" /> My Rides
-        </h2>
-
         {/* Tab Navigation */}
         <div className="flex p-1 bg-black/20 rounded-xl mb-6 overflow-x-auto no-scrollbar">
           {['posted', 'completed', 'cancelled'].map((tab) => (
