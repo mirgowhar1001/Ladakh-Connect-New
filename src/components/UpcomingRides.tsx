@@ -5,9 +5,10 @@ import { Ride } from '../data/mockData';
 interface UpcomingRidesProps {
     bookings: Booking[];
     rides: Ride[];
+    onCancelBooking: (bookingId: string) => void;
 }
 
-export const UpcomingRides: React.FC<UpcomingRidesProps> = ({ bookings, rides }) => {
+export const UpcomingRides: React.FC<UpcomingRidesProps> = ({ bookings, rides, onCancelBooking }) => {
     if (bookings.length === 0) return null;
 
     return (
@@ -17,6 +18,9 @@ export const UpcomingRides: React.FC<UpcomingRidesProps> = ({ bookings, rides })
                 {bookings.map(booking => {
                     const ride = rides.find(r => r.id === booking.rideId);
                     if (!ride) return null;
+
+                    const isConfirmed = booking.status === 'CONFIRMED';
+                    const isRejected = booking.status === 'REJECTED';
 
                     return (
                         <div key={booking.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
@@ -34,16 +38,23 @@ export const UpcomingRides: React.FC<UpcomingRidesProps> = ({ bookings, rides })
                                 <StatusBadge status={booking.status} />
                             </div>
 
-                            {booking.status === 'CONFIRMED' && (
-                                <div className="mt-3">
-                                    <button className="w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg flex items-center justify-center gap-2 shadow-sm hover:bg-blue-700 transition-colors">
+                            <div className="mt-3 flex gap-3">
+                                {isConfirmed ? (
+                                    <button className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 rounded-lg flex items-center justify-center gap-2 shadow-sm cursor-default">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                         </svg>
                                         Seat Confirmed
                                     </button>
-                                </div>
-                            )}
+                                ) : !isRejected && (
+                                    <button
+                                        onClick={() => onCancelBooking(booking.id)}
+                                        className="flex-1 bg-red-100 text-red-700 text-sm font-bold py-2 rounded-lg hover:bg-red-200 transition-colors border border-red-200"
+                                    >
+                                        CANCEL
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     );
                 })}

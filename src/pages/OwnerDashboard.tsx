@@ -76,6 +76,10 @@ export const OwnerDashboard: React.FC = () => {
         }));
     };
 
+    const handleCancelBooking = (bookingId: string) => {
+        setBookings(prev => prev.filter(b => b.id !== bookingId));
+    };
+
     // Find pending bookings for the "driver" (mock logic: all pending bookings are for this driver)
     const pendingBookings = bookings.filter(b => b.status === 'PENDING');
 
@@ -130,7 +134,11 @@ export const OwnerDashboard: React.FC = () => {
                 </div>
 
                 {userRole === 'PASSENGER' && (
-                    <UpcomingRides bookings={bookings} rides={MOCK_RIDES} />
+                    <UpcomingRides
+                        bookings={bookings}
+                        rides={MOCK_RIDES}
+                        onCancelBooking={handleCancelBooking}
+                    />
                 )}
 
                 {/* Completed Rides Section */}
