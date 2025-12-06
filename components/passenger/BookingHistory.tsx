@@ -53,151 +53,178 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                         <p className="text-gray-400 text-sm font-medium">No {activeTab.toLowerCase()} bookings found.</p>
                     </div>
                 ) : (
-
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <div className="w-0.5 h-8 bg-gray-200 border-l border-dashed"></div>
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                        </div>
-                        <div className="flex-1 space-y-4">
-                            <div>
-                                <p className="font-bold text-gray-800">{trip.from}</p>
-                                <p className="text-xs text-gray-400">{new Date(trip.date).toLocaleDateString()}</p>
+                    filteredTrips.map(trip => (
+                        <div key={trip.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                            {/* Header: Status Indicators */}
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-2">
+                                    {(trip.status === 'COMPLETED' || activeTab === 'COMPLETED') ? (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-3 h-3 rounded-full bg-blue-600 shadow-sm shadow-blue-200"></div>
+                                            <span className="text-sm font-bold text-blue-600">Completed</span>
+                                        </div>
+                                    ) : (['CANCELLED', 'REJECTED'].includes(trip.status) || activeTab === 'CANCELLED') ? (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm shadow-red-200"></div>
+                                            <span className="text-sm font-bold text-red-600">Cancelled</span>
+                                        </div>
+                                    ) : ['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status) ? (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm shadow-green-200 animate-pulse"></div>
+                                            <span className="text-sm font-bold text-green-600">Confirmed</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                                            <span className="text-sm font-bold text-gray-500">Waiting Confirmation</span>
+                                        </div>
+                                    )}
+                                    <span className="text-xs text-gray-400 font-mono absolute top-2 right-2">#{trip.id.slice(0, 6).toUpperCase()}</span>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-bold text-gray-800">{trip.to}</p>
-                            </div>
-                        </div>
-                    </div>
 
-
-
-                            {/* Post-Ride Confirmation: Removed as per "Zero Payment" flow */}
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-xs text-gray-500">
-                            {trip.driverName?.[0] || 'D'}
-                        </div>
-                        <div>
-                            <p className="text-lg font-black text-gray-800">{trip.driverName || 'Assigned Driver'}</p>
-                            <p className="text-xs text-gray-600 font-bold mt-0.5">{trip.vehicleNo} • {trip.driverMobile || 'No Mobile'}</p>
-                        </div>
-                    </div>
-
-                    {activeTab === 'UPCOMING' && (
-                        <div className="flex gap-4 items-center">
-                            {trip.status === 'WAITING_CONFIRMATION' ? (
-                                <button
-                                    onClick={() => {
-                                        if (window.confirm('Are you sure you want to cancel this booking request?')) {
-                                            updateTripStatus(trip.id, 'CANCELLED');
-                                        }
-                                    }}
-                                    className="w-full bg-red-500 text-white px-4 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-600 transition flex items-center justify-center gap-2"
-                                >
-                                    <XCircle size={18} /> CANCEL RIDE
-                                </button>
-                            ) : (
+                            {/* Route Details */}
+                            <div className="flex items-center gap-3 mb-4">
                                 <div className="flex flex-col items-center gap-1">
-                                    {trip.status !== 'EN_ROUTE' && trip.status !== 'ARRIVED' && trip.status !== 'COMPLETED' && (
-                                        <>
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div className="w-0.5 h-8 bg-gray-200 border-l border-dashed"></div>
+                                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                </div>
+                                <div className="flex-1 space-y-4">
+                                    <div>
+                                        <p className="font-bold text-gray-800">{trip.from}</p>
+                                        <p className="text-xs text-gray-400">{new Date(trip.date).toLocaleDateString()}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-gray-800">{trip.to}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-xs text-gray-500">
+                                        {trip.driverName?.[0] || 'D'}
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-black text-gray-800">{trip.driverName || 'Assigned Driver'}</p>
+                                        <p className="text-xs text-gray-600 font-bold mt-0.5">{trip.vehicleNo} • {trip.driverMobile || 'No Mobile'}</p>
+                                    </div>
+                                </div>
+
+                                {activeTab === 'UPCOMING' && (
+                                    <div className="flex gap-4 items-center">
+                                        {trip.status === 'WAITING_CONFIRMATION' ? (
                                             <button
                                                 onClick={() => {
-                                                    if (window.confirm('Are you sure you want to cancel this booking?')) {
+                                                    if (window.confirm('Are you sure you want to cancel this booking request?')) {
                                                         updateTripStatus(trip.id, 'CANCELLED');
                                                     }
                                                 }}
-                                                className="bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 p-3 rounded-full transition"
-                                                title="Cancel Booking"
+                                                className="w-full bg-red-500 text-white px-4 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-600 transition flex items-center justify-center gap-2"
                                             >
-                                                <XCircle size={20} />
+                                                <XCircle size={18} /> CANCEL RIDE
                                             </button>
-                                            <span className="text-[10px] font-bold text-gray-400">Cancel</span>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-1">
+                                                {trip.status !== 'EN_ROUTE' && trip.status !== 'ARRIVED' && trip.status !== 'COMPLETED' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm('Are you sure you want to cancel this booking?')) {
+                                                                    updateTripStatus(trip.id, 'CANCELLED');
+                                                                }
+                                                            }}
+                                                            className="bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 p-3 rounded-full transition"
+                                                            title="Cancel Booking"
+                                                        >
+                                                            <XCircle size={20} />
+                                                        </button>
+                                                        <span className="text-[10px] font-bold text-gray-400">Cancel</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                    {activeTab === 'COMPLETED' && (
-                        <div className="flex gap-2">
-                            {!trip.userRating && (
-                                <button
-                                    onClick={() => setRatingModal({ tripId: trip.id, rating: 5 })}
-                                    className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-yellow-200 transition"
-                                >
-                                    <Star size={14} fill="currentColor" /> Rate
-                                </button>
-                            )}
-                            <button
-                                onClick={() => setSelectedInvoiceTrip(trip)}
-                                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition"
-                            >
-                                <FileText size={14} /> Invoice
-                            </button>
+                                {activeTab === 'COMPLETED' && (
+                                    <div className="flex gap-2">
+                                        {!trip.userRating && (
+                                            <button
+                                                onClick={() => setRatingModal({ tripId: trip.id, rating: 5 })}
+                                                className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-yellow-200 transition"
+                                            >
+                                                <Star size={14} fill="currentColor" /> Rate
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => setSelectedInvoiceTrip(trip)}
+                                            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition"
+                                        >
+                                            <FileText size={14} /> Invoice
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    )}
-                </div>
-            </div>
-            ))
+                    ))
                 )}
-        </div>
+            </div>
 
             {
-        selectedInvoiceTrip && (
-            <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
-        )
-    }
+                selectedInvoiceTrip && (
+                    <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
+                )
+            }
 
-    {/* Rating Modal */ }
-    {
-        ratingModal && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-                    <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
-                    <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
+            {/* Rating Modal */}
+            {
+                ratingModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
+                            <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
+                            <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
 
-                    <div className="flex justify-center gap-2 mb-6">
-                        {[1, 2, 3, 4, 5].map(star => (
-                            <button
-                                key={star}
-                                onClick={() => setRatingModal({ ...ratingModal, rating: star })}
-                                className="transition-all hover:scale-110"
-                            >
-                                <Star
-                                    size={32}
-                                    fill={star <= ratingModal.rating ? "#FFD700" : "none"}
-                                    className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
-                                />
-                            </button>
-                        ))}
+                            <div className="flex justify-center gap-2 mb-6">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRatingModal({ ...ratingModal, rating: star })}
+                                        className="transition-all hover:scale-110"
+                                    >
+                                        <Star
+                                            size={32}
+                                            fill={star <= ratingModal.rating ? "#FFD700" : "none"}
+                                            className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setRatingModal(null)}
+                                    className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
+                                >
+                                    Skip
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        rateTrip(ratingModal.tripId, ratingModal.rating);
+                                        setRatingModal(null);
+                                        alert("Thanks for your feedback!");
+                                    }}
+                                    className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => setRatingModal(null)}
-                            className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
-                        >
-                            Skip
-                        </button>
-                        <button
-                            onClick={() => {
-                                rateTrip(ratingModal.tripId, ratingModal.rating);
-                                setRatingModal(null);
-                                alert("Thanks for your feedback!");
-                            }}
-                            className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
-                        >
-                            Submit
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
         </div >
     );
 };
