@@ -667,68 +667,59 @@ export const OwnerDashboard: React.FC = () => {
         {/* COMPLETED TAB */}
         {activeTab === 'completed' && (
           <div className="space-y-4">
-            {completedTrips.length === 0 ? (
+            {rideOffers.filter(o => o.driverName === user?.name && o.status === 'COMPLETED').length === 0 ? (
               <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
                 <p className="text-gray-400 text-xs text-center">No completed rides history.</p>
               </div>
             ) : (
-              completedTrips.map(trip => (
-                <div
-                  key={trip.id}
-                  onClick={() => setExpandedTripId(expandedTripId === trip.id ? null : trip.id)}
-                  className="bg-[var(--driver-card)] p-5 rounded-3xl shadow-md border border-gray-800 transition cursor-pointer hover:bg-gray-800 hover:border-green-500/30 group relative overflow-hidden"
-                >
-                  <div className="absolute top-0 left-0 w-1 h-full bg-green-500/50"></div>
-                  <div className="flex justify-between items-center pl-3">
-                    <div>
-                      <h4 className="font-bold text-white text-lg">{trip.from} → {trip.to}</h4>
-                      <p className="text-sm text-gray-400">{new Date(trip.date).toDateString()}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs bg-green-500 text-black px-4 py-1.5 rounded-xl font-black shadow-lg shadow-green-900/20 tracking-wide">COMPLETED</span>
-                    </div>
-                  </div>
+              rideOffers
+                .filter(o => o.driverName === user?.name && o.status === 'COMPLETED')
+                .map(offer => {
+                  const offerTrips = getPassengersForOffer(offer.id);
+                  const totalEarned = offerTrips.reduce((acc, t) => acc + t.cost, 0);
 
-                  {expandedTripId === trip.id && (
-                    <div className="mt-4 pt-4 border-t border-gray-700 animate-in slide-in-from-top-2">
-                      <h5 className="text-xs font-bold text-[var(--driver-primary)] uppercase mb-2">Trip Details</h5>
-                      <div className="grid grid-cols-2 gap-y-3 text-sm">
-
+                  return (
+                    <div
+                      key={offer.id}
+                      onClick={() => setExpandedTripId(expandedTripId === offer.id ? null : offer.id)}
+                      className="bg-[var(--driver-card)] p-5 rounded-3xl shadow-md border border-gray-800 transition cursor-pointer hover:bg-gray-800 hover:border-green-500/30 group relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 left-0 w-1 h-full bg-green-500/50"></div>
+                      <div className="flex justify-between items-center pl-3">
                         <div>
-                          <span className="block text-xs text-gray-500">Passenger</span>
-                          <span className="font-bold text-white">{trip.passengerName || 'Unknown'}</span>
+                          <h4 className="font-bold text-white text-lg">{offer.from} → {offer.to}</h4>
+                          <p className="text-sm text-gray-400">{new Date(offer.date).toDateString()} • {offer.time}</p>
                         </div>
-
-                        <div>
-                          <span className="block text-xs text-gray-500">Mobile</span>
-                          <span className="font-mono text-white text-xs">{trip.passengerMobile || 'N/A'}</span>
+                        <div className="text-right">
+                          <span className="text-xs bg-green-500 text-black px-4 py-1.5 rounded-xl font-black shadow-lg shadow-green-900/20 tracking-wide">COMPLETED</span>
                         </div>
-
-                        <div>
-                          <span className="block text-xs text-gray-500">Vehicle</span>
-                          <span className="text-white">{trip.vehicleType || 'Standard'}</span>
-                        </div>
-
-                        <div>
-                          <span className="block text-xs text-gray-500">Seats Booked</span>
-                          <span className="font-bold text-white flex gap-1">
-                            {trip.seats && trip.seats.length > 0
-                              ? trip.seats.map((s: any) => <span key={s} className="bg-gray-700 px-1.5 rounded">{s}</span>)
-                              : <span className="text-gray-500 italic">1 seat</span>
-                            }
-                          </span>
-                        </div>
-
-                        <div className="col-span-2 mt-1">
-                          <span className="block text-xs text-gray-500">Total Cost</span>
-                          <span className="font-bold text-green-400 text-lg">₹{trip.cost}</span>
-                        </div>
-
                       </div>
+
+                      {expandedTripId === offer.id && (
+                        <div className="mt-4 pt-4 border-t border-gray-700 animate-in slide-in-from-top-2">
+                          <h5 className="text-xs font-bold text-[var(--driver-primary)] uppercase mb-2">Ride Summary</h5>
+
+                          <div className="space-y-3">
+                            {offerTrips.map(trip => (
+                              <div key={trip.id} className="flex justify-between items-center bg-gray-900/50 p-3 rounded-xl border border-gray-700">
+                                <div>
+                                  <p className="text-white font-bold text-sm">{trip.passengerName || 'Passenger'}</p>
+                                  <p className="text-xs text-gray-400">{trip.seats.length} Seat(s)</p>
+                                </div>
+                                <span className="font-bold text-green-400">+₹{trip.cost}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="mt-4 flex justify-between items-center pt-3 border-t border-gray-700">
+                            <span className="text-gray-400 text-sm font-bold">Total Earnings</span>
+                            <span className="text-xl font-black text-green-400">₹{totalEarned}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))
+                  );
+                })
             )}
           </div>
         )}
