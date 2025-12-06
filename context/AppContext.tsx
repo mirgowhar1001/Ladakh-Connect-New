@@ -350,32 +350,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Payment Check Bypassed for "Booking Only" Mode
     if (user) {
       const seats = tripDetails.seats || [];
-      const costPerSeat = cost / (seats.length || 1);
 
-      // Create a separate trip document for EACH seat requested
-      // This ensures the driver receives separate confirmation requests for each seat.
-      const bookingPromises = seats.map(async (seatNum) => {
-        const newTrip = {
-          ...tripDetails,
-          seats: [seatNum], // Each trip doc covers only 1 seat
-          cost: costPerSeat,
-          status: 'WAITING_CONFIRMATION',
-          passengerId: user.name,
-          passengerUid: user.uid,
-          passengerMobile: user.mobile || '',
-          driverId: tripDetails.driverId, // Ensure ID is saved
-          driverName: tripDetails.driverName || 'Assigned Driver',
-          driverMobile: tripDetails.driverMobile || '',
-          vehicleNo: tripDetails.vehicleNo || 'JK-XX-TEMP',
-          messages: [],
-          offerId: offerId || null,
-          createdAt: Date.now()
-        };
+      const newTrip = {
+        ...tripDetails,
+        seats: seats, // Keep all seats in one doc
+        cost: cost,   // Total cost for all seats
+        status: 'WAITING_CONFIRMATION',
+        passengerId: user.name,
+        passengerUid: user.uid,
+        passengerMobile: user.mobile || '',
+        driverId: tripDetails.driverId, // Ensure ID is saved
+        driverName: tripDetails.driverName || 'Assigned Driver',
+        driverMobile: tripDetails.driverMobile || '',
+        vehicleNo: tripDetails.vehicleNo || 'JK-XX-TEMP',
+        messages: [],
+        offerId: offerId || null,
+        createdAt: Date.now()
+      };
 
-        await addDoc(collection(db, 'trips'), newTrip);
-      });
-
-      await Promise.all(bookingPromises);
+      await addDoc(collection(db, 'trips'), newTrip);
 
       // Update RideOffer bookedSeats (Bulk update is fine here)
       if (offerId) {
