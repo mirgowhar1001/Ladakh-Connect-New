@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Ride } from '../data/mockData';
-import { UserRole, RideStatus } from '../types';
+import { UserRole, RideStatus, Booking } from '../types';
 
 interface RideListProps {
     rides: Ride[];
@@ -8,9 +8,16 @@ interface RideListProps {
     onBookRide?: (rideId: string) => void;
     onCloseBooking?: (rideId: string) => void;
     statuses?: Record<string, RideStatus>;
+    bookings?: Booking[];
 }
 
-export const RideList: React.FC<RideListProps> = ({ rides, userRole = 'PASSENGER', onBookRide, onCloseBooking, statuses = {} }) => {
+export const RideList: React.FC<RideListProps> = ({ rides, userRole = 'PASSENGER', onBookRide, onCloseBooking, statuses = {}, bookings = [] }) => {
+    const [expandedRideId, setExpandedRideId] = useState<string | null>(null);
+
+    const toggleExpand = (rideId: string) => {
+        setExpandedRideId(prev => prev === rideId ? null : rideId);
+    };
+
     if (rides.length === 0) {
         return (
             <div className="text-center py-10 text-slate-500">
@@ -28,16 +35,52 @@ export const RideList: React.FC<RideListProps> = ({ rides, userRole = 'PASSENGER
                 const isCompleted = status === 'COMPLETED';
 
                 if (isCompleted && userRole === 'DRIVER') {
-                    // Simplified view for completed rides in driver dashboard
+                    const rideBookings = bookings.filter(b => b.rideId === ride.id && (b.status === 'CONFIRMED' || b.status === 'PENDING'));
+                    const isExpanded = expandedRideId === ride.id;
+
+                    // Support expandable view for completed rides
                     return (
-                        <div key={ride.id} className="card bg-slate-50 border-slate-200 opacity-75">
+                        <div
+                            key={ride.id}
+                            className={`card bg-slate-50 border-slate-200 transition-all cursor-pointer hover:bg-slate-100 ${isExpanded ? 'ring-2 ring-primary/20' : ''}`}
+                            onClick={() => toggleExpand(ride.id)}
+                        >
                             <div className="flex justify-between items-center p-4">
                                 <div>
                                     <h3 className="font-bold text-slate-700">{ride.from} → {ride.to}</h3>
                                     <p className="text-sm text-slate-500">{ride.date} • {ride.time}</p>
                                 </div>
-                                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2 py-1 rounded">Completed</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2 py-1 rounded">Completed</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
                             </div>
+
+                            {/* Expanded Details */}
+                            {isExpanded && (
+                                <div className="p-4 pt-0 border-t border-slate-200 mt-2 bg-white mx-2 mb-2 rounded shadow-inner" onClick={(e) => e.stopPropagation()}>
+                                    <h4 className="text-sm font-bold text-slate-700 mb-2 mt-3">Passenger List</h4>
+                                    {rideBookings.length > 0 ? (
+                                        <ul className="space-y-2">
+                                            {rideBookings.map(booking => (
+                                                <li key={booking.id} className="flex justify-between items-center text-sm p-2 bg-slate-50 rounded">
+                                                    <div>
+                                                        <span className="font-medium text-slate-900">{booking.passengerName}</span>
+                                                        <span className="text-xs text-slate-500 ml-2">ID: {booking.id.slice(0, 6)}</span>
+                                                    </div>
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${booking.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                        {booking.status}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">No passengers booked for this ride.</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     );
                 }

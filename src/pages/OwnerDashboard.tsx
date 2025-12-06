@@ -149,7 +149,7 @@ export const OwnerDashboard: React.FC = () => {
                             rides={completedRides}
                             userRole={userRole}
                             statuses={rideStatuses}
-                        // No actions for completed rides
+                            bookings={bookings} // Passed bookings
                         />
                     </div>
                 )}
