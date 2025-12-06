@@ -127,25 +127,7 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                                 <XCircle size={18} /> CANCEL RIDE
                                             </button>
                                         ) : (
-                                            <div className="flex flex-col items-center gap-1">
-                                                {trip.status !== 'EN_ROUTE' && trip.status !== 'ARRIVED' && trip.status !== 'COMPLETED' && trip.status !== 'CONFIRMED' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (window.confirm('Are you sure you want to cancel this booking?')) {
-                                                                    updateTripStatus(trip.id, 'CANCELLED');
-                                                                }
-                                                            }}
-                                                            className="bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 p-3 rounded-full transition"
-                                                            title="Cancel Booking"
-                                                        >
-                                                            <XCircle size={20} />
-                                                        </button>
-                                                        <span className="text-[10px] font-bold text-gray-400">Cancel</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        )}
+                                        ): null}
                                     </div>
                                 )}
 
