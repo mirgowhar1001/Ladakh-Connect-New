@@ -57,14 +57,53 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                         <div key={trip.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${trip.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
-                                        trip.status === 'CANCELLED' ? 'bg-red-100 text-red-600' :
-                                            trip.status === 'WAITING_CONFIRMATION' ? 'bg-yellow-100 text-yellow-600' :
-                                                'bg-blue-100 text-blue-600'
-                                        }`}>
-                                        {trip.status === 'WAITING_CONFIRMATION' ? 'AWAITED' : trip.status === 'CONFIRMED' ? 'CONFIRMED' : trip.status.replace('_', ' ')}
-                                    </span>
-                                    <span className="text-xs text-gray-400">#{trip.id.slice(0, 6).toUpperCase()}</span>
+                                    {/* Milestone Tracker UI */}
+                                    <div className="flex items-center gap-3">
+                                        {/* Step 1: Request Sent (Always Done if it exists) */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm border border-green-600"></div>
+                                            {/* <span className="text-[8px] font-bold text-gray-400 uppercase">Sent</span> */}
+                                        </div>
+
+                                        {/* Connector 1: Sent -> Confirmed */}
+                                        <div className="w-12 h-1 bg-gray-100 rounded-full relative overflow-hidden">
+                                            {trip.status === 'WAITING_CONFIRMATION' ? (
+                                                <div className="absolute inset-0 flex items-center justify-center gap-1 bg-yellow-50/50">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-[bounce_1s_infinite_-0.3s]"></div>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-[bounce_1s_infinite_-0.15s]"></div>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-[bounce_1s_infinite]"></div>
+                                                </div>
+                                            ) : (['CONFIRMED', 'EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status)) && (
+                                                <div className="w-full h-full bg-green-500"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Step 2: Confirmed */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className={`w-3 h-3 rounded-full border transition-all duration-300 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status)
+                                                    ? 'bg-green-500 border-green-600 scale-110 shadow-green-200 shadow-lg'
+                                                    : 'bg-gray-200 border-gray-300'
+                                                }`}></div>
+                                            {/* <span className={`text-[8px] font-bold uppercase transition-colors ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-green-600' : 'text-gray-300'}`}>Confirmed</span> */}
+                                        </div>
+
+                                        {/* Connector 2: Confirmed -> En Route */}
+                                        <div className="w-12 h-1 bg-gray-100 rounded-full relative overflow-hidden">
+                                            {['EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status) && (
+                                                <div className="w-full h-full bg-green-500"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Step 3: En Route */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className={`w-3 h-3 rounded-full border transition-all duration-300 ${['EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status)
+                                                    ? 'bg-green-500 border-green-600 animate-pulse'
+                                                    : 'bg-gray-200 border-gray-300'
+                                                }`}></div>
+                                            {/* <span className={`text-[8px] font-bold uppercase transition-colors ${['EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-green-600' : 'text-gray-300'}`}>On Way</span> */}
+                                        </div>
+                                    </div>
+                                    <span className="text-xs text-gray-400 font-mono">#{trip.id.slice(0, 6).toUpperCase()}</span>
                                 </div>
                                 {/* <p className="font-bold text-lg">₹{trip.cost}</p> */}
                             </div>
