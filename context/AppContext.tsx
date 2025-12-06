@@ -404,6 +404,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         alert("Cannot cancel a completed ride!");
         return;
       }
+      if (trip.status === 'CONFIRMED') {
+        alert("Confirmed rides cannot be cancelled. Please contact support.");
+        return;
+      }
 
       // Tiered Penalty Logic
       // 1. Calculate hours until departure
@@ -615,7 +619,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (offerSnap.exists()) {
       const offerData = offerSnap.data() as RideOffer;
-      if (offerData.bookedSeats && offerData.bookedSeats.length > 0) {
+      // MORE ROBUST CHECK: Query active trips for this offer
+      const tripsQuery = query(collection(db, 'trips'), where('offerId', '==', offerId));
+      const { getDocs } = await import('firebase/firestore');
+      const tripsSnap = await getDocs(tripsQuery);
+
+      const hasActiveBookings = tripsSnap.docs.some(doc => {
+        const status = doc.data().status;
+        return status === 'BOOKED' || status === 'WAITING_CONFIRMATION' || status === 'CONFIRMED' || status === 'EN_ROUTE' || status === 'ARRIVED';
+      });
+
+      if (hasActiveBookings) {
         alert("Cannot cancel ride with active bookings. Please contact support.");
         return;
       }

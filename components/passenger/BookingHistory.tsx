@@ -128,7 +128,7 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                             </button>
                                         ) : (
                                             <div className="flex flex-col items-center gap-1">
-                                                {trip.status !== 'EN_ROUTE' && trip.status !== 'ARRIVED' && trip.status !== 'COMPLETED' && (
+                                                {trip.status !== 'EN_ROUTE' && trip.status !== 'ARRIVED' && trip.status !== 'COMPLETED' && trip.status !== 'CONFIRMED' && (
                                                     <>
                                                         <button
                                                             onClick={() => {
