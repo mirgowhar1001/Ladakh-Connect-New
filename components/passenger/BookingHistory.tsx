@@ -59,39 +59,46 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                 <div className="flex items-center gap-2">
                                     {/* Milestone Tracker UI */}
                                     {/* Milestone Tracker UI */}
-                                    <div className="flex items-center justify-between w-full mt-3 mb-2 px-2 relative">
-
-                                        {/* Step 1: AWAITED - Always Active (Start State) */}
-                                        <div className="flex flex-col items-center relative z-10 w-24">
-                                            <div className="w-5 h-5 rounded-full bg-yellow-400 border-2 border-white shadow-sm animate-pulse mb-2"></div>
-                                            <p className="text-[10px] font-bold text-yellow-600 text-center leading-tight whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2">Waiting Driver<br />Confirmation</p>
+                                    {(trip.status === 'COMPLETED' || activeTab === 'COMPLETED') ? (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
+                                            <span className="text-sm font-bold text-blue-600">Ride Completed</span>
                                         </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between w-full mt-3 mb-2 px-2 relative">
 
-                                        {/* Line 1: Grey -> Yellow when CONFIRMED */}
-                                        <div className={`h-1 flex-1 mx-[-1rem] mb-6 rounded-full relative z-0 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status) ? 'bg-yellow-400' : 'bg-gray-100'}`}></div>
+                                            {/* Step 1: AWAITED - Always Active (Start State) */}
+                                            <div className="flex flex-col items-center relative z-10 w-24">
+                                                <div className="w-5 h-5 rounded-full bg-yellow-400 border-2 border-white shadow-sm animate-pulse mb-2"></div>
+                                                <p className="text-[10px] font-bold text-yellow-600 text-center leading-tight whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2">Waiting Driver<br />Confirmation</p>
+                                            </div>
 
-                                        {/* Step 2: CONFIRMED - Active when CONFIRMED */}
-                                        <div className="flex flex-col items-center relative z-10 w-24">
-                                            <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status)
-                                                    ? 'bg-green-500 scale-110'
-                                                    : 'bg-gray-200'
-                                                }`}></div>
-                                            <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status) ? 'text-green-600' : 'text-gray-300'}`}>Confirmed</p>
+                                            {/* Line 1: Grey -> Yellow when CONFIRMED */}
+                                            <div className={`h-1 flex-1 mx-[-1rem] mb-6 rounded-full relative z-0 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'bg-yellow-400' : 'bg-gray-100'}`}></div>
+
+                                            {/* Step 2: CONFIRMED - Active when CONFIRMED */}
+                                            <div className="flex flex-col items-center relative z-10 w-24">
+                                                <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status)
+                                                        ? 'bg-green-500 scale-110'
+                                                        : 'bg-gray-200'
+                                                    }`}></div>
+                                                <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-green-600' : 'text-gray-300'}`}>Confirmed</p>
+                                            </div>
+
+                                            {/* Line 2: Grey -> Green when EN_ROUTE */}
+                                            <div className={`h-1 flex-1 mx-[-1rem] mb-6 rounded-full relative z-0 ${['EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'bg-green-500' : 'bg-gray-100'}`}></div>
+
+                                            {/* Step 3: EN ROUTE - Active when EN_ROUTE */}
+                                            <div className="flex flex-col items-center relative z-10 w-24">
+                                                <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['EN_ROUTE', 'ARRIVED'].includes(trip.status)
+                                                        ? 'bg-violet-600 animate-pulse'
+                                                        : 'bg-gray-200'
+                                                    }`}></div>
+                                                <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-violet-600' : 'text-gray-300'}`}>En Route</p>
+                                            </div>
+
                                         </div>
-
-                                        {/* Line 2: Grey -> Green when EN_ROUTE */}
-                                        <div className={`h-1 flex-1 mx-[-1rem] mb-6 rounded-full relative z-0 ${['EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status) ? 'bg-green-500' : 'bg-gray-100'}`}></div>
-
-                                        {/* Step 3: EN ROUTE - Active when EN_ROUTE */}
-                                        <div className="flex flex-col items-center relative z-10 w-24">
-                                            <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status)
-                                                    ? 'bg-violet-600 animate-pulse'
-                                                    : 'bg-gray-200'
-                                                }`}></div>
-                                            <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['EN_ROUTE', 'ARRIVED', 'COMPLETED'].includes(trip.status) ? 'text-violet-600' : 'text-gray-300'}`}>En Route</p>
-                                        </div>
-
-                                    </div>
+                                    )}
                                     <span className="text-xs text-gray-400 font-mono absolute top-2 right-2">#{trip.id.slice(0, 6).toUpperCase()}</span>
                                 </div>
                                 {/* <p className="font-bold text-lg">₹{trip.cost}</p> */}
