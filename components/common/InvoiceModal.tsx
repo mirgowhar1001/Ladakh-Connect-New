@@ -21,78 +21,84 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ trip, onClose }) => 
                 </div>
 
                 {/* Invoice Content */}
-                <div className="p-6 space-y-6" id="invoice-content">
-                    <div className="text-center border-b border-gray-100 pb-6">
-                        <h1 className="text-2xl font-extrabold text-mmt-red">Taxi Booking Ladakh</h1>
-                        <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Official Receipt</p>
+                <div className="p-4 space-y-4" id="invoice-content">
+                    <div className="text-center border-b border-gray-100 pb-4">
+                        <h1 className="text-2xl font-black text-violet-600 tracking-tight uppercase">LADAKH TAXI</h1>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Official Receipt</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                         {/* Passenger Details */}
                         <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Passenger</p>
-                            <p className="font-bold text-gray-800 text-sm">{trip.passengerId}</p>
-                            <p className="text-xs text-gray-500 font-mono">+91 {trip.passengerMobile || 'N/A'}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">Trip ID: #{trip.id.slice(0, 8).toUpperCase()}</p>
+                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Passenger</p>
+                            <p className="font-bold text-gray-800 text-xs">{trip.passengerId}</p>
+                            <p className="text-[10px] text-gray-500 font-mono">+91 {trip.passengerMobile || 'N/A'}</p>
+                            <p className="text-[9px] text-gray-400 mt-0.5">#{trip.id.slice(0, 8).toUpperCase()}</p>
                         </div>
 
                         {/* Driver Details */}
                         <div className="text-right">
-                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Driver</p>
-                            <p className="font-bold text-gray-800 text-sm">{trip.driverName}</p>
-                            <p className="text-xs text-gray-500 font-mono">+91 {trip.driverMobile || 'N/A'}</p>
-                            <p className="text-[10px] text-gray-500 mt-1">{trip.vehicleType} <span className="font-black text-gray-800">{trip.vehicleNo}</span></p>
+                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Driver</p>
+                            <p className="font-bold text-gray-800 text-xs">{trip.driverName}</p>
+                            <p className="text-[10px] text-gray-500 font-mono">+91 {trip.driverMobile || 'N/A'}</p>
+                            <p className="text-[9px] text-gray-500 mt-0.5">{trip.vehicleType} <span className="font-black text-gray-800">{trip.vehicleNo}</span></p>
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div className="flex justify-between items-center border-t border-gray-100 pt-3">
                         <div>
                             <p className="text-[10px] text-gray-400 uppercase font-bold">Date</p>
-                            <p className="font-bold text-gray-800">{new Date(trip.date).toLocaleDateString()}</p>
+                            <p className="font-bold text-gray-800 text-sm">{new Date(trip.date).toLocaleDateString()}</p>
                         </div>
                         <div className="text-right">
                             <p className="text-[10px] text-gray-400 uppercase font-bold">Time</p>
                             {/* Assuming trip might have time, else hide */}
-                            <p className="font-bold text-gray-800">{(trip as any).time || 'N/A'}</p>
+                            <p className="font-bold text-gray-800 text-sm">{(trip as any).time || 'N/A'}</p>
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-xl space-y-3">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <p className="font-bold text-gray-700">{trip.from}</p>
+                    <div className="bg-gray-50 p-3 rounded-xl space-y-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                            <p className="font-bold text-gray-700 text-sm">{trip.from}</p>
                         </div>
-                        <div className="border-l-2 border-gray-200 h-4 ml-1"></div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <p className="font-bold text-gray-700">{trip.to}</p>
+                        <div className="border-l-2 border-gray-200 h-3 ml-0.5"></div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                            <p className="font-bold text-gray-700 text-sm">{trip.to}</p>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
+                    <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
                             <span className="text-gray-500">Base Fare</span>
                             <span className="font-bold">₹{trip.cost}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs">
                             <span className="text-gray-500">Taxes & Fees</span>
                             <span className="font-bold">₹0</span>
                         </div>
                         <div className="border-t border-dashed border-gray-200 my-2"></div>
-                        <div className="flex justify-between text-lg">
+                        <div className="flex justify-between text-base">
                             <span className="font-bold text-gray-800">Total Paid</span>
-                            <span className="font-extrabold text-mmt-blue">₹{trip.cost}</span>
+                            <span className="font-extrabold text-blue-600">₹{trip.cost}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
+                <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-200"
+                    >
+                        Completed
+                    </button>
                     <button
                         onClick={() => window.print()}
-                        className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-900 transition"
+                        className="px-4 py-3 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition"
                     >
-                        <Printer size={18} /> Print Invoice
+                        <Printer size={18} />
                     </button>
                 </div>
 
