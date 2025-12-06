@@ -22,6 +22,7 @@ export const OwnerDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posted' | 'booked' | 'active' | 'completed'>('posted');
   const [currentView, setCurrentView] = useState<OwnerView>('marketplace');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
 
   const handleClearAllData = async () => {
     if (window.confirm("CRITICAL WARNING: This will WIPE ALL DATA (Trips, Bookings, Wallet, Documents) for ALL USERS, keeping only Login Details. Are you sure?")) {
@@ -664,14 +665,59 @@ export const OwnerDashboard: React.FC = () => {
               </div>
             ) : (
               completedTrips.map(trip => (
-                <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center opacity-75 hover:opacity-100 transition">
-                  <div>
-                    <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
-                    <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+                <div
+                  key={trip.id}
+                  onClick={() => setExpandedTripId(expandedTripId === trip.id ? null : trip.id)}
+                  className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 transition cursor-pointer hover:bg-gray-800"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
+                      <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
-                  </div>
+
+                  {expandedTripId === trip.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-700 animate-in slide-in-from-top-2">
+                      <h5 className="text-xs font-bold text-[var(--driver-primary)] uppercase mb-2">Trip Details</h5>
+                      <div className="grid grid-cols-2 gap-y-3 text-sm">
+
+                        <div>
+                          <span className="block text-xs text-gray-500">Passenger</span>
+                          <span className="font-bold text-white">{trip.passengerName || 'Unknown'}</span>
+                        </div>
+
+                        <div>
+                          <span className="block text-xs text-gray-500">Mobile</span>
+                          <span className="font-mono text-white text-xs">{trip.passengerMobile || 'N/A'}</span>
+                        </div>
+
+                        <div>
+                          <span className="block text-xs text-gray-500">Vehicle</span>
+                          <span className="text-white">{trip.vehicleType || 'Standard'}</span>
+                        </div>
+
+                        <div>
+                          <span className="block text-xs text-gray-500">Seats Booked</span>
+                          <span className="font-bold text-white flex gap-1">
+                            {trip.seats && trip.seats.length > 0
+                              ? trip.seats.map((s: any) => <span key={s} className="bg-gray-700 px-1.5 rounded">{s}</span>)
+                              : <span className="text-gray-500 italic">1 seat</span>
+                            }
+                          </span>
+                        </div>
+
+                        <div className="col-span-2 mt-1">
+                          <span className="block text-xs text-gray-500">Total Cost</span>
+                          <span className="font-bold text-green-400 text-lg">₹{trip.cost}</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}
