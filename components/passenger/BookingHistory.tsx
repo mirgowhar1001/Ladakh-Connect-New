@@ -62,7 +62,7 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                     {(trip.status === 'COMPLETED' || activeTab === 'COMPLETED') ? (
                                         <div className="flex items-center gap-2 mt-2">
                                             <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
-                                            <span className="text-sm font-bold text-blue-600">Ride Completed</span>
+                                            <span className="text-sm font-bold text-blue-600">Completed</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-between w-full mt-3 mb-2 px-2 relative">
@@ -79,8 +79,8 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                             {/* Step 2: CONFIRMED - Active when CONFIRMED */}
                                             <div className="flex flex-col items-center relative z-10 w-24">
                                                 <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status)
-                                                        ? 'bg-green-500 scale-110'
-                                                        : 'bg-gray-200'
+                                                    ? 'bg-green-500 scale-110'
+                                                    : 'bg-gray-200'
                                                     }`}></div>
                                                 <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['CONFIRMED', 'EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-green-600' : 'text-gray-300'}`}>Confirmed</p>
                                             </div>
@@ -91,8 +91,8 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                             {/* Step 3: EN ROUTE - Active when EN_ROUTE */}
                                             <div className="flex flex-col items-center relative z-10 w-24">
                                                 <div className={`w-5 h-5 rounded-full border-2 border-white shadow-sm transition-colors duration-300 mb-2 ${['EN_ROUTE', 'ARRIVED'].includes(trip.status)
-                                                        ? 'bg-violet-600 animate-pulse'
-                                                        : 'bg-gray-200'
+                                                    ? 'bg-violet-600 animate-pulse'
+                                                    : 'bg-gray-200'
                                                     }`}></div>
                                                 <p className={`text-[10px] font-bold text-center whitespace-nowrap absolute top-7 left-1/2 -translate-x-1/2 ${['EN_ROUTE', 'ARRIVED'].includes(trip.status) ? 'text-violet-600' : 'text-gray-300'}`}>En Route</p>
                                             </div>
