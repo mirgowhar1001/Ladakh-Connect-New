@@ -129,6 +129,7 @@ export const OwnerDashboard: React.FC = () => {
 
   const availableRides = rideOffers
     .filter(offer => (offer.totalSeats - (offer.bookedSeats?.length || 0)) > 0)
+    .filter(offer => !offer.status || offer.status === 'OPEN') // ONLY SHOW OPEN RIDES
     .sort((a, b) => {
       const timeA = a.createdAt || 0;
       const timeB = b.createdAt || 0;
@@ -628,12 +629,19 @@ export const OwnerDashboard: React.FC = () => {
                         {/* Ride Actions */}
                         <div className="flex flex-wrap gap-3">
                           {!isEnRoute && !isArrived && passengers.length > 0 && (
-                            <button onClick={() => { passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); setActiveTab('posted'); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                            <button onClick={() => {
+                              passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE'));
+                              updateRideOffer(offer.id, { status: 'EN_ROUTE' }); // LOCK THE RIDE
+                              setActiveTab('posted');
+                            }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
                               Start Ride <ChevronRight size={20} />
                             </button>
                           )}
                           {isEnRoute && (
-                            <button onClick={() => { passengers.forEach(p => completeRide(p.id)); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                            <button onClick={() => {
+                              passengers.forEach(p => completeRide(p.id));
+                              updateRideOffer(offer.id, { status: 'COMPLETED' }); // BURY THE RIDE
+                            }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
                               Finish Ride <CheckCircle size={20} />
                             </button>
                           )}

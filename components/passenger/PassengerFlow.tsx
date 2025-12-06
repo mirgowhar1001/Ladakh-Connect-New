@@ -447,7 +447,11 @@ export const PassengerFlow: React.FC = () => {
     // 1. Filter by Route & Date
     const today = new Date().toISOString().split('T')[0];
     let matchedOffers = rideOffers.filter(
-      r => r.from === searchParams.from && r.to === searchParams.to && r.date === searchParams.date && r.date >= today
+      r => r.from === searchParams.from &&
+        r.to === searchParams.to &&
+        r.date === searchParams.date &&
+        r.date >= today &&
+        (!r.status || r.status === 'OPEN') // Only show OPEN rides
     );
 
 
