@@ -872,10 +872,7 @@ export const OwnerDashboard: React.FC = () => {
             <p className="text-2xl font-black text-green-400">92%</p>
             <p className="text-xs text-gray-400 font-bold uppercase">Acceptance</p>
           </div>
-          <div className="bg-gray-800 p-4 rounded-2xl text-center">
-            <p className="text-2xl font-black text-white">₹{totalEarnings}</p>
-            <p className="text-xs text-gray-400 font-bold uppercase">Earnings</p>
-          </div>
+
         </div>
       </div>
 
