@@ -224,7 +224,7 @@ export const OwnerDashboard: React.FC = () => {
   };
 
   const handleNavigate = (view: string) => {
-    if (view === 'bookings') setCurrentView('my-rides');
+    if (view === 'bookings' || view === 'history') setCurrentView('my-rides');
     else setCurrentView(view as OwnerView);
     setIsMenuOpen(false);
   };
