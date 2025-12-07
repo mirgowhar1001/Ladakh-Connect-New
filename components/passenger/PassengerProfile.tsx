@@ -10,7 +10,7 @@ interface PassengerProfileProps {
 // import { handlePayment } from '../common/PaymentService';
 
 export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNavigate }) => {
-    const { user, passengerBalance, depositToWallet, updateUser, logout, deleteAccount } = useApp();
+    const { user, passengerBalance, depositToWallet, updateUser, logout, deleteAccount, trips } = useApp();
     /* Edit state removed - moved to EditProfile.tsx */
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,18 +99,34 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
 
                 {/* Statistics Row */}
                 <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
-                        <p className="text-xl font-black text-[var(--pass-primary)]">12</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Rides</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
-                        <p className="text-xl font-black text-green-500">0%</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Cancel</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
-                        <p className="text-xl font-black text-yellow-500">4.9</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Rating</p>
-                    </div>
+                    {(() => {
+                        const myTrips = trips || []; // Access trips from context
+                        const completed = myTrips.filter(t => t.status === 'COMPLETED').length;
+                        const cancelled = myTrips.filter(t => t.status === 'CANCELLED').length;
+                        const total = completed + cancelled;
+                        const honestyScore = total === 0 ? 100 : Math.round((completed / total) * 100);
+
+                        let scoreColor = 'text-green-500';
+                        if (honestyScore < 70) scoreColor = 'text-red-500';
+                        else if (honestyScore < 90) scoreColor = 'text-yellow-500';
+
+                        return (
+                            <>
+                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <p className="text-xl font-black text-[var(--pass-primary)]">{completed}</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Completed</p>
+                                </div>
+                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <p className="text-xl font-black text-red-500">{cancelled}</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Cancelled</p>
+                                </div>
+                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <p className={`text-xl font-black ${scoreColor}`}>{honestyScore}%</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Honesty Score</p>
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* Wallet Card - HIDDEN */}
