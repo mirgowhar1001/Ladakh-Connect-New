@@ -40,8 +40,12 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigate 
 
                     <div className="flex items-center gap-4 mb-2">
                         <div className="w-16 h-16 bg-white rounded-full p-1 shadow-lg">
-                            <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-bold text-xl">
-                                {user?.name?.charAt(0) || 'U'}
+                            <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-bold text-xl overflow-hidden">
+                                {user?.profileImage ? (
+                                    <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    user?.name?.charAt(0) || 'U'
+                                )}
                             </div>
                         </div>
                         <div>
