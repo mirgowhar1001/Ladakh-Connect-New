@@ -383,8 +383,8 @@ export const OwnerDashboard: React.FC = () => {
                       <User size={14} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-200">{offer.driverName}</p>
-                      <p className="text-[10px] text-gray-500">{offer.vehicleType}</p>
+                      <p className="text-sm font-bold text-white">{offer.vehicleNo}</p>
+                      <p className="text-[10px] text-gray-400">{offer.driverName} • {offer.vehicleType}</p>
                     </div>
                   </div>
 
@@ -397,9 +397,10 @@ export const OwnerDashboard: React.FC = () => {
                       </p>
                     </div>
 
-                    <button className="bg-[var(--driver-primary)] text-black px-5 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition">
-                      View Details
-                    </button>
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Mobile</p>
+                      <p className="text-sm font-bold text-white tracking-wide">{offer.driverMobile}</p>
+                    </div>
                   </div>
                 </div>
               </div>
