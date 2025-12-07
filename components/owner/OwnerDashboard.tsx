@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { storage, db } from '../../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -337,6 +337,51 @@ export const OwnerDashboard: React.FC = () => {
       );
     }
 
+
+    const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editVehicleData, setEditVehicleData] = useState({ vehicleNo: '', vehicleType: '' });
+    const [editProfileData, setEditProfileData] = useState({ name: '', mobile: '', email: '' });
+
+    // Initialize edit data when entering edit mode
+    useEffect(() => {
+      if (isEditingVehicle && user) {
+        setEditVehicleData({
+          vehicleNo: user.vehicleNo || '',
+          vehicleType: user.vehicleType || 'Toyota Innova'
+        });
+      }
+      if (isEditingProfile && user) {
+        setEditProfileData({
+          name: user.name || '',
+          mobile: user.mobile || '',
+          email: user.name ? `${user.name.toLowerCase().replace(' ', '.')}@example.com` : ''
+        });
+      }
+    }, [isEditingVehicle, isEditingProfile, user]);
+
+    const handleSaveVehicle = async () => {
+      if (!editVehicleData.vehicleNo || !editVehicleData.vehicleType) return alert("All fields are required.");
+      await updateUser({
+        vehicleNo: editVehicleData.vehicleNo,
+        vehicleType: editVehicleData.vehicleType
+      });
+      setIsEditingVehicle(false);
+      alert("Vehicle details updated successfully!");
+    };
+
+    const handleSaveProfile = async () => {
+      if (!editProfileData.name || !editProfileData.mobile) return alert("Name and Mobile are required.");
+      await updateUser({
+        name: editProfileData.name,
+        mobile: editProfileData.mobile,
+        // Email is usually not editable directly if linked to auth, but here we simulated it 
+        // user.email update logic would go here if applicable
+      });
+      setIsEditingProfile(false);
+      alert("Profile details updated successfully!");
+    };
+
     return (
       <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
         <div className="mb-6">
@@ -379,16 +424,57 @@ export const OwnerDashboard: React.FC = () => {
             <p className="text-gray-400 text-xs uppercase font-bold mb-2">Earnings Today</p>
             <p className="text-2xl font-black text-green-400">₹{todayEarnings}</p>
           </div>
-          <h3 className="font-bold text-lg text-white mb-4">Vehicle Details</h3>
+        </div>
+
+        {/* Vehicle Details Section */}
+        <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg text-white">Vehicle Details</h3>
+            {!isEditingVehicle ? (
+              <button onClick={() => setIsEditingVehicle(true)} className="text-[var(--driver-primary)] p-2 hover:bg-white/5 rounded-full transition">
+                <Edit size={18} />
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditingVehicle(false)} className="text-gray-400 p-2 hover:bg-white/5 rounded-full transition">
+                  <X size={18} />
+                </button>
+                <button onClick={handleSaveVehicle} className="text-green-400 p-2 hover:bg-white/5 rounded-full transition">
+                  <Check size={18} />
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-4">
             <div className="flex justify-between border-b border-gray-700 pb-2">
-              <span className="text-gray-400 text-sm">Vehicle Number</span>
-              <span className="font-bold text-white">{user?.vehicleNo}</span>
+              <span className="text-gray-400 text-sm py-2">Vehicle Number</span>
+              {isEditingVehicle ? (
+                <input
+                  type="text"
+                  value={editVehicleData.vehicleNo}
+                  onChange={(e) => setEditVehicleData({ ...editVehicleData, vehicleNo: e.target.value.toUpperCase() })}
+                  className="bg-gray-900 text-white font-bold p-2 rounded-lg border border-gray-700 w-40 text-right uppercase"
+                />
+              ) : (
+                <span className="font-bold text-white py-2">{user?.vehicleNo}</span>
+              )}
             </div>
             <div className="flex justify-between border-b border-gray-700 pb-2">
-              <span className="text-gray-400 text-sm">Vehicle Type</span>
-              <span className="font-bold text-white">{user?.vehicleType}</span>
+              <span className="text-gray-400 text-sm py-2">Vehicle Type</span>
+              {isEditingVehicle ? (
+                <select
+                  value={editVehicleData.vehicleType}
+                  onChange={(e) => setEditVehicleData({ ...editVehicleData, vehicleType: e.target.value })}
+                  className="bg-gray-900 text-white font-bold p-2 rounded-lg border border-gray-700 w-40 text-right appearance-none"
+                >
+                  {VEHICLE_WHITELIST.map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
+              ) : (
+                <span className="font-bold text-white py-2">{user?.vehicleType}</span>
+              )}
             </div>
+            {/* Driver Name logic - kept separate or part of profile? It was under Vehicle details in original code, moving to Personal Info mostly, but original had it here too. Keeping it readonly here as it pertains to License */}
             <div className="flex justify-between">
               <span className="text-gray-400 text-sm">Driver Name</span>
               <span className="font-bold text-white">{user?.name}</span>
@@ -396,16 +482,56 @@ export const OwnerDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Personal Info Section */}
         <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
-          <h3 className="font-bold text-lg text-white mb-4">Personal Info</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg text-white">Personal Info</h3>
+            {!isEditingProfile ? (
+              <button onClick={() => setIsEditingProfile(true)} className="text-[var(--driver-primary)] p-2 hover:bg-white/5 rounded-full transition">
+                <Edit size={18} />
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditingProfile(false)} className="text-gray-400 p-2 hover:bg-white/5 rounded-full transition">
+                  <X size={18} />
+                </button>
+                <button onClick={handleSaveProfile} className="text-green-400 p-2 hover:bg-white/5 rounded-full transition">
+                  <Check size={18} />
+                </button>
+              </div>
+            )}
+          </div>
           <div className="space-y-4">
             <div className="flex justify-between border-b border-gray-700 pb-2">
-              <span className="text-gray-400 text-sm">Mobile</span>
-              <span className="font-bold text-white">+91 {user?.mobile}</span>
+              <span className="text-gray-400 text-sm py-2">Mobile</span>
+              {isEditingProfile ? (
+                <input
+                  type="tel"
+                  value={editProfileData.mobile}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, mobile: e.target.value })}
+                  className="bg-gray-900 text-white font-bold p-2 rounded-lg border border-gray-700 w-40 text-right"
+                />
+              ) : (
+                <span className="font-bold text-white py-2">+91 {user?.mobile}</span>
+              )}
             </div>
             <div className="flex justify-between border-b border-gray-700 pb-2">
-              <span className="text-gray-400 text-sm">Email</span>
-              <span className="font-bold text-white">{user?.name.toLowerCase().replace(' ', '.')}@example.com</span>
+              <span className="text-gray-400 text-sm py-2">Email</span>
+              {/* Email is mocked in original code, skipping edit for now or just mock edit */}
+              <span className="font-bold text-white py-2">{user?.name.toLowerCase().replace(' ', '.')}@example.com</span>
+            </div>
+            <div className="flex justify-between border-b border-gray-700 pb-2">
+              <span className="text-gray-400 text-sm py-2">Name</span>
+              {isEditingProfile ? (
+                <input
+                  type="text"
+                  value={editProfileData.name}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
+                  className="bg-gray-900 text-white font-bold p-2 rounded-lg border border-gray-700 w-40 text-right"
+                />
+              ) : (
+                <span className="font-bold text-white py-2">{user?.name}</span>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400 text-sm">Joined</span>
@@ -991,3 +1117,150 @@ export const OwnerDashboard: React.FC = () => {
       </div>
     );
   };
+
+  const AllRidesView = () => (
+    <div className="px-6 pb-24 pt-6">
+      <h2 className="text-2xl font-bold text-white mb-6">All Rides</h2>
+      <div className="text-gray-400 text-center py-10">Coming Soon</div>
+    </div>
+  );
+
+  const MyRidesView = () => (
+    <div className="px-6 pb-24 pt-6">
+      <h2 className="text-2xl font-bold text-white mb-6">My Trips</h2>
+      <div className="space-y-4">
+        {activeTrips.length === 0 && myPostedRides.length === 0 ? (
+          <div className="text-gray-400 text-center py-10">No trips found.</div>
+        ) : (
+          <>
+            {myPostedRides.map(offer => (
+              <div key={offer.id} className="bg-[var(--driver-card)] p-4 rounded-2xl border border-gray-800 mb-4">
+                <div className="flex justify-between">
+                  <h3 className="text-white font-bold">{offer.from} → {offer.to}</h3>
+                  <span className="text-[var(--driver-primary)] font-bold">{offer.status || 'OPEN'}</span>
+                </div>
+                <p className="text-gray-400 text-sm">{new Date(offer.date).toLocaleDateString()} at {offer.time}</p>
+                <button
+                  onClick={() => { setEditingRide(offer); setShowEditRide(true); }}
+                  className="mt-2 text-sm bg-gray-700 px-3 py-1 rounded text-white"
+                >
+                  Edit
+                </button>
+              </div>
+            ))}
+            {activeTrips.map(trip => (
+              <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl border border-gray-800 mb-4 opacity-75">
+                <h3 className="text-white font-bold">{trip.from} → {trip.to}</h3>
+                <p className="text-gray-400 text-sm">Trip ID: {trip.id}</p>
+                <p className="text-yellow-500 text-xs">Active Trip</p>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  const ProfileView = () => (
+    <div className="px-6 pb-24 pt-6">
+      <h2 className="text-2xl font-bold text-white mb-6">My Profile</h2>
+      <p className="text-gray-400">Please verify your details in the Home (Marketplace) view.</p>
+      <button onClick={() => setCurrentView('marketplace')} className="mt-4 text-[var(--driver-primary)] underline">Go to Home</button>
+    </div>
+  );
+
+  return (
+    <div className="bg-[var(--driver-bg)] min-h-screen pb-24 relative">
+      <SideMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onNavigate={handleNavigate}
+      />
+
+      <DriverHeader />
+
+      {currentView === 'marketplace' && <MarketplaceView />}
+      {currentView === 'all-rides' && <AllRidesView />}
+      {currentView === 'my-rides' && <MyRidesView />}
+      {currentView === 'profile' && <ProfileView />}
+      {currentView === 'support' && <div className="p-6 text-center text-gray-500">Support coming soon...</div>}
+
+      {/* Floating Action Button for Post Ride */}
+      <button
+        onClick={() => {
+          if (user?.verificationStatus === 'verified') {
+            setShowAddRide(true);
+          } else {
+            alert("Please upload your documents in the Profile section to verify your account before posting rides.");
+            setCurrentView('profile'); // Profile info is now in marketplace view actually
+            setCurrentView('marketplace');
+          }
+        }}
+        className={`fixed bottom-24 right-6 p-4 rounded-full shadow-2xl transition z-40 animate-in zoom-in duration-300 ${user?.verificationStatus === 'verified' ? 'bg-[var(--driver-primary)] text-[var(--login-btn-text)] hover:opacity-90' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
+      >
+        <Plus size={28} />
+      </button>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[var(--driver-card)] border-t border-gray-800 p-4 flex justify-around items-center z-50 pb-6 rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
+        <button
+          onClick={() => setCurrentView('marketplace')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'marketplace' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <Home size={24} fill={currentView === 'marketplace' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">Home</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('my-rides')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'my-rides' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <Navigation size={24} fill={currentView === 'my-rides' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">My Trips</span>
+        </button >
+        <button
+          onClick={() => setCurrentView('profile')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'profile' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <User size={24} fill={currentView === 'profile' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">Account</span>
+        </button>
+      </div>
+
+      {/* Add Ride Modal - Simplified Re-implementation */}
+      {showAddRide && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="bg-[var(--driver-bg)] p-5 flex justify-between items-center text-white border-b border-gray-800 flex-shrink-0">
+              <h3 className="font-bold">Post New Ride</h3>
+              <button onClick={() => setShowAddRide(false)} className="bg-white/10 p-2 rounded-full"><X size={20} /></button>
+            </div>
+            <div className="p-6 bg-[var(--driver-card)] text-white">
+              <p className="mb-4 text-sm text-gray-400">Please select route and details. (Simplified for Recovery)</p>
+
+              {/* Simplified Inputs */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase text-gray-400">Route</label>
+                  <select
+                    value={`${newRide.from}-${newRide.to}`}
+                    onChange={e => {
+                      const [from, to] = e.target.value.split('-');
+                      setNewRide({ ...newRide, from, to, price: BASE_RATES[`${from}-${to}`] || 2500 });
+                    }}
+                    className="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"
+                  >
+                    {ROUTE_WHITELIST.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+
+                <button onClick={handlePublish} className="w-full bg-[var(--driver-primary)] text-black font-bold py-3 rounded-xl mt-4">
+                  Publish Ride
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
