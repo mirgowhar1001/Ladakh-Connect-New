@@ -253,14 +253,16 @@ export const OwnerDashboard: React.FC = () => {
             <Menu className="text-white" size={24} />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner">
-              <User className="text-white" size={20} />
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Driver" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="font-bold text-lg drop-shadow-md leading-none">{user?.name}</h1>
-              <p className="text-xs text-white/80 font-medium">{user?.vehicleNo} </p>
+              <div className="flex items-baseline gap-2">
+                <h1 className="font-bold text-xl drop-shadow-md leading-none text-white">{user?.name}</h1>
+                <p className="text-sm text-gray-300 font-medium">{user?.vehicleNo}</p>
+              </div>
               <div className="mt-1 bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full inline-block border border-yellow-500/50">
-                v2.1 Flight Optimized
+                v2.1 TAXI Optimized
               </div>
             </div>
           </div>
