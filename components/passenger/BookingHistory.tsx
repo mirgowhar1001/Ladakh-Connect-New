@@ -115,7 +115,7 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
 
                                 {activeTab === 'UPCOMING' && (
                                     <div className="flex gap-4 items-center">
-                                        {trip.status === 'WAITING_CONFIRMATION' ? (
+                                        {trip.status === 'WAITING_CONFIRMATION' && (
                                             <button
                                                 onClick={() => {
                                                     if (window.confirm('Are you sure you want to cancel this booking request?')) {
@@ -125,13 +125,6 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                                 className="text-red-500 hover:scale-110 transition p-2"
                                             >
                                                 <XCircle size={20} />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => setSelectedInvoiceTrip(trip)}
-                                                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition"
-                                            >
-                                                <FileText size={14} /> Invoice
                                             </button>
                                         )}
                                     </div>

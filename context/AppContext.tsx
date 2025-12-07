@@ -350,12 +350,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const bookTrip = useCallback(async (tripDetails: any, cost: number, offerId?: string) => {
     if (!user) return false;
 
-    // 1. Check Balance (Passenger) - BYPASSED FOR TESTING/CASH FLOW
-    // const walletBalance = user.walletBalance || 0;
-    // if (walletBalance < cost) {
-    //   alert("Insufficient wallet balance!");
-    //   return false;
-    // }
+    // 1. Check Balance (Passenger) - REMOVED
+
 
     // 2. Check Seat Availability (if offerId provided)
     if (offerId) {
@@ -393,13 +389,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     // 4. Deduct Balance (Move to Escrow/Vault) - DISABLED FOR CASH FLOW
-    // const userRef = doc(db, 'users', user.uid);
-    // await updateDoc(userRef, {
-    //   walletBalance: walletBalance - cost,
-    //   escrowBalance: (user.escrowBalance || 0) + cost
-    // });
-    // setPassengerBalance(prev => prev - cost);
-    // setAppVault(prev => prev + cost);
+    /* Logic Removed as per User Request */
 
     // 5. Update Ride Offer (Book Seats)
     if (offerId && tripDetails.seats) {
