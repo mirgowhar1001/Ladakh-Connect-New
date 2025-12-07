@@ -571,7 +571,7 @@ export const PassengerFlow: React.FC = () => {
                 <div className="p-4 flex gap-4">
                   {/* Car Image */}
                   <div className="w-24 h-20 rounded-lg bg-gray-50 flex-shrink-0 overflow-hidden relative">
-                    <img src={vehicleInfo.image} alt={offer.vehicleType} className="w-full h-full object-cover" />
+                    <img src={offer.vehicleImage || vehicleInfo.image} alt={offer.vehicleType} className="w-full h-full object-cover" />
                     <div className={`absolute bottom-0 w-full text-white text-[9px] text-center py-0.5 font-bold
                       ${availableSeatsCount > 1 ? 'bg-green-600' : availableSeatsCount === 1 ? 'bg-yellow-500' : 'bg-red-600'}
                     `}>

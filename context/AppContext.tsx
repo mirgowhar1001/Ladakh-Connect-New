@@ -430,6 +430,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       driverName: user.name,
       driverId: user.uid || user.mobile,
       driverMobile: user.mobile, // Save mobile directly
+      vehicleImage: user.documents?.vehicleSide || null, // Include vehicle image from profile
       bookedSeats: [],
       rating: 5.0,
       createdAt: Date.now(),
