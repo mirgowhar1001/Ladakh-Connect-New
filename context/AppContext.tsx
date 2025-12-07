@@ -353,54 +353,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // 1. Check Balance (Passenger) - REMOVED
 
 
-    // 2. Check Seat Availability (if offerId provided)
-    if (offerId) {
-      const offerRef = doc(db, 'rideOffers', offerId);
-      const offerSnap = await getDoc(offerRef);
-      if (offerSnap.exists()) {
-        const offer = offerSnap.data() as RideOffer;
-        const available = offer.totalSeats - (offer.bookedSeats?.length || 0);
-        if (available <= 0) {
-          alert("Sorry, seats are no longer available.");
-          return false;
+    try {
+      // 2. Check Seat Availability (if offerId provided)
+      if (offerId) {
+        const offerRef = doc(db, 'rideOffers', offerId);
+        const offerSnap = await getDoc(offerRef);
+        if (offerSnap.exists()) {
+          const offer = offerSnap.data() as RideOffer;
+          const available = offer.totalSeats - (offer.bookedSeats?.length || 0);
+          if (available <= 0) {
+            alert("Sorry, seats are no longer available.");
+            return false;
+          }
         }
       }
-    }
 
-    // 3. Create Trip Document
-    await addDoc(collection(db, 'trips'), {
-      passengerUid: user.uid,
-      passengerName: user.name,
-      passengerMobile: user.mobile,
-      driverName: tripDetails.driverName || 'Unknown', // Fallback
-      vehicleNo: tripDetails.vehicleNo || 'Unknown',
-      from: tripDetails.from,
-      to: tripDetails.to,
-      date: tripDetails.date,
-      time: tripDetails.time,
-      cost: cost,
-      status: 'WAITING_CONFIRMATION', // Restored confirmation flow
-      createdAt: Date.now(),
-      offerId: offerId || null,
-      seats: tripDetails.seats || [], // Store seat numbers if provided
-      paymentRequested: false,
-      driverId: tripDetails.driverId || null, // CRITICAL FIX: Save driverId so they receive the booking
-      messages: []
-    });
-
-    // 4. Deduct Balance (Move to Escrow/Vault) - DISABLED FOR CASH FLOW
-    /* Logic Removed as per User Request */
-
-    // 5. Update Ride Offer (Book Seats)
-    if (offerId && tripDetails.seats) {
-      const offerRef = doc(db, 'rideOffers', offerId);
-      await updateDoc(offerRef, {
-        bookedSeats: arrayUnion(...tripDetails.seats)
+      // 3. Create Trip Document
+      console.log("Creating trip doc...", tripDetails);
+      await addDoc(collection(db, 'trips'), {
+        passengerUid: user.uid,
+        passengerName: user.name,
+        passengerMobile: user.mobile,
+        driverName: tripDetails.driverName || 'Unknown', // Fallback
+        vehicleNo: tripDetails.vehicleNo || 'Unknown',
+        from: tripDetails.from,
+        to: tripDetails.to,
+        date: tripDetails.date,
+        time: tripDetails.time,
+        cost: cost,
+        status: 'WAITING_CONFIRMATION', // Restored confirmation flow
+        createdAt: Date.now(),
+        offerId: offerId || null,
+        seats: tripDetails.seats || [], // Store seat numbers if provided
+        paymentRequested: false,
+        driverId: tripDetails.driverId || null, // CRITICAL FIX: Save driverId so they receive the booking
+        messages: []
       });
-    }
 
-    alert("Trip Booked Successfully!");
-    return true;
+      // 4. Deduct Balance (Move to Escrow/Vault) - DISABLED FOR CASH FLOW
+      /* Logic Removed as per User Request */
+
+      // 5. Update Ride Offer (Book Seats)
+      if (offerId && tripDetails.seats) {
+        console.log("Updating offer seats...", offerId);
+        const offerRef = doc(db, 'rideOffers', offerId);
+        await updateDoc(offerRef, {
+          bookedSeats: arrayUnion(...tripDetails.seats)
+        });
+      }
+
+      alert("Trip Booked Successfully!");
+      return true;
+
+    } catch (error: any) {
+      console.error("Booking Error:", error);
+      alert(`Booking Failed: ${error.message}`);
+      return false;
+    }
   }, [user]);
 
   const publishRide = useCallback(async (offerData: Omit<RideOffer, 'id' | 'driverName' | 'driverId' | 'bookedSeats' | 'rating'>) => {
