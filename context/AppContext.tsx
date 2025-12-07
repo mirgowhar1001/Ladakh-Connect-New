@@ -383,7 +383,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       date: tripDetails.date,
       time: tripDetails.time,
       cost: cost,
-      status: 'BOOKED',
+      status: 'WAITING_CONFIRMATION', // Restored confirmation flow
       createdAt: Date.now(),
       offerId: offerId || null,
       seats: tripDetails.seats || [], // Store seat numbers if provided
