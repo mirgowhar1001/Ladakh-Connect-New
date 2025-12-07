@@ -26,14 +26,21 @@ export const VEHICLES: VehicleDef[] = [
     rateMultiplier: 1.2,
     seats: 7,
     layout: [1, 3, 3],
-    image: 'https://imgd.aeplcdn.com/1056x594/n/cw/ec/114977/innova-crysta-exterior-right-front-three-quarter-2.jpeg?isig=0&q=80'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/2/23/2012_Toyota_Innova_2.5_G_Review.jpg'
   },
   {
-    type: 'Toyota Crysta',
+    type: 'Toyota Innova Crysta',
     rateMultiplier: 1.4,
     seats: 6,
     layout: [1, 2, 3], // Captain seats in middle
     image: 'https://imgd.aeplcdn.com/1056x594/n/cw/ec/140809/innova-crysta-exterior-right-front-three-quarter.jpeg?isig=0&q=80'
+  },
+  {
+    type: 'Tempo Traveler',
+    rateMultiplier: 1.5,
+    seats: 12,
+    layout: [1, 3, 4, 4],
+    image: 'https://5.imimg.com/data5/SELLER/Default/2022/9/MZ/QO/HG/3895315/tempo-traveller-hire-service-500x500.jpg'
   }
 ];
 
