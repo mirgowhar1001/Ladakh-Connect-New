@@ -793,16 +793,16 @@ export const PassengerFlow: React.FC = () => {
               if (!confirmBooking) return;
 
               const success = await bookTrip({
-                date: searchParams.date,
-                time: selectedRide.time, // Added missing field
-                from: searchParams.from,
-                to: searchParams.to,
+                date: searchParams.date || new Date().toISOString().split('T')[0],
+                time: selectedRide.time || '00:00',
+                from: searchParams.from || 'Unknown',
+                to: searchParams.to || 'Unknown',
                 seats: selectedSeats,
-                vehicleType: selectedRide.type,
-                driverName: selectedRide.driverName,
+                vehicleType: selectedRide.type || selectedRide.vehicleType || 'Taxi',
+                driverName: selectedRide.driverName || 'Driver',
                 driverId: selectedRide.driverId,
-                driverMobile: selectedRide.driverMobile,
-                vehicleNo: selectedRide.vehicleNo,
+                driverMobile: selectedRide.driverMobile || '',
+                vehicleNo: selectedRide.vehicleNo || 'Unknown',
                 cost: totalCost
               }, totalCost, selectedRide.id); // Passing totalCost but payment logic is bypassed in backend/context if needed, or we just ignore it.
 
