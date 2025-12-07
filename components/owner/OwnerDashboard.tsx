@@ -240,6 +240,9 @@ export const OwnerDashboard: React.FC = () => {
             <div>
               <h1 className="font-bold text-lg drop-shadow-md leading-none">{user?.name}</h1>
               <p className="text-xs text-white/80 font-medium">{user?.vehicleNo}</p>
+              <div className="mt-1 bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full inline-block border border-yellow-500/50">
+                v2.0 Flight Layout
+              </div>
             </div>
           </div>
         </div>
