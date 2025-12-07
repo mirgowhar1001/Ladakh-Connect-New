@@ -862,19 +862,40 @@ export const OwnerDashboard: React.FC = () => {
       <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
         <h3 className="font-bold text-lg text-white mb-4">Statistics</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-800 p-4 rounded-2xl text-center">
-            <p className="text-2xl font-black text-[var(--driver-primary)]">{completedTrips.length}</p>
-            <p className="text-xs text-gray-400 font-bold uppercase">Trips Done</p>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-2xl text-center">
-            <p className="text-2xl font-black text-yellow-400 flex items-center justify-center gap-1">4.8 <Star size={16} fill="currentColor" /></p>
-            <p className="text-xs text-gray-400 font-bold uppercase">Rating</p>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-2xl text-center">
-            <p className="text-2xl font-black text-green-400">92%</p>
-            <p className="text-xs text-gray-400 font-bold uppercase">Acceptance</p>
-          </div>
+          {(() => {
+            const myTrips = trips || [];
+            const completed = myTrips.filter(t => t.status === 'COMPLETED').length;
+            const cancelled = myTrips.filter(t => t.status === 'CANCELLED').length;
+            const total = completed + cancelled;
+            const honestyScore = total === 0 ? 100 : Math.round((completed / total) * 100);
 
+            let scoreColor = 'text-green-400';
+            if (honestyScore < 70) scoreColor = 'text-red-400';
+            else if (honestyScore < 90) scoreColor = 'text-yellow-400';
+
+            return (
+              <>
+                <div className="bg-gray-800 p-4 rounded-2xl text-center">
+                  <p className="text-2xl font-black text-[var(--driver-primary)]">{completed}</p>
+                  <p className="text-xs text-gray-400 font-bold uppercase">Trips Completed</p>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-2xl text-center">
+                  <p className="text-2xl font-black text-red-400">{cancelled}</p>
+                  <p className="text-xs text-gray-400 font-bold uppercase">Trips Cancelled</p>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-2xl text-center">
+                  <p className={`text-2xl font-black ${scoreColor}`}>{honestyScore}%</p>
+                  <p className="text-xs text-gray-400 font-bold uppercase">Honesty Score</p>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-2xl text-center">
+                  <p className="text-2xl font-black text-yellow-400 flex items-center justify-center gap-1">
+                    {user?.rating || '4.9'} <Star size={16} fill="currentColor" />
+                  </p>
+                  <p className="text-xs text-gray-400 font-bold uppercase">Rating</p>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
 
