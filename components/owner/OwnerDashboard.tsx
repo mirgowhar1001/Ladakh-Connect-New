@@ -130,6 +130,23 @@ export const OwnerDashboard: React.FC = () => {
   const availableRides = rideOffers
     .filter(offer => (offer.totalSeats - (offer.bookedSeats?.length || 0)) > 0)
     .filter(offer => !offer.status || offer.status === 'OPEN') // ONLY SHOW OPEN RIDES
+    .filter(offer => {
+      // Filter out past rides
+      try {
+        const [tTime, tAmpm] = offer.time.split(' ');
+        const [tHours, tMinutes] = tTime.split(':');
+        let th = parseInt(tHours);
+        if (tAmpm === 'PM' && th !== 12) th += 12;
+        if (tAmpm === 'AM' && th === 12) th = 0;
+
+        const rideDate = new Date(offer.date);
+        rideDate.setHours(th, parseInt(tMinutes), 0, 0);
+
+        return rideDate > new Date(); // Only show future rides
+      } catch (e) {
+        return true; // Keep if date parsing fails to avoid empty list on error
+      }
+    })
     .sort((a, b) => {
       const timeA = a.createdAt || 0;
       const timeB = b.createdAt || 0;
