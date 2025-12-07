@@ -232,25 +232,53 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!user || !user.uid || !auth.currentUser) return;
 
     try {
-      // 1. Delete User Document from Firestore
-      const { deleteDoc } = await import('firebase/firestore');
-      await deleteDoc(doc(db, 'users', user.uid));
+      const { deleteDoc, writeBatch, getDocs } = await import('firebase/firestore');
+      const batch = writeBatch(db);
 
-      // 2. Delete User from Firebase Auth
+      // 1. Gather all documents to delete
+      const deletions_promises = [];
+
+      // A. Active/Past Trips
+      // If Driver: Delete trips where driverId == uid
+      // If Passenger: Delete trips where passengerUid == uid
+      const tripField = user.role === 'owner' ? 'driverId' : 'passengerUid';
+      const tripsQ = query(collection(db, 'trips'), where(tripField, '==', user.uid));
+      const tripsSnap = await getDocs(tripsQ);
+      tripsSnap.forEach(doc => batch.delete(doc.ref));
+
+      // B. If Driver: Delete Posted Ride Offers
+      if (user.role === 'owner') {
+        const offersQ = query(collection(db, 'rideOffers'), where('driverId', '==', user.uid));
+        const offersSnap = await getDocs(offersQ);
+        offersSnap.forEach(doc => batch.delete(doc.ref));
+      }
+
+      // C. The User Document
+      const userRef = doc(db, 'users', user.uid);
+      batch.delete(userRef);
+
+      // 2. Commit Batch Delete
+      await batch.commit();
+
+      // 3. Delete from Auth
       const { deleteUser } = await import('firebase/auth');
       await deleteUser(auth.currentUser);
 
-      // 3. Clear Local State
+      // 4. Clear Local State
       setUser(null);
       setTrips([]);
       setRideOffers([]);
+      setPassengerBalance(0);
+      setDriverBalance(0);
+
+      alert("Account and all associated data deleted successfully.");
 
     } catch (error: any) {
       console.error("Error deleting account:", error);
       if (error.code === 'auth/requires-recent-login') {
         alert("For security, please logout and login again before deleting your account.");
       } else {
-        throw error;
+        alert("Error deleting account: " + error.message);
       }
     }
   }, [user]);
@@ -360,6 +388,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       offerId: offerId || null,
       seats: tripDetails.seats || [], // Store seat numbers if provided
       paymentRequested: false,
+      driverId: tripDetails.driverId || null, // CRITICAL FIX: Save driverId so they receive the booking
       messages: []
     });
 
