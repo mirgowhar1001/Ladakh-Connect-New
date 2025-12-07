@@ -13,7 +13,9 @@ import {
   getDoc,
   arrayUnion,
   arrayRemove,
-  orderBy
+  orderBy,
+  getDocs,    // Added
+  writeBatch  // Added
 } from 'firebase/firestore';
 import { onAuthStateChanged, signOut, EmailAuthProvider, linkWithCredential, signInWithEmailAndPassword, updatePassword } from 'firebase/auth';
 
@@ -136,6 +138,76 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubTrips();
     };
   }, [user]); // Re-run when user logs in/out
+
+  // Automatic Cleanup of Expired Rides
+  useEffect(() => {
+    const cleanupExpiredRides = async () => {
+      try {
+        const now = new Date();
+        const offersRef = collection(db, 'rideOffers');
+        // Retrieve all OPEN offers to check expiry. 
+        // Optimization: We could query where('date', '<', ...) but date is string "YYYY-MM-DD".
+        // Fetching all is acceptable for prototype scale.
+        const snapshot = await getDocs(offersRef);
+        const batch = writeBatch(db);
+        let updatesCount = 0;
+
+        for (const docSnap of snapshot.docs) {
+          const offer = docSnap.data() as RideOffer;
+          if (offer.status === 'COMPLETED' || offer.status === 'CANCELLED') continue;
+
+          try {
+            // Parse timestamp
+            const [timePart, ampm] = offer.time.split(' ');
+            const [hours, minutes] = timePart.split(':');
+            let h = parseInt(hours);
+            if (ampm === 'PM' && h !== 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+
+            const rideDate = new Date(offer.date);
+            rideDate.setHours(h, parseInt(minutes), 0, 0);
+
+            if (rideDate < now) {
+              // Ride is in the past
+              if (!offer.bookedSeats || offer.bookedSeats.length === 0) {
+                // Rule 1: No bookings -> Delete
+                console.log(`[Cleanup] Deleting expired empty offer: ${docSnap.id}`);
+                batch.delete(doc(db, 'rideOffers', docSnap.id));
+                updatesCount++;
+              } else {
+                // Rule 2: Has bookings but not started -> Cancel
+                if (offer.status !== 'EN_ROUTE') {
+                  console.log(`[Cleanup] Cancelling expired unattended offer: ${docSnap.id}`);
+                  batch.update(doc(db, 'rideOffers', docSnap.id), { status: 'CANCELLED' });
+
+                  // Cancel associated trips
+                  const tripsQuery = query(collection(db, 'trips'), where('offerId', '==', docSnap.id));
+                  const tripsSnap = await getDocs(tripsQuery);
+                  tripsSnap.forEach(tDoc => {
+                    if (tDoc.data().status !== 'CANCELLED') {
+                      batch.update(doc(db, 'trips', tDoc.id), { status: 'CANCELLED' });
+                    }
+                  });
+                  updatesCount++;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Skipping offer with invalid date/time:", offer.id);
+          }
+        }
+
+        if (updatesCount > 0) {
+          await batch.commit();
+          console.log(`[Cleanup] Committed ${updatesCount} updates.`);
+        }
+      } catch (error) {
+        console.error("Cleanup failed:", error);
+      }
+    };
+
+    cleanupExpiredRides();
+  }, []); // Run once on mount
 
   const login = useCallback(async (role: UserRole, data: Omit<User, 'role'>) => {
     let uid = auth.currentUser?.uid;
