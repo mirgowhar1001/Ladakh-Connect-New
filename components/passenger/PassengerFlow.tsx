@@ -794,6 +794,8 @@ export const PassengerFlow: React.FC = () => {
 
               const success = await bookTrip({
                 date: searchParams.date,
+                from: searchParams.from, // Added missing field
+                to: searchParams.to,     // Added missing field
                 seats: selectedSeats,
                 vehicleType: selectedRide.type,
                 driverName: selectedRide.driverName,
