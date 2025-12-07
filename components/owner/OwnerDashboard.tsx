@@ -922,10 +922,7 @@ export const OwnerDashboard: React.FC = () => {
 
         <div className="space-y-4">
           {[
-            { id: 'dl', label: 'Driving License' },
-            { id: 'rc', label: 'Vehicle Registration' },
-            { id: 'insurance', label: 'Vehicle Insurance' },
-            { id: 'vehicleFront', label: 'Vehicle Photo' }
+            { id: 'vehicleSide', label: 'Vehicle Photo' }
           ].map((doc) => (
             <div key={doc.id} className="flex items-center justify-between bg-black/20 p-3 rounded-xl border border-gray-700">
               <div className="flex items-center gap-3">
@@ -977,16 +974,16 @@ export const OwnerDashboard: React.FC = () => {
           <button
             onClick={async () => {
               // Check if all docs are present (either in user.documents or uploadedDocs)
-              const allDocsPresent = ['dl', 'rc', 'insurance', 'vehicleFront'].every(
+              const allDocsPresent = ['vehicleSide'].every(
                 key => user?.documents?.[key as keyof typeof user.documents] || uploadedDocs[key]
               );
 
               if (!allDocsPresent) {
-                alert("Please upload all required documents first.");
+                alert("Please upload the vehicle photo first.");
                 return;
               }
 
-              const confirmVerify = window.confirm("Submit documents for verification?");
+              const confirmVerify = window.confirm("Submit document for verification?");
               if (confirmVerify) {
                 // Merge existing docs with new uploads
                 const finalDocs = { ...user?.documents, ...uploadedDocs };
@@ -995,7 +992,7 @@ export const OwnerDashboard: React.FC = () => {
                   verificationStatus: 'verified', // Auto-verify for now
                   documents: finalDocs
                 });
-                alert("Documents submitted and verified! You can now post rides.");
+                alert("Document submitted and verified! You can now post rides.");
               }
             }}
             className="w-full mt-6 bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg shadow-yellow-900/20 hover:scale-[1.02] active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
