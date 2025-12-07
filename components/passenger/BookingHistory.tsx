@@ -121,79 +121,78 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                                     if (window.confirm('Are you sure you want to cancel this booking request?')) {
                                                         updateTripStatus(trip.id, 'CANCELLED');
                                                     }
-                                                    <button
-                                                        onClick={() => setRatingModal({ tripId: trip.id, rating: 5 })}
-                                                        className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-yellow-200 transition"
-                                                    >
-                                                        <Star size={14} fill="currentColor" /> Rate
-                                                    </button>
+                                                }}
+                                                className="text-red-500 hover:scale-110 transition p-2"
+                                            >
+                                                <XCircle size={20} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => setSelectedInvoiceTrip(trip)}
+                                                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition"
+                                            >
+                                                <FileText size={14} /> Invoice
+                                            </button>
+
                                         )}
-                                        <button
-                                            onClick={() => setSelectedInvoiceTrip(trip)}
-                                            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition"
-                                        >
-                                            <FileText size={14} /> Invoice
-                                        </button>
                                     </div>
-                                )}
-                            </div>
                         </div>
-                    ))
+                            ))
                 )}
-            </div>
+                        </div>
 
             {
-                selectedInvoiceTrip && (
-                    <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
-                )
+                            selectedInvoiceTrip && (
+                            <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
+                        )
             }
 
-            {/* Rating Modal */}
-            {
-                ratingModal && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-                            <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
-                            <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
+                {/* Rating Modal */}
+                {
+                    ratingModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
+                                <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
+                                <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
 
-                            <div className="flex justify-center gap-2 mb-6">
-                                {[1, 2, 3, 4, 5].map(star => (
+                                <div className="flex justify-center gap-2 mb-6">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                        <button
+                                            key={star}
+                                            onClick={() => setRatingModal({ ...ratingModal, rating: star })}
+                                            className="transition-all hover:scale-110"
+                                        >
+                                            <Star
+                                                size={32}
+                                                fill={star <= ratingModal.rating ? "#FFD700" : "none"}
+                                                className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
                                     <button
-                                        key={star}
-                                        onClick={() => setRatingModal({ ...ratingModal, rating: star })}
-                                        className="transition-all hover:scale-110"
+                                        onClick={() => setRatingModal(null)}
+                                        className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
                                     >
-                                        <Star
-                                            size={32}
-                                            fill={star <= ratingModal.rating ? "#FFD700" : "none"}
-                                            className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
-                                        />
+                                        Skip
                                     </button>
-                                ))}
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setRatingModal(null)}
-                                    className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
-                                >
-                                    Skip
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        rateTrip(ratingModal.tripId, ratingModal.rating);
-                                        setRatingModal(null);
-                                        alert("Thanks for your feedback!");
-                                    }}
-                                    className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
-                                >
-                                    Submit
-                                </button>
+                                    <button
+                                        onClick={() => {
+                                            rateTrip(ratingModal.tripId, ratingModal.rating);
+                                            setRatingModal(null);
+                                            alert("Thanks for your feedback!");
+                                        }}
+                                        className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
+                                    >
+                                        Submit
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )
-            }
-        </div >
-    );
+                    )
+                }
+            </div >
+            );
 };
