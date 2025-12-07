@@ -710,13 +710,33 @@ export const OwnerDashboard: React.FC = () => {
               </div>
             ) : (
               completedTrips.map(trip => (
-                <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center opacity-75 hover:opacity-100 transition">
-                  <div>
-                    <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
-                    <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+                <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex flex-col gap-3 opacity-90 hover:opacity-100 transition">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-white mb-1">{trip.from} → {trip.to}</h4>
+                      <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                        <Calendar size={10} /> {new Date(trip.date).toDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] bg-green-900/30 text-green-400 px-2.5 py-1 rounded-lg font-bold border border-green-900/50">COMPLETED</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
+
+                  <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Patient/Passenger Details</p>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm font-bold text-white flex items-center gap-2">
+                          <User size={14} className="text-[var(--driver-primary)]" /> {trip.passengerName || 'Unknown'}
+                        </p>
+                        <p className="text-xs text-gray-400 pl-6">{trip.id.slice(0, 8).toUpperCase()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-white tracking-wide">{trip.passengerMobile || 'N/A'}</p>
+                        <p className="text-[10px] text-gray-500">Mobile</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
