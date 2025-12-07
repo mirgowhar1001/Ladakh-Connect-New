@@ -133,66 +133,67 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                             >
                                                 <FileText size={14} /> Invoice
                                             </button>
-
                                         )}
                                     </div>
-                        </div>
-                            ))
-                )}
-                        </div>
-
-            {
-                            selectedInvoiceTrip && (
-                            <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
-                        )
-            }
-
-                {/* Rating Modal */}
-                {
-                    ratingModal && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-                                <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
-                                <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
-
-                                <div className="flex justify-center gap-2 mb-6">
-                                    {[1, 2, 3, 4, 5].map(star => (
-                                        <button
-                                            key={star}
-                                            onClick={() => setRatingModal({ ...ratingModal, rating: star })}
-                                            className="transition-all hover:scale-110"
-                                        >
-                                            <Star
-                                                size={32}
-                                                fill={star <= ratingModal.rating ? "#FFD700" : "none"}
-                                                className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setRatingModal(null)}
-                                        className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
-                                    >
-                                        Skip
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            rateTrip(ratingModal.tripId, ratingModal.rating);
-                                            setRatingModal(null);
-                                            alert("Thanks for your feedback!");
-                                        }}
-                                        className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
-                                    >
-                                        Submit
-                                    </button>
-                                </div>
+                                )}
                             </div>
                         </div>
-                    )
-                }
-            </div >
-            );
+                    ))
+                )}
+            </div>
+
+            {
+                selectedInvoiceTrip && (
+                    <InvoiceModal trip={selectedInvoiceTrip} onClose={() => setSelectedInvoiceTrip(null)} />
+                )
+            }
+
+            {/* Rating Modal */}
+            {
+                ratingModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
+                            <h3 className="font-bold text-lg mb-2">Rate your Driver</h3>
+                            <p className="text-gray-500 text-xs mb-6">How was your ride?</p>
+
+                            <div className="flex justify-center gap-2 mb-6">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRatingModal({ ...ratingModal, rating: star })}
+                                        className="transition-all hover:scale-110"
+                                    >
+                                        <Star
+                                            size={32}
+                                            fill={star <= ratingModal.rating ? "#FFD700" : "none"}
+                                            className={star <= ratingModal.rating ? "text-yellow-400" : "text-gray-300"}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setRatingModal(null)}
+                                    className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition"
+                                >
+                                    Skip
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        rateTrip(ratingModal.tripId, ratingModal.rating);
+                                        setRatingModal(null);
+                                        alert("Thanks for your feedback!");
+                                    }}
+                                    className="flex-1 bg-mmt-blue text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
+    );
 };
