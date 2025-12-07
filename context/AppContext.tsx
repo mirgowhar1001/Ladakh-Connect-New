@@ -319,6 +319,71 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return true;
   }, [user, driverBalance, passengerBalance]);
 
+  const bookTrip = useCallback(async (tripDetails: any, cost: number, offerId?: string) => {
+    if (!user) return false;
+
+    // 1. Check Balance (Passenger)
+    const walletBalance = user.walletBalance || 0;
+    if (walletBalance < cost) {
+      alert("Insufficient wallet balance!");
+      return false;
+    }
+
+    // 2. Check Seat Availability (if offerId provided)
+    if (offerId) {
+      const offerRef = doc(db, 'rideOffers', offerId);
+      const offerSnap = await getDoc(offerRef);
+      if (offerSnap.exists()) {
+        const offer = offerSnap.data() as RideOffer;
+        const available = offer.totalSeats - (offer.bookedSeats?.length || 0);
+        if (available <= 0) {
+          alert("Sorry, seats are no longer available.");
+          return false;
+        }
+      }
+    }
+
+    // 3. Create Trip Document
+    await addDoc(collection(db, 'trips'), {
+      passengerUid: user.uid,
+      passengerName: user.name,
+      passengerMobile: user.mobile,
+      driverName: tripDetails.driverName || 'Unknown', // Fallback
+      vehicleNo: tripDetails.vehicleNo || 'Unknown',
+      from: tripDetails.from,
+      to: tripDetails.to,
+      date: tripDetails.date,
+      time: tripDetails.time,
+      cost: cost,
+      status: 'BOOKED',
+      createdAt: Date.now(),
+      offerId: offerId || null,
+      seats: tripDetails.seats || [], // Store seat numbers if provided
+      paymentRequested: false,
+      messages: []
+    });
+
+    // 4. Deduct Balance (Move to Escrow/Vault)
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+      walletBalance: walletBalance - cost,
+      escrowBalance: (user.escrowBalance || 0) + cost
+    });
+    setPassengerBalance(prev => prev - cost);
+    setAppVault(prev => prev + cost);
+
+    // 5. Update Ride Offer (Book Seats)
+    if (offerId && tripDetails.seats) {
+      const offerRef = doc(db, 'rideOffers', offerId);
+      await updateDoc(offerRef, {
+        bookedSeats: arrayUnion(...tripDetails.seats)
+      });
+    }
+
+    alert("Trip Booked Successfully!");
+    return true;
+  }, [user]);
+
   const publishRide = useCallback(async (offerData: Omit<RideOffer, 'id' | 'driverName' | 'driverId' | 'bookedSeats' | 'rating'>) => {
     if (!user || user.role !== 'owner') return;
 
@@ -344,319 +409,308 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     await addDoc(collection(db, 'rideOffers'), newOffer);
-    // In a real app, use arrayUnion for simpler atomic updates if seat overlap validation is handled via security rules or transactions
-    const currentOffer = rideOffers.find(o => o.id === offerId);
-    if (currentOffer) {
-      await updateDoc(offerRef, {
-        bookedSeats: [...currentOffer.bookedSeats, ...seats]
-      });
-    }
-  }
-      return true;
-}
-return false;
-  }, [user, rideOffers]);
+  }, [user]);
 
-const updateTripStatus = useCallback(async (tripId: string, status: TripStatus) => {
-  const trip = trips.find(t => t.id === tripId);
-  if (!trip) return;
+  const updateTripStatus = useCallback(async (tripId: string, status: TripStatus) => {
+    const trip = trips.find(t => t.id === tripId);
+    if (!trip) return;
 
-  // Prevent cancelling if already completed
-  if (status === 'CANCELLED') {
-    if (trip.status === 'COMPLETED') {
-      alert("Cannot cancel a completed ride!");
-      return;
-    }
-    if (trip.status === 'CONFIRMED') {
-      alert("Confirmed rides cannot be cancelled. Please contact support.");
-      return;
-    }
-
-    // Tiered Penalty Logic
-    // 1. Calculate hours until departure
-    let hoursUntilDeparture = 0;
-    try {
-      // Parse Trip Date & Time
-      // trip.date is YYYY-MM-DD, trip.time is HH:MM AM/PM
-      if (trip.date && trip.time) {
-        const [tTime, tAmpm] = trip.time.split(' ');
-        const [tHours, tMinutes] = tTime.split(':');
-        let th = parseInt(tHours);
-        if (tAmpm === 'PM' && th !== 12) th += 12;
-        if (tAmpm === 'AM' && th === 12) th = 0;
-
-        const departureTime = new Date(trip.date);
-        departureTime.setHours(th, parseInt(tMinutes), 0, 0);
-
-        const now = new Date();
-        const diffMs = departureTime.getTime() - now.getTime();
-        hoursUntilDeparture = diffMs / (1000 * 60 * 60);
+    // Prevent cancelling if already completed
+    if (status === 'CANCELLED') {
+      if (trip.status === 'COMPLETED') {
+        alert("Cannot cancel a completed ride!");
+        return;
       }
-    } catch (e) {
-      console.error("Error parsing date/time for cancellation", e);
-      // Fallback to 50% if date parsing fails
-      hoursUntilDeparture = 12;
-    }
+      if (trip.status === 'CONFIRMED') {
+        alert("Confirmed rides cannot be cancelled. Please contact support.");
+        return;
+      }
 
-    let refundPercentage = 0;
-    let policyText = "";
+      // Tiered Penalty Logic
+      // 1. Calculate hours until departure
+      let hoursUntilDeparture = 0;
+      try {
+        // Parse Trip Date & Time
+        // trip.date is YYYY-MM-DD, trip.time is HH:MM AM/PM
+        if (trip.date && trip.time) {
+          const [tTime, tAmpm] = trip.time.split(' ');
+          const [tHours, tMinutes] = tTime.split(':');
+          let th = parseInt(tHours);
+          if (tAmpm === 'PM' && th !== 12) th += 12;
+          if (tAmpm === 'AM' && th === 12) th = 0;
 
-    if (hoursUntilDeparture > 24) {
-      refundPercentage = 1.0; // 100% Refund
-      policyText = "Full Refund (> 24h notice)";
-    } else if (hoursUntilDeparture > 2) {
-      refundPercentage = 0.5; // 50% Refund
-      policyText = "50% Refund (< 24h notice)";
-    } else {
-      refundPercentage = 0.0; // 0% Refund
-      policyText = "No Refund (< 2h notice)";
-    }
+          const departureTime = new Date(trip.date);
+          departureTime.setHours(th, parseInt(tMinutes), 0, 0);
 
-    const refundAmount = trip.cost * refundPercentage;
-    const driverCompensation = trip.cost * (1 - refundPercentage);
-
-    // 1. Deduct from Escrow
-    setAppVault(prev => prev - trip.cost);
-
-    // 2. Refund Passenger
-    if (refundAmount > 0) {
-      setPassengerBalance(prev => prev + refundAmount);
-      if (trip.passengerUid) {
-        const passRef = doc(db, 'users', trip.passengerUid);
-        const passDoc = await getDoc(passRef);
-        if (passDoc.exists()) {
-          await updateDoc(passRef, {
-            walletBalance: (passDoc.data().walletBalance || 0) + refundAmount,
-            escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
-          });
+          const now = new Date();
+          const diffMs = departureTime.getTime() - now.getTime();
+          hoursUntilDeparture = diffMs / (1000 * 60 * 60);
         }
+      } catch (e) {
+        console.error("Error parsing date/time for cancellation", e);
+        // Fallback to 50% if date parsing fails
+        hoursUntilDeparture = 12;
       }
-    } else {
-      // If no refund, just remove from escrow tracking for passenger
-      if (trip.passengerUid) {
-        const passRef = doc(db, 'users', trip.passengerUid);
-        const passDoc = await getDoc(passRef);
-        if (passDoc.exists()) {
-          await updateDoc(passRef, {
-            escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
-          });
-        }
-      }
-    }
 
-    // 3. Compensate Driver
-    if (driverCompensation > 0) {
-      if (trip.driverId && trip.driverId !== 'admin') {
-        try {
-          const driverRef = doc(db, 'users', trip.driverId);
-          const driverDoc = await getDoc(driverRef);
-          if (driverDoc.exists()) {
-            await updateDoc(driverRef, {
-              walletBalance: (driverDoc.data().walletBalance || 0) + driverCompensation
+      let refundPercentage = 0;
+      let policyText = "";
+
+      if (hoursUntilDeparture > 24) {
+        refundPercentage = 1.0; // 100% Refund
+        policyText = "Full Refund (> 24h notice)";
+      } else if (hoursUntilDeparture > 2) {
+        refundPercentage = 0.5; // 50% Refund
+        policyText = "50% Refund (< 24h notice)";
+      } else {
+        refundPercentage = 0.0; // 0% Refund
+        policyText = "No Refund (< 2h notice)";
+      }
+
+      const refundAmount = trip.cost * refundPercentage;
+      const driverCompensation = trip.cost * (1 - refundPercentage);
+
+      // 1. Deduct from Escrow
+      setAppVault(prev => prev - trip.cost);
+
+      // 2. Refund Passenger
+      if (refundAmount > 0) {
+        setPassengerBalance(prev => prev + refundAmount);
+        if (trip.passengerUid) {
+          const passRef = doc(db, 'users', trip.passengerUid);
+          const passDoc = await getDoc(passRef);
+          if (passDoc.exists()) {
+            await updateDoc(passRef, {
+              walletBalance: (passDoc.data().walletBalance || 0) + refundAmount,
+              escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
             });
           }
-        } catch (e) {
-          console.warn("Could not update driver wallet directly", e);
+        }
+      } else {
+        // If no refund, just remove from escrow tracking for passenger
+        if (trip.passengerUid) {
+          const passRef = doc(db, 'users', trip.passengerUid);
+          const passDoc = await getDoc(passRef);
+          if (passDoc.exists()) {
+            await updateDoc(passRef, {
+              escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
+            });
+          }
         }
       }
-    }
 
-    // 4. Free up seats in RideOffer
-    if (trip.offerId && trip.seats && trip.seats.length > 0) {
-      try {
-        const offerRef = doc(db, 'rideOffers', trip.offerId);
-        await updateDoc(offerRef, {
-          bookedSeats: arrayRemove(...trip.seats)
-        });
-      } catch (error) {
-        console.error("Error freeing up seats:", error);
+      // 3. Compensate Driver
+      if (driverCompensation > 0) {
+        if (trip.driverId && trip.driverId !== 'admin') {
+          try {
+            const driverRef = doc(db, 'users', trip.driverId);
+            const driverDoc = await getDoc(driverRef);
+            if (driverDoc.exists()) {
+              await updateDoc(driverRef, {
+                walletBalance: (driverDoc.data().walletBalance || 0) + driverCompensation
+              });
+            }
+          } catch (e) {
+            console.warn("Could not update driver wallet directly", e);
+          }
+        }
       }
+
+      // 4. Free up seats in RideOffer
+      if (trip.offerId && trip.seats && trip.seats.length > 0) {
+        try {
+          const offerRef = doc(db, 'rideOffers', trip.offerId);
+          await updateDoc(offerRef, {
+            bookedSeats: arrayRemove(...trip.seats)
+          });
+        } catch (error) {
+          console.error("Error freeing up seats:", error);
+        }
+      }
+
+      alert(`Ride Cancelled. ${policyText}. Refund: ₹${refundAmount}. Driver Compensation: ₹${driverCompensation}.`);
     }
 
-    alert(`Ride Cancelled. ${policyText}. Refund: ₹${refundAmount}. Driver Compensation: ₹${driverCompensation}.`);
-  }
+    const tripRef = doc(db, 'trips', tripId);
+    // If status is COMPLETED, set completedAt
+    const updateData: any = { status };
+    if (status === 'COMPLETED') {
+      updateData.completedAt = Date.now();
+      updateData.paymentRequested = false;
+    }
 
-  const tripRef = doc(db, 'trips', tripId);
-  // If status is COMPLETED, set completedAt
-  const updateData: any = { status };
-  if (status === 'COMPLETED') {
-    updateData.completedAt = Date.now();
-    updateData.paymentRequested = false;
-  }
+    await updateDoc(tripRef, updateData);
 
-  await updateDoc(tripRef, updateData);
+    // NEW: Send Confirmation Message to Passenger (Logic from Remote)
+    if (status === 'EN_ROUTE' || status === 'ARRIVED') {
+      const messageText = status === 'EN_ROUTE'
+        ? "Your ride has started! The driver is en route."
+        : "The driver has arrived at the pickup location.";
 
-  // NEW: Send Confirmation Message to Passenger (Logic from Remote)
-  if (status === 'EN_ROUTE' || status === 'ARRIVED') {
-    const messageText = status === 'EN_ROUTE'
-      ? "Your ride has started! The driver is en route."
-      : "The driver has arrived at the pickup location.";
+      const message: ChatMessage = {
+        id: Date.now().toString(),
+        senderId: 'system',
+        text: messageText,
+        timestamp: Date.now()
+      };
 
-    const message: ChatMessage = {
-      id: Date.now().toString(),
-      senderId: 'system',
-      text: messageText,
-      timestamp: Date.now()
-    };
+      await updateDoc(tripRef, {
+        messages: arrayUnion(message)
+      });
+    }
+  }, [trips]);
 
-    await updateDoc(tripRef, {
-      messages: arrayUnion(message)
-    });
-  }
-}, [trips]);
+  const rateTrip = useCallback(async (tripId: string, rating: number) => {
+    const tripRef = doc(db, 'trips', tripId);
+    await updateDoc(tripRef, { userRating: rating });
+  }, []);
 
-const rateTrip = useCallback(async (tripId: string, rating: number) => {
-  const tripRef = doc(db, 'trips', tripId);
-  await updateDoc(tripRef, { userRating: rating });
-}, []);
+  const requestPayment = useCallback(async (tripId: string) => {
+    const tripRef = doc(db, 'trips', tripId);
+    await updateDoc(tripRef, { paymentRequested: true });
+  }, []);
 
-const requestPayment = useCallback(async (tripId: string) => {
-  const tripRef = doc(db, 'trips', tripId);
-  await updateDoc(tripRef, { paymentRequested: true });
-}, []);
-
-const completeRide = useCallback(async (tripId: string) => {
-  // Driver triggers this. Sets status to COMPLETED immediately.
-  // "No Money Business" -> No permission required from passenger.
-  const tripRef = doc(db, 'trips', tripId);
-  await updateDoc(tripRef, {
-    status: 'COMPLETED',
-    paymentRequested: false,
-    completedAt: Date.now()
-  });
-}, []);
-
-const confirmRideCompletion = useCallback(async (tripId: string, confirmed: boolean) => {
-  const tripRef = doc(db, 'trips', tripId);
-  const tripSnap = await getDoc(tripRef);
-  if (!tripSnap.exists()) return;
-  const trip = tripSnap.data() as Trip;
-
-  if (confirmed) {
-    // Release funds from Escrow to Driver
-    setAppVault(prev => prev - trip.cost);
-    setDriverBalance(prev => prev + trip.cost);
-
-    // Update Driver's Wallet in Firestore
-    // Assuming we have the driver's UID or can query it. 
-    // For now, updating local state simulation.
-
+  const completeRide = useCallback(async (tripId: string) => {
+    // Driver triggers this. Sets status to COMPLETED immediately.
+    // "No Money Business" -> No permission required from passenger.
+    const tripRef = doc(db, 'trips', tripId);
     await updateDoc(tripRef, {
       status: 'COMPLETED',
       paymentRequested: false,
       completedAt: Date.now()
     });
-  } else {
-    // Dispute raised
+  }, []);
+
+  const confirmRideCompletion = useCallback(async (tripId: string, confirmed: boolean) => {
+    const tripRef = doc(db, 'trips', tripId);
+    const tripSnap = await getDoc(tripRef);
+    if (!tripSnap.exists()) return;
+    const trip = tripSnap.data() as Trip;
+
+    if (confirmed) {
+      // Release funds from Escrow to Driver
+      setAppVault(prev => prev - trip.cost);
+      setDriverBalance(prev => prev + trip.cost);
+
+      // Update Driver's Wallet in Firestore
+      // Assuming we have the driver's UID or can query it. 
+      // For now, updating local state simulation.
+
+      await updateDoc(tripRef, {
+        status: 'COMPLETED',
+        paymentRequested: false,
+        completedAt: Date.now()
+      });
+    } else {
+      // Dispute raised
+      await updateDoc(tripRef, {
+        status: 'DISPUTED',
+        paymentRequested: false
+      });
+      alert("Ride marked as Disputed. Support will contact you.");
+    }
+  }, []);
+
+  // Deprecated: releaseFunds (kept for backward compatibility if needed, but replaced by confirmRideCompletion)
+  const releaseFunds = useCallback(async (tripId: string, cost: number) => {
+    await confirmRideCompletion(tripId, true);
+  }, [confirmRideCompletion]);
+
+  const sendMessage = useCallback(async (tripId: string, text: string) => {
+    if (!user) return;
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      senderId: user.name,
+      text,
+      timestamp: Date.now()
+    };
+
+    const tripRef = doc(db, 'trips', tripId);
     await updateDoc(tripRef, {
-      status: 'DISPUTED',
-      paymentRequested: false
+      messages: arrayUnion(newMessage)
     });
-    alert("Ride marked as Disputed. Support will contact you.");
-  }
-}, []);
+  }, [user]);
 
-// Deprecated: releaseFunds (kept for backward compatibility if needed, but replaced by confirmRideCompletion)
-const releaseFunds = useCallback(async (tripId: string, cost: number) => {
-  await confirmRideCompletion(tripId, true);
-}, [confirmRideCompletion]);
+  const cancelRideOffer = useCallback(async (offerId: string) => {
+    const offerRef = doc(db, 'rideOffers', offerId);
+    const offerSnap = await getDoc(offerRef);
 
-const sendMessage = useCallback(async (tripId: string, text: string) => {
-  if (!user) return;
-  const newMessage: ChatMessage = {
-    id: Date.now().toString(),
-    senderId: user.name,
-    text,
-    timestamp: Date.now()
-  };
+    if (offerSnap.exists()) {
+      const offerData = offerSnap.data() as RideOffer;
+      // MORE ROBUST CHECK: Query active trips for this offer
+      const tripsQuery = query(collection(db, 'trips'), where('offerId', '==', offerId));
+      const { getDocs } = await import('firebase/firestore');
+      const tripsSnap = await getDocs(tripsQuery);
 
-  const tripRef = doc(db, 'trips', tripId);
-  await updateDoc(tripRef, {
-    messages: arrayUnion(newMessage)
-  });
-}, [user]);
+      const hasActiveBookings = tripsSnap.docs.some(doc => {
+        const status = doc.data().status;
+        return status === 'BOOKED' || status === 'WAITING_CONFIRMATION' || status === 'CONFIRMED' || status === 'EN_ROUTE' || status === 'ARRIVED';
+      });
 
-const cancelRideOffer = useCallback(async (offerId: string) => {
-  const offerRef = doc(db, 'rideOffers', offerId);
-  const offerSnap = await getDoc(offerRef);
+      if (hasActiveBookings) {
+        alert("Cannot cancel ride with active bookings. Please contact support.");
+        return;
+      }
+    }
 
-  if (offerSnap.exists()) {
-    const offerData = offerSnap.data() as RideOffer;
-    // MORE ROBUST CHECK: Query active trips for this offer
-    const tripsQuery = query(collection(db, 'trips'), where('offerId', '==', offerId));
-    const { getDocs } = await import('firebase/firestore');
-    const tripsSnap = await getDocs(tripsQuery);
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(offerRef);
+  }, []);
 
-    const hasActiveBookings = tripsSnap.docs.some(doc => {
-      const status = doc.data().status;
-      return status === 'BOOKED' || status === 'WAITING_CONFIRMATION' || status === 'CONFIRMED' || status === 'EN_ROUTE' || status === 'ARRIVED';
-    });
+  const updateRideOfferPrice = useCallback(async (offerId: string, newPrice: number, seatPrices: { [key: number]: number }) => {
+    const offerRef = doc(db, 'rideOffers', offerId);
+    await updateDoc(offerRef, { pricePerSeat: newPrice, seatPrices });
+  }, []);
 
-    if (hasActiveBookings) {
-      alert("Cannot cancel ride with active bookings. Please contact support.");
+  const updateRideOffer = useCallback(async (offerId: string, data: Partial<RideOffer>) => {
+    const offerRef = doc(db, 'rideOffers', offerId);
+    const offerSnap = await getDoc(offerRef);
+
+    if (!offerSnap.exists()) return;
+    const currentOffer = offerSnap.data() as RideOffer;
+    const bookedCount = currentOffer.bookedSeats?.length || 0;
+
+    // Golden Rule: 0 Bookings = Full Edit
+    if (bookedCount === 0) {
+      await updateDoc(offerRef, data);
       return;
     }
-  }
 
-  const { deleteDoc } = await import('firebase/firestore');
-  await deleteDoc(offerRef);
-}, []);
+    // Iron Rule: >0 Bookings = Restricted Edit
+    // 1. Cannot increase price
+    if (data.pricePerSeat && data.pricePerSeat > currentOffer.pricePerSeat) {
+      alert("Cannot increase price for a ride with active bookings.");
+      return;
+    }
 
-const updateRideOfferPrice = useCallback(async (offerId: string, newPrice: number, seatPrices: { [key: number]: number }) => {
-  const offerRef = doc(db, 'rideOffers', offerId);
-  await updateDoc(offerRef, { pricePerSeat: newPrice, seatPrices });
-}, []);
+    // 2. Cannot change vehicle type
+    if (data.vehicleType && data.vehicleType !== currentOffer.vehicleType) {
+      alert("Cannot change vehicle type for a ride with active bookings.");
+      return;
+    }
 
-const updateRideOffer = useCallback(async (offerId: string, data: Partial<RideOffer>) => {
-  const offerRef = doc(db, 'rideOffers', offerId);
-  const offerSnap = await getDoc(offerRef);
+    // 3. Cannot reduce capacity below booked count
+    if (data.totalSeats && data.totalSeats < bookedCount) {
+      alert(`Cannot reduce seats below currently booked count (${bookedCount}).`);
+      return;
+    }
 
-  if (!offerSnap.exists()) return;
-  const currentOffer = offerSnap.data() as RideOffer;
-  const bookedCount = currentOffer.bookedSeats?.length || 0;
-
-  // Golden Rule: 0 Bookings = Full Edit
-  if (bookedCount === 0) {
     await updateDoc(offerRef, data);
-    return;
-  }
+  }, []);
 
-  // Iron Rule: >0 Bookings = Restricted Edit
-  // 1. Cannot increase price
-  if (data.pricePerSeat && data.pricePerSeat > currentOffer.pricePerSeat) {
-    alert("Cannot increase price for a ride with active bookings.");
-    return;
-  }
+  return (
+    <AppContext.Provider value={{
+      user, login, updateUser, logout,
+      passengerBalance, driverBalance, appVault,
+      trips, rideOffers, bookTrip, publishRide, updateTripStatus, releaseFunds, depositToWallet,
+      sendMessage, rateTrip, requestPayment, cancelRideOffer, updateRideOfferPrice, updateRideOffer,
+      completeRide, confirmRideCompletion,
 
-  // 2. Cannot change vehicle type
-  if (data.vehicleType && data.vehicleType !== currentOffer.vehicleType) {
-    alert("Cannot change vehicle type for a ride with active bookings.");
-    return;
-  }
-
-  // 3. Cannot reduce capacity below booked count
-  if (data.totalSeats && data.totalSeats < bookedCount) {
-    alert(`Cannot reduce seats below currently booked count (${bookedCount}).`);
-    return;
-  }
-
-  await updateDoc(offerRef, data);
-}, []);
-
-return (
-  <AppContext.Provider value={{
-    user, login, updateUser, logout,
-    passengerBalance, driverBalance, appVault,
-    trips, rideOffers, bookTrip, publishRide, updateTripStatus, releaseFunds, depositToWallet,
-    sendMessage, rateTrip, requestPayment, cancelRideOffer, updateRideOfferPrice, updateRideOffer,
-    completeRide, confirmRideCompletion,
-
-    loginWithPassword, setupPassword, resetPassword, withdrawFromWallet,
-    deleteAccount
-  }}>
-    {children}
-  </AppContext.Provider>
-);
+      loginWithPassword, setupPassword, resetPassword, withdrawFromWallet,
+      deleteAccount
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export const useApp = () => {

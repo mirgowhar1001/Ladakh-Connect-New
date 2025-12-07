@@ -287,844 +287,979 @@ export const OwnerDashboard: React.FC = () => {
     // The view always shows the list, but filters if selectedRoute is present.
     // The previous conditional return (lines 289-338) is removed to unify the view.
 
-    if (false) { // Effectively removing this block logic, the content below handles both states
-      return null;
-    }
 
 
-  }
 
-  return (
-    <div className="px-4 pb-24 h-full flex flex-col md:flex-row gap-6">
-      {/* Left Sidebar Filter */}
-      <div className="hidden md:block w-64 shrink-0 space-y-6">
-        <div className="bg-[var(--driver-card)] p-5 rounded-2xl border border-gray-800">
-          <h3 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Route Filters</h3>
-          <div className="space-y-2">
+    return (
+      <div className="px-4 pb-24 h-full flex flex-col md:flex-row gap-6">
+        {/* Left Sidebar Filter */}
+        <div className="hidden md:block w-64 shrink-0 space-y-6">
+          <div className="bg-[var(--driver-card)] p-5 rounded-2xl border border-gray-800">
+            <h3 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Route Filters</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setSelectedRouteFilter(null)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${!selectedRouteFilter ? 'bg-[var(--driver-primary)] text-black font-bold' : 'text-gray-400 hover:bg-gray-800'}`}
+              >
+                All Routes
+              </button>
+              {uniqueRoutes.map(route => {
+                const count = availableRides.filter(r => `${r.from}-${r.to}` === route).length;
+                return (
+                  <button
+                    key={route}
+                    onClick={() => setSelectedRouteFilter(route)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex justify-between items-center ${selectedRouteFilter === route ? 'bg-[var(--driver-primary)] text-black font-bold' : 'text-gray-400 hover:bg-gray-800'}`}
+                  >
+                    <span>{route.replace('-', ' → ')}</span>
+                    <span className="text-xs opacity-70">({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Filter (Horizontal Scroll) */}
+        <div className="md:hidden flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+          <button
+            onClick={() => setSelectedRouteFilter(null)}
+            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${!selectedRouteFilter ? 'bg-[var(--driver-primary)] text-black' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
+          >
+            All Routes
+          </button>
+          {uniqueRoutes.map(route => (
             <button
-              onClick={() => setSelectedRoute(null)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${!selectedRoute ? 'bg-[var(--driver-primary)] text-black font-bold' : 'text-gray-400 hover:bg-gray-800'}`}
+              key={route}
+              onClick={() => setSelectedRouteFilter(route)}
+              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${selectedRouteFilter === route ? 'bg-[var(--driver-primary)] text-black' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
             >
-              All Routes
+              {route.replace('-', ' → ')}
             </button>
-            {uniqueRoutes.map(route => {
-              const count = availableRides.filter(r => `${r.from}-${r.to}` === route).length;
-              return (
-                <button
-                  key={route}
-                  onClick={() => setSelectedRoute(route)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex justify-between items-center ${selectedRoute === route ? 'bg-[var(--driver-primary)] text-black font-bold' : 'text-gray-400 hover:bg-gray-800'}`}
-                >
-                  <span>{route.replace('-', ' → ')}</span>
-                  <span className="text-xs opacity-70">({count})</span>
-                </button>
-              );
-            })}
+          ))}
+        </div>
+
+        {/* Main Content - Ride List */}
+        <div className="flex-1">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-white">Available Rides</h2>
+            <p className="text-gray-400 text-sm">{selectedRouteFilter ? `Showing rides for ${selectedRouteFilter.replace('-', ' → ')}` : 'All posted rides'}</p>
+          </div>
+
+          <div className="space-y-4">
+            {(selectedRouteFilter ? filteredRides : availableRides).length === 0 ? (
+              <div className="text-center py-12 px-8 bg-[var(--driver-card)] rounded-3xl border border-gray-800 opacity-50">
+                <MapPin size={32} className="text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">No active rides found for this route.</p>
+              </div>
+            ) : (selectedRouteFilter ? filteredRides : availableRides).map(offer => (
+              <div key={offer.id} className="bg-[var(--driver-card)] rounded-2xl p-0 border border-gray-800 overflow-hidden hover:border-gray-600 transition shadow-lg">
+                {/* Flight Ticket Style Layout */}
+                <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center relative">
+                  {/* Left: Time & Route */}
+                  <div className="flex items-center gap-6 w-full md:w-auto">
+                    <div className="text-center min-w-[60px]">
+                      <p className="text-lg font-black text-white">{offer.time.split(' ')[0]}</p>
+                      <p className="text-[10px] text-gray-500 font-bold uppercase">{offer.time.split(' ')[1]}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-sm font-bold text-gray-300">{offer.from}</span>
+                        <div className="h-[2px] w-12 bg-gray-700 flex items-center justify-center relative">
+                          <div className="w-1.5 h-1.5 bg-gray-500 rounded-full absolute -left-0.5"></div>
+                          <div className="w-1.5 h-1.5 bg-gray-500 rounded-full absolute -right-0.5"></div>
+                        </div>
+                        <span className="text-sm font-bold text-white">{offer.to}</span>
+                      </div>
+                      <p className="text-xs text-[var(--driver-primary)] font-medium flex items-center gap-1">
+                        <Calendar size={10} /> {new Date(offer.date).toDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Middle: Vehicle Info */}
+                  <div className="w-full md:w-auto flex items-center gap-3 bg-gray-800/30 px-3 py-2 rounded-lg border border-gray-700/50">
+                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300">
+                      <User size={14} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-200">{offer.driverName}</p>
+                      <p className="text-[10px] text-gray-500">{offer.vehicleType}</p>
+                    </div>
+                  </div>
+
+                  {/* Right: Seats & Action */}
+                  <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6">
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Seats</p>
+                      <p className={`text-lg font-black ${offer.totalSeats - offer.bookedSeats.length > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {offer.totalSeats - offer.bookedSeats.length} <span className="text-xs text-gray-500 font-medium">/ {offer.totalSeats}</span>
+                      </p>
+                    </div>
+
+                    <button className="bg-[var(--driver-primary)] text-black px-5 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Mobile Filter (Horizontal Scroll) */}
-      <div className="md:hidden flex overflow-x-auto gap-2 pb-2 no-scrollbar">
-        <button
-          onClick={() => setSelectedRoute(null)}
-          className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${!selectedRoute ? 'bg-[var(--driver-primary)] text-black' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
-        >
-          All Routes
-        </button>
-        {uniqueRoutes.map(route => (
-          <button
-            key={route}
-            onClick={() => setSelectedRoute(route)}
-            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${selectedRoute === route ? 'bg-[var(--driver-primary)] text-black' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
-          >
-            {route.replace('-', ' → ')}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Content - Ride List */}
-      <div className="flex-1">
-        <div className="mb-4">
-          <h2 className="text-xl font-bold text-white">Available Rides</h2>
-          <p className="text-gray-400 text-sm">{selectedRoute ? `Showing rides for ${selectedRoute.replace('-', ' → ')}` : 'All posted rides'}</p>
-        </div>
-
-        <div className="space-y-4">
-          {(selectedRoute ? routeRides : availableRides).length === 0 ? (
-            <div className="text-center py-12 px-8 bg-[var(--driver-card)] rounded-3xl border border-gray-800 opacity-50">
-              <MapPin size={32} className="text-gray-600 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">No active rides found for this route.</p>
-            </div>
-          ) : (selectedRoute ? routeRides : availableRides).map(offer => (
-            <div key={offer.id} className="bg-[var(--driver-card)] rounded-2xl p-0 border border-gray-800 overflow-hidden hover:border-gray-600 transition shadow-lg">
-              {/* Flight Ticket Style Layout */}
-              <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center relative">
-                {/* Left: Time & Route */}
-                <div className="flex items-center gap-6 w-full md:w-auto">
-                  <div className="text-center min-w-[60px]">
-                    <p className="text-lg font-black text-white">{offer.time.split(' ')[0]}</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase">{offer.time.split(' ')[1]}</p>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-sm font-bold text-gray-300">{offer.from}</span>
-                      <div className="h-[2px] w-12 bg-gray-700 flex items-center justify-center relative">
-                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full absolute -left-0.5"></div>
-                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full absolute -right-0.5"></div>
-                      </div>
-                      <span className="text-sm font-bold text-white">{offer.to}</span>
-                    </div>
-                    <p className="text-xs text-[var(--driver-primary)] font-medium flex items-center gap-1">
-                      <Calendar size={10} /> {new Date(offer.date).toDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Middle: Vehicle Info */}
-                <div className="w-full md:w-auto flex items-center gap-3 bg-gray-800/30 px-3 py-2 rounded-lg border border-gray-700/50">
-                  <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300">
-                    <User size={14} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-200">{offer.driverName}</p>
-                    <p className="text-[10px] text-gray-500">{offer.vehicleType}</p>
-                  </div>
-                </div>
-
-                {/* Right: Seats & Action */}
-                <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6">
-                  <div className="text-right">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Seats</p>
-                    <p className={`text-lg font-black ${offer.totalSeats - offer.bookedSeats.length > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {offer.totalSeats - offer.bookedSeats.length} <span className="text-xs text-gray-500 font-medium">/ {offer.totalSeats}</span>
-                    </p>
-                  </div>
-
-                  <button className="bg-[var(--driver-primary)] text-black px-5 py-2 rounded-lg font-bold text-xs shadow-lg hover:scale-105 transition">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AllRidesView = () => (
-  <div className="px-6 animate-in slide-in-from-right duration-300 pb-24 h-full flex flex-col">
-    <div className="flex items-center gap-2 mb-6">
-      <button onClick={() => setCurrentView('marketplace')} className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700">
-        <ArrowRight size={20} className="rotate-180" />
-      </button>
-      <h2 className="font-bold text-[var(--driver-text)] flex items-center gap-2 text-lg">
-        All Available Rides
-      </h2>
-    </div>
-
-    {availableRides.length === 0 ? (
-      <div className="text-center py-16 px-8 bg-[var(--driver-card)] rounded-3xl shadow-sm border border-gray-800">
-        <div className="bg-purple-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Users size={32} className="text-[var(--driver-primary)]" />
-        </div>
-        <p className="text-white font-bold mb-1">No Rides Available</p>
-        <p className="text-gray-400 text-sm">Check back later for new ride offers.</p>
-      </div>
-    ) : (
-      <div className="space-y-4 overflow-y-auto pb-10">
-        {availableRides.map(offer => {
-          const seatsAvailable = offer.totalSeats - (offer.bookedSeats?.length || 0);
-
-          return (
-            <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-sm p-5 border border-gray-800">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-bold text-white text-lg">{offer.from} → {offer.to}</h3>
-                  <p className="text-xs text-[var(--driver-text-sec)]">{new Date(offer.date).toDateString()} • {offer.time}</p>
-                </div>
-                {/* <span className="bg-purple-900/30 text-[var(--driver-primary)] px-3 py-1 rounded-xl text-sm font-bold">
-                    ₹{offer.pricePerSeat}
-                  </span> */}
-              </div>
-
-              <div className="flex items-center justify-between mt-4 p-3 bg-black/20 rounded-xl">
-                <div className="text-xs text-gray-400">
-                  <p className="font-bold text-gray-300 mb-1">Driver</p>
-                  <div className="flex items-center gap-1">
-                    <User size={12} /> {offer.driverName}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400 text-right">
-                  <p className="font-bold text-gray-300 mb-1">Seats Available</p>
-                  <div className={`flex items-center justify-end gap-1 font-bold ${seatsAvailable > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    <Users size={12} /> {seatsAvailable} / {offer.totalSeats}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
-                <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700">{offer.vehicleType}</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )}
-  </div>
-);
-
-const MyRidesView = () => {
-  // Filter logic for tabs
-  const postedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length === 0);
-  const bookedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length > 0);
-
-  // For Booked Rides, we need to find the associated trips (passengers)
-  const getPassengersForOffer = (offerId: string) => {
-    return trips.filter(t => t.offerId === offerId && t.status !== 'CANCELLED');
+    );
   };
 
-  // Filter bookedRides to only show those that haven't started yet
-  const pendingBookedRides = rideOffers.filter(o => {
-    if (o.driverName !== user?.name) return false;
-    const offersTrips = getPassengersForOffer(o.id);
-
-    // If it has "real" bookings (BOOKED or WAITING), it's pending if not started
-    const hasBookings = offersTrips.some(t => t.status === 'BOOKED' || t.status === 'WAITING_CONFIRMATION');
-    if (!hasBookings && o.bookedSeats.length === 0) return false;
-
-    // If any trip is EN_ROUTE or ARRIVED, this ride is active, not just booked
-    const isStarted = offersTrips.some(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED' || t.status === 'COMPLETED');
-    return !isStarted;
-  });
-
-  // Valid Active Trips for the 'Active' tab (En Route or Arrived)
-  const inProgressTrips = activeTrips.filter(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED');
-
-  return (
-    <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
-      <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-        <Calendar size={18} className="text-[var(--driver-primary)]" /> My Rides
-      </h2>
-
-      {/* Tab Navigation */}
-      <div className="flex p-1 bg-black/20 rounded-xl mb-6 overflow-x-auto no-scrollbar">
-        {['posted', 'completed', 'cancelled'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold capitalize whitespace-nowrap transition-all ${activeTab === tab
-              ? 'bg-[var(--driver-primary)] text-black shadow-lg'
-              : 'text-gray-400 hover:text-white'
-              }`}
-          >
-            {tab}
-          </button>
-        ))}
+  const AllRidesView = () => (
+    <div className="px-6 animate-in slide-in-from-right duration-300 pb-24 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-6">
+        <button onClick={() => setCurrentView('marketplace')} className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700">
+          <ArrowRight size={20} className="rotate-180" />
+        </button>
+        <h2 className="font-bold text-[var(--driver-text)] flex items-center gap-2 text-lg">
+          All Available Rides
+        </h2>
       </div>
 
-      {/* POSTED TAB: Combines Posted (Empty), Booked (Pending), and Active (En Route) */}
-      {/* POSTED TAB: Combines Posted (Empty), Booked (Pending), and Active (En Route) */}
-      {activeTab === 'posted' && (
-        <div className="space-y-6">
-          <h3 className="text-gray-400 text-sm font-bold uppercase mb-2">My Active Rides</h3>
-          {[...postedRides, ...pendingBookedRides, ...inProgressTrips].length === 0 ? (
-            <div className="text-center py-12 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-              <p className="text-gray-400 text-base">No active rides.</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* Unified Render Loop for All Active/Posted Rides */}
-              {[...inProgressTrips, ...pendingBookedRides, ...postedRides]
-                // Remove duplicates by ID
-                .filter((ride, index, self) => index === self.findIndex((t) => t.id === ride.id))
-                .map(ride => {
-                  // Determine if it's a Trip (booking) or Offer
-                  let offer: any = ride;
-                  if ((ride as any).passengerId) {
-                    const parentOffer = rideOffers.find(o => o.id === (ride as any).offerId);
-                    if (parentOffer) offer = parentOffer;
-                  }
+      {availableRides.length === 0 ? (
+        <div className="text-center py-16 px-8 bg-[var(--driver-card)] rounded-3xl shadow-sm border border-gray-800">
+          <div className="bg-purple-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users size={32} className="text-[var(--driver-primary)]" />
+          </div>
+          <p className="text-white font-bold mb-1">No Rides Available</p>
+          <p className="text-gray-400 text-sm">Check back later for new ride offers.</p>
+        </div>
+      ) : (
+        <div className="space-y-4 overflow-y-auto pb-10">
+          {availableRides.map(offer => {
+            const seatsAvailable = offer.totalSeats - (offer.bookedSeats?.length || 0);
 
-                  // Re-fetch passengers
-                  const passengers = getPassengersForOffer(offer.id);
-                  const isEnRoute = passengers.some(t => t.status === 'EN_ROUTE');
-                  const isArrived = passengers.some(t => t.status === 'ARRIVED');
+            return (
+              <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-sm p-5 border border-gray-800">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-white text-lg">{offer.from} → {offer.to}</h3>
+                    <p className="text-xs text-[var(--driver-text-sec)]">{new Date(offer.date).toDateString()} • {offer.time}</p>
+                  </div>
+                  {/* <span className="bg-purple-900/30 text-[var(--driver-primary)] px-3 py-1 rounded-xl text-sm font-bold">
+                    ₹{offer.pricePerSeat}
+                  </span> */}
+                </div>
 
-                  return (
-                    <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-lg p-6 border border-gray-800 relative overflow-hidden">
-                      <div className={`absolute top-0 left-0 w-2 h-full ${isEnRoute ? 'bg-orange-500' : isArrived ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                <div className="flex items-center justify-between mt-4 p-3 bg-black/20 rounded-xl">
+                  <div className="text-xs text-gray-400">
+                    <p className="font-bold text-gray-300 mb-1">Driver</p>
+                    <div className="flex items-center gap-1">
+                      <User size={12} /> {offer.driverName}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 text-right">
+                    <p className="font-bold text-gray-300 mb-1">Seats Available</p>
+                    <div className={`flex items-center justify-end gap-1 font-bold ${seatsAvailable > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <Users size={12} /> {seatsAvailable} / {offer.totalSeats}
+                    </div>
+                  </div>
+                </div>
 
-                      {/* Header */}
-                      <div className="flex justify-between items-start mb-6 pl-2">
-                        <div>
-                          <div className="mb-2">
-                            {isEnRoute ? <span className="bg-orange-900/40 text-orange-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">In Progress</span> :
-                              isArrived ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Arrived</span> :
-                                passengers.length > 0 ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Active ({passengers.length} Booked)</span> :
-                                  <span className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Open</span>
-                            }
+                <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+                  <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700">{offer.vehicleType}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  const MyRidesView = () => {
+    // Filter logic for tabs
+    const postedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length === 0);
+    const bookedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length > 0);
+
+    // For Booked Rides, we need to find the associated trips (passengers)
+    const getPassengersForOffer = (offerId: string) => {
+      return trips.filter(t => t.offerId === offerId && t.status !== 'CANCELLED');
+    };
+
+    // Filter bookedRides to only show those that haven't started yet
+    const pendingBookedRides = rideOffers.filter(o => {
+      if (o.driverName !== user?.name) return false;
+      const offersTrips = getPassengersForOffer(o.id);
+
+      // If it has "real" bookings (BOOKED or WAITING), it's pending if not started
+      const hasBookings = offersTrips.some(t => t.status === 'BOOKED' || t.status === 'WAITING_CONFIRMATION');
+      if (!hasBookings && o.bookedSeats.length === 0) return false;
+
+      // If any trip is EN_ROUTE or ARRIVED, this ride is active, not just booked
+      const isStarted = offersTrips.some(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED' || t.status === 'COMPLETED');
+      return !isStarted;
+    });
+
+    // Valid Active Trips for the 'Active' tab (En Route or Arrived)
+    const inProgressTrips = activeTrips.filter(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED');
+
+    return (
+      <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
+        <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+          <Calendar size={18} className="text-[var(--driver-primary)]" /> My Rides
+        </h2>
+
+        {/* Tab Navigation */}
+        <div className="flex p-1 bg-black/20 rounded-xl mb-6 overflow-x-auto no-scrollbar">
+          {['posted', 'completed', 'cancelled'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold capitalize whitespace-nowrap transition-all ${activeTab === tab
+                ? 'bg-[var(--driver-primary)] text-black shadow-lg'
+                : 'text-gray-400 hover:text-white'
+                }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* POSTED TAB: Combines Posted (Empty), Booked (Pending), and Active (En Route) */}
+        {/* POSTED TAB: Combines Posted (Empty), Booked (Pending), and Active (En Route) */}
+        {activeTab === 'posted' && (
+          <div className="space-y-6">
+            <h3 className="text-gray-400 text-sm font-bold uppercase mb-2">My Active Rides</h3>
+            {[...postedRides, ...pendingBookedRides, ...inProgressTrips].length === 0 ? (
+              <div className="text-center py-12 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
+                <p className="text-gray-400 text-base">No active rides.</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Unified Render Loop for All Active/Posted Rides */}
+                {[...inProgressTrips, ...pendingBookedRides, ...postedRides]
+                  // Remove duplicates by ID
+                  .filter((ride, index, self) => index === self.findIndex((t) => t.id === ride.id))
+                  .map(ride => {
+                    // Determine if it's a Trip (booking) or Offer
+                    let offer: any = ride;
+                    if ((ride as any).passengerId) {
+                      const parentOffer = rideOffers.find(o => o.id === (ride as any).offerId);
+                      if (parentOffer) offer = parentOffer;
+                    }
+
+                    // Re-fetch passengers
+                    const passengers = getPassengersForOffer(offer.id);
+                    const isEnRoute = passengers.some(t => t.status === 'EN_ROUTE');
+                    const isArrived = passengers.some(t => t.status === 'ARRIVED');
+
+                    return (
+                      <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-lg p-6 border border-gray-800 relative overflow-hidden">
+                        <div className={`absolute top-0 left-0 w-2 h-full ${isEnRoute ? 'bg-orange-500' : isArrived ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+
+                        {/* Header */}
+                        <div className="flex justify-between items-start mb-6 pl-2">
+                          <div>
+                            <div className="mb-2">
+                              {isEnRoute ? <span className="bg-orange-900/40 text-orange-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">In Progress</span> :
+                                isArrived ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Arrived</span> :
+                                  passengers.length > 0 ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Active ({passengers.length} Booked)</span> :
+                                    <span className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Open</span>
+                              }
+                            </div>
+                            <h3 className="font-bold text-white text-3xl mb-2">{offer.from} → {offer.to}</h3>
+                            <p className="text-base text-gray-300">{new Date(offer.date).toDateString()} • {offer.time}</p>
                           </div>
-                          <h3 className="font-bold text-white text-3xl mb-2">{offer.from} → {offer.to}</h3>
-                          <p className="text-base text-gray-300">{new Date(offer.date).toDateString()} • {offer.time}</p>
+                          <div className="text-right">
+                            {/* <span className="block text-3xl font-bold text-[var(--driver-primary)]">₹{offer.pricePerSeat}</span> */}
+                            <button onClick={() => { setEditingRide(offer); setShowEditRide(true); }} className="text-xs bg-gray-700 px-4 py-2 rounded-xl text-white mt-3 hover:bg-gray-600 font-bold transition-colors">Edit Details</button>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          {/* <span className="block text-3xl font-bold text-[var(--driver-primary)]">₹{offer.pricePerSeat}</span> */}
-                          <button onClick={() => { setEditingRide(offer); setShowEditRide(true); }} className="text-xs bg-gray-700 px-4 py-2 rounded-xl text-white mt-3 hover:bg-gray-600 font-bold transition-colors">Edit Details</button>
-                        </div>
-                      </div>
 
-                      {/* SEAT MAP VISUALIZATION */}
-                      <div className="bg-black/30 rounded-2xl p-5 mb-6 space-y-3">
-                        <h4 className="text-gray-400 text-xs font-bold uppercase mb-3 tracking-wider">Seat Status</h4>
-                        <div className="space-y-3">
-                          {Array.from({ length: offer.totalSeats }, (_, i) => i + 1).map(seatNum => {
-                            const booking = passengers.find(p => p.seats && p.seats.includes(seatNum));
-                            const isBooked = !!booking;
+                        {/* SEAT MAP VISUALIZATION */}
+                        <div className="bg-black/30 rounded-2xl p-5 mb-6 space-y-3">
+                          <h4 className="text-gray-400 text-xs font-bold uppercase mb-3 tracking-wider">Seat Status</h4>
+                          <div className="space-y-3">
+                            {Array.from({ length: offer.totalSeats }, (_, i) => i + 1).map(seatNum => {
+                              const booking = passengers.find(p => p.seats && p.seats.includes(seatNum));
+                              const isBooked = !!booking;
 
-                            return (
-                              <div key={seatNum} className="flex items-center justify-between bg-[var(--driver-bg)]/60 p-4 rounded-xl border border-gray-700/50 hover:border-gray-600 transition-colors">
-                                <div className="flex items-center gap-5">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner ${isBooked
-                                    ? (booking?.status === 'WAITING_CONFIRMATION'
-                                      ? 'bg-gradient-to-br from-yellow-600 to-amber-800 text-white shadow-yellow-900/50'
-                                      : 'bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-green-900/50')
-                                    : 'bg-gradient-to-br from-red-500 to-rose-700 text-white shadow-red-900/50'
-                                    }`}>
-                                    {seatNum}
+                              return (
+                                <div key={seatNum} className="flex items-center justify-between bg-[var(--driver-bg)]/60 p-4 rounded-xl border border-gray-700/50 hover:border-gray-600 transition-colors">
+                                  <div className="flex items-center gap-5">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner ${isBooked
+                                      ? (booking?.status === 'WAITING_CONFIRMATION'
+                                        ? 'bg-gradient-to-br from-yellow-600 to-amber-800 text-white shadow-yellow-900/50'
+                                        : 'bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-green-900/50')
+                                      : 'bg-gradient-to-br from-red-500 to-rose-700 text-white shadow-red-900/50'
+                                      }`}>
+                                      {seatNum}
+                                    </div>
+                                    <div>
+                                      <p className={`text-base font-bold mb-1 ${isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'text-yellow-400' : 'text-green-400') : 'text-red-400'}`}>
+                                        {isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'Approval Needed' : 'Booked') : 'Available'}
+                                      </p>
+                                      {isBooked ? (
+                                        <div className="flex flex-col gap-0.5">
+                                          <span className="text-sm text-white font-medium">{booking?.passengerId}</span>
+                                          <span className="text-xs text-gray-400 font-mono tracking-wide">+91 {booking?.passengerMobile || 'N/A'}</span>
+                                          {booking?.status === 'WAITING_CONFIRMATION' && <span className="text-[10px] text-yellow-400 font-bold uppercase mt-1 animate-pulse">Waiting Confirmation</span>}
+                                        </div>
+                                      ) : (
+                                        <span className="text-sm text-gray-500">Empty Seat</span>
+                                      )}
+                                    </div>
                                   </div>
+
+                                  {/* Actions */}
                                   <div>
-                                    <p className={`text-base font-bold mb-1 ${isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'text-yellow-400' : 'text-green-400') : 'text-red-400'}`}>
-                                      {isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'Approval Needed' : 'Booked') : 'Available'}
-                                    </p>
                                     {isBooked ? (
-                                      <div className="flex flex-col gap-0.5">
-                                        <span className="text-sm text-white font-medium">{booking?.passengerId}</span>
-                                        <span className="text-xs text-gray-400 font-mono tracking-wide">+91 {booking?.passengerMobile || 'N/A'}</span>
-                                        {booking?.status === 'WAITING_CONFIRMATION' && <span className="text-[10px] text-yellow-400 font-bold uppercase mt-1 animate-pulse">Waiting Confirmation</span>}
-                                      </div>
+                                      booking?.status === 'WAITING_CONFIRMATION' ? (
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => updateTripStatus(booking.id, 'CONFIRMED')}
+                                            className="px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-600/30 font-bold text-xs uppercase hover:bg-green-600/30 transition"
+                                          >
+                                            Confirm
+                                          </button>
+                                          <button
+                                            onClick={() => updateTripStatus(booking.id, 'CANCELLED')}
+                                            className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg border border-red-600/30 font-bold text-xs uppercase hover:bg-red-600/30 transition"
+                                          >
+                                            Reject
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        booking?.status === 'CONFIRMED' ? (
+                                          <span className="text-xs text-green-400 font-bold uppercase border border-green-400/30 px-3 py-2 rounded-lg bg-green-400/10">Confirmed</span>
+                                        ) : (
+                                          <a href={`tel:${booking?.passengerMobile}`} className="p-3 bg-green-900/20 text-green-400 rounded-xl hover:bg-green-900/40 inline-flex items-center justify-center transition-colors">
+                                            <Phone size={20} />
+                                          </a>
+                                        )
+                                      )
                                     ) : (
-                                      <span className="text-sm text-gray-500">Empty Seat</span>
+                                      <button
+                                        onClick={() => {
+                                          updateRideOffer(offer.id, { totalSeats: offer.totalSeats - 1 });
+                                        }}
+                                        className="text-xs text-red-400 hover:text-red-200 font-bold px-4 py-2 bg-red-900/10 rounded-lg border border-red-900/30 transition-colors uppercase tracking-wide"
+                                      >
+                                        Cancel
+                                      </button>
                                     )}
                                   </div>
                                 </div>
+                              );
+                            })}
+                          </div>
+                        </div>
 
-                                {/* Actions */}
-                                <div>
-                                  {isBooked ? (
-                                    booking?.status === 'WAITING_CONFIRMATION' ? (
-                                      <div className="flex gap-2">
-                                        <button
-                                          onClick={() => updateTripStatus(booking.id, 'CONFIRMED')}
-                                          className="px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-600/30 font-bold text-xs uppercase hover:bg-green-600/30 transition"
-                                        >
-                                          Confirm
-                                        </button>
-                                        <button
-                                          onClick={() => updateTripStatus(booking.id, 'CANCELLED')}
-                                          className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg border border-red-600/30 font-bold text-xs uppercase hover:bg-red-600/30 transition"
-                                        >
-                                          Reject
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      booking?.status === 'CONFIRMED' ? (
-                                        <span className="text-xs text-green-400 font-bold uppercase border border-green-400/30 px-3 py-2 rounded-lg bg-green-400/10">Confirmed</span>
-                                      ) : (
-                                        <a href={`tel:${booking?.passengerMobile}`} className="p-3 bg-green-900/20 text-green-400 rounded-xl hover:bg-green-900/40 inline-flex items-center justify-center transition-colors">
-                                          <Phone size={20} />
-                                        </a>
-                                      )
-                                    )
-                                  ) : (
-                                    <button
-                                      onClick={() => {
-                                        updateRideOffer(offer.id, { totalSeats: offer.totalSeats - 1 });
-                                      }}
-                                      className="text-xs text-red-400 hover:text-red-200 font-bold px-4 py-2 bg-red-900/10 rounded-lg border border-red-900/30 transition-colors uppercase tracking-wide"
-                                    >
-                                      Cancel
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
+                        {/* Ride Actions */}
+                        {/* Ride Actions */}
+                        <div className="flex flex-wrap gap-3">
+                          {!isEnRoute && !isArrived && passengers.length > 0 && (
+                            <button onClick={() => { passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); setActiveTab('posted'); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                              Start Ride <ChevronRight size={20} />
+                            </button>
+                          )}
+                          {isEnRoute && (
+                            <button onClick={() => { passengers.forEach(p => completeRide(p.id)); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                              Finish Ride <CheckCircle size={20} />
+                            </button>
+                          )}
+                          {isArrived && (
+                            <div className="flex-1 bg-gray-800 text-gray-400 py-4 rounded-xl font-bold text-sm text-center border border-gray-700 flex items-center justify-center gap-2">
+                              <CheckCircle size={18} /> Ride Completed
+                            </div>
+                          )}
+                          {/* Show Cancel Ride only if no passengers or explicit user action */}
+                          <button onClick={() => { if (confirm("Are you sure you want to cancel this ENTIRE ride offer?")) cancelRideOffer(offer.id); }} className={`px-4 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${passengers.length === 0 ? 'bg-red-900/20 text-red-500 w-full hover:bg-red-900/30' : 'bg-gray-800 text-gray-400 hover:bg-red-900/20 hover:text-red-500'}`}>
+                            {passengers.length === 0 ? 'Cancel Ride' : <Trash2 size={20} />}
+                          </button>
                         </div>
                       </div>
+                    );
+                  })
+                }
+              </div>
+            )}
+          </div>
+        )}
 
-                      {/* Ride Actions */}
-                      {/* Ride Actions */}
-                      <div className="flex flex-wrap gap-3">
-                        {!isEnRoute && !isArrived && passengers.length > 0 && (
-                          <button onClick={() => { passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); setActiveTab('posted'); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                            Start Ride <ChevronRight size={20} />
-                          </button>
-                        )}
-                        {isEnRoute && (
-                          <button onClick={() => { passengers.forEach(p => completeRide(p.id)); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                            Finish Ride <CheckCircle size={20} />
-                          </button>
-                        )}
-                        {isArrived && (
-                          <div className="flex-1 bg-gray-800 text-gray-400 py-4 rounded-xl font-bold text-sm text-center border border-gray-700 flex items-center justify-center gap-2">
-                            <CheckCircle size={18} /> Ride Completed
-                          </div>
-                        )}
-                        {/* Show Cancel Ride only if no passengers or explicit user action */}
-                        <button onClick={() => { if (confirm("Are you sure you want to cancel this ENTIRE ride offer?")) cancelRideOffer(offer.id); }} className={`px-4 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${passengers.length === 0 ? 'bg-red-900/20 text-red-500 w-full hover:bg-red-900/30' : 'bg-gray-800 text-gray-400 hover:bg-red-900/20 hover:text-red-500'}`}>
-                          {passengers.length === 0 ? 'Cancel Ride' : <Trash2 size={20} />}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              }
+        {/* COMPLETED TAB */}
+        {activeTab === 'completed' && (
+          <div className="space-y-4">
+            {completedTrips.length === 0 ? (
+              <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
+                <p className="text-gray-400 text-xs text-center">No completed rides history.</p>
+              </div>
+            ) : (
+              completedTrips.map(trip => (
+                <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center opacity-75 hover:opacity-100 transition">
+                  <div>
+                    <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
+                    <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const WalletView = () => {
+    const pendingPayouts = activeTrips.reduce((acc, t) => acc + t.cost, 0);
+    const availableBalance = driverBalance;
+
+    return (
+      <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
+        <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+          <Wallet size={18} className="text-[var(--driver-primary)]" /> My Wallet
+        </h2>
+
+        {/* Balance Card */}
+        <div className="bg-gradient-to-br from-gray-800 to-black p-6 rounded-3xl shadow-lg border border-gray-700 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--driver-primary)]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+
+          <div className="relative z-10">
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Available Balance</p>
+            <h1 className="text-4xl font-black text-white mb-4">₹ {availableBalance.toLocaleString()}</h1>
+
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
+                <p className="text-[10px] text-gray-400 uppercase font-bold">Pending Payouts</p>
+                <p className="text-lg font-bold text-yellow-400">₹ {pendingPayouts.toLocaleString()}</p>
+              </div>
+              <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
+                <p className="text-[10px] text-gray-400 uppercase font-bold">Total Earned</p>
+                <p className="text-lg font-bold text-green-400">₹ {totalEarnings.toLocaleString()}</p>
+              </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* COMPLETED TAB */}
-      {activeTab === 'completed' && (
+            <button
+              onClick={() => setShowWithdrawModal(true)}
+              className="w-full bg-[var(--driver-primary)] text-black py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition flex items-center justify-center gap-2"
+            >
+              <Wallet size={18} /> Withdraw Funds
+            </button>
+          </div>
+        </div>
+
+        {/* Transactions List */}
+        <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Recent Transactions</h3>
         <div className="space-y-4">
           {completedTrips.length === 0 ? (
             <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-              <p className="text-gray-400 text-xs text-center">No completed rides history.</p>
+              <p className="text-gray-400 text-xs">No transactions yet.</p>
             </div>
           ) : (
-            completedTrips.map(trip => (
-              <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center opacity-75 hover:opacity-100 transition">
-                <div>
-                  <h4 className="font-bold text-white">{trip.from} → {trip.to}</h4>
-                  <p className="text-xs text-gray-400">{new Date(trip.date).toDateString()}</p>
+            completedTrips.slice(0, 10).map(trip => (
+              <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
+                    <ArrowRight size={18} className="-rotate-45" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">Ride Payment</h4>
+                    <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} • {trip.from} → {trip.to}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
-                </div>
+                <span className="font-bold text-green-400">+ ₹{trip.cost}</span>
               </div>
             ))
           )}
         </div>
-      )}
-    </div>
-  );
-};
+      </div>
+    );
+  };
 
-const WalletView = () => {
-  const pendingPayouts = activeTrips.reduce((acc, t) => acc + t.cost, 0);
-  const availableBalance = driverBalance;
-
-  return (
-    <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
-      <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-        <Wallet size={18} className="text-[var(--driver-primary)]" /> My Wallet
-      </h2>
-
-      {/* Balance Card */}
-      <div className="bg-gradient-to-br from-gray-800 to-black p-6 rounded-3xl shadow-lg border border-gray-700 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--driver-primary)]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-
-        <div className="relative z-10">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Available Balance</p>
-          <h1 className="text-4xl font-black text-white mb-4">₹ {availableBalance.toLocaleString()}</h1>
-
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
-              <p className="text-[10px] text-gray-400 uppercase font-bold">Pending Payouts</p>
-              <p className="text-lg font-bold text-yellow-400">₹ {pendingPayouts.toLocaleString()}</p>
-            </div>
-            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
-              <p className="text-[10px] text-gray-400 uppercase font-bold">Total Earned</p>
-              <p className="text-lg font-bold text-green-400">₹ {totalEarnings.toLocaleString()}</p>
-            </div>
+  const ProfileView = () => (
+    <div className="px-6 animate-in slide-in-from-right duration-300 pb-20">
+      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
+        <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => alert("Edit Vehicle Details feature coming soon!")}>
+          <Edit size={16} />
+        </button>
+        <h3 className="font-bold text-lg text-white mb-4">Vehicle Details</h3>
+        <div className="space-y-4">
+          <div className="flex justify-between border-b border-gray-700 pb-2">
+            <span className="text-gray-400 text-sm">Vehicle Number</span>
+            <span className="font-bold text-white">{user?.vehicleNo}</span>
           </div>
-
-          <button
-            onClick={() => setShowWithdrawModal(true)}
-            className="w-full bg-[var(--driver-primary)] text-black py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition flex items-center justify-center gap-2"
-          >
-            <Wallet size={18} /> Withdraw Funds
-          </button>
+          <div className="flex justify-between border-b border-gray-700 pb-2">
+            <span className="text-gray-400 text-sm">Vehicle Type</span>
+            <span className="font-bold text-white">{user?.vehicleType}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400 text-sm">Driver Name</span>
+            <span className="font-bold text-white">{user?.name}</span>
+          </div>
         </div>
       </div>
 
-      {/* Transactions List */}
-      <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Recent Transactions</h3>
-      <div className="space-y-4">
-        {completedTrips.length === 0 ? (
-          <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-            <p className="text-gray-400 text-xs">No transactions yet.</p>
+      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
+        <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => alert("Edit Personal Info feature coming soon!")}>
+          <Edit size={16} />
+        </button>
+        <h3 className="font-bold text-lg text-white mb-4">Personal Info</h3>
+        <div className="space-y-4">
+          <div className="flex justify-between border-b border-gray-700 pb-2">
+            <span className="text-gray-400 text-sm">Mobile</span>
+            <span className="font-bold text-white">+91 {user?.mobile}</span>
           </div>
-        ) : (
-          completedTrips.slice(0, 10).map(trip => (
-            <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center">
+          <div className="flex justify-between border-b border-gray-700 pb-2">
+            <span className="text-gray-400 text-sm">Email</span>
+            <span className="font-bold text-white">{user?.name.toLowerCase().replace(' ', '.')}@example.com</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400 text-sm">Joined</span>
+            <span className="font-bold text-white">Jan 2024</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
+        <h3 className="font-bold text-lg text-white mb-4">Statistics</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-800 p-4 rounded-2xl text-center">
+            <p className="text-2xl font-black text-[var(--driver-primary)]">{completedTrips.length}</p>
+            <p className="text-xs text-gray-400 font-bold uppercase">Trips Done</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded-2xl text-center">
+            <p className="text-2xl font-black text-yellow-400 flex items-center justify-center gap-1">4.8 <Star size={16} fill="currentColor" /></p>
+            <p className="text-xs text-gray-400 font-bold uppercase">Rating</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded-2xl text-center">
+            <p className="text-2xl font-black text-green-400">92%</p>
+            <p className="text-xs text-gray-400 font-bold uppercase">Acceptance</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded-2xl text-center">
+            <p className="text-2xl font-black text-white">₹{totalEarnings}</p>
+            <p className="text-xs text-gray-400 font-bold uppercase">Earnings</p>
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={logout}
+        className="w-full bg-[#E02E49] text-black py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
+      >
+        <LogOut size={22} /> LOGOUT
+      </button>
+
+      <button
+        onClick={() => {
+          if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            // Assuming deleteAccount is available in useApp (it was added in previous steps)
+            // We need to destructure it from useApp at the top of the component
+            deleteAccount();
+          }
+        }}
+        className="w-full mt-4 text-red-500 py-3 rounded-2xl font-bold text-sm hover:bg-red-900/20 transition flex items-center justify-center gap-2"
+      >
+        <Trash2 size={18} /> Delete Account
+      </button>
+
+      <button
+        onClick={handleClearAllData}
+        className="w-full mt-4 text-orange-500 py-3 rounded-2xl font-bold text-sm hover:bg-orange-900/20 transition flex items-center justify-center gap-2 border border-dashed border-orange-500/50"
+      >
+        <Trash2 size={18} /> Clean DB (Debug)
+      </button>
+
+      {/* Documents Section */}
+      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mt-6 mb-6">
+        <h3 className="font-bold text-lg text-white mb-4 flex items-center gap-2">
+          <FileText size={20} className="text-[var(--driver-primary)]" /> My Documents
+        </h3>
+
+        {user?.verificationStatus !== 'verified' && (
+          <div className="bg-yellow-900/20 border border-yellow-700/50 p-3 rounded-xl mb-4 flex items-start gap-2">
+            <AlertCircle className="text-yellow-500 shrink-0 mt-0.5" size={16} />
+            <p className="text-xs text-yellow-200">
+              Please upload all documents to verify your account and start posting rides.
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {[
+            { id: 'dl', label: 'Driving License' },
+            { id: 'rc', label: 'Vehicle Registration' },
+            { id: 'insurance', label: 'Vehicle Insurance' },
+            { id: 'vehicleFront', label: 'Vehicle Photo' }
+          ].map((doc) => (
+            <div key={doc.id} className="flex items-center justify-between bg-black/20 p-3 rounded-xl border border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
-                  <ArrowRight size={18} className="-rotate-45" />
+                <div className={`p-2 rounded-lg ${user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'bg-green-900/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+                  {user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? <Check size={16} /> : <FileText size={16} />}
                 </div>
-                <div>
-                  <h4 className="font-bold text-white text-sm">Ride Payment</h4>
-                  <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} • {trip.from} → {trip.to}</p>
+                <div className="text-left">
+                  <p className="text-base text-gray-300 font-medium">{doc.label}</p>
+                  {(user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]) && <p className="text-xs text-green-400">Uploaded</p>}
                 </div>
               </div>
-              <span className="font-bold text-green-400">+ ₹{trip.cost}</span>
+
+              {uploading[doc.id] ? (
+                <Loader2 size={18} className="animate-spin text-[var(--driver-primary)]" />
+              ) : (
+                <div className="flex gap-2">
+                  {(user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]) && (
+                    <a
+                      href={user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg text-sm font-bold bg-gray-700 hover:bg-gray-600 text-white transition flex items-center"
+                    >
+                      View
+                    </a>
+                  )}
+
+                  <label className={`cursor-pointer px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center ${user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'bg-gray-800 text-gray-400' : 'bg-[var(--driver-primary)]/10 hover:bg-[var(--driver-primary)]/20 text-[var(--driver-primary)]'}`}>
+                    {user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'Change' : 'Upload'}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          handleFileUpload(e.target.files[0], doc.id);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
-          ))
+          ))}
+        </div>
+
+        {/* Submit Verification Button */}
+        {user?.verificationStatus !== 'verified' && (
+          <button
+            onClick={async () => {
+              // Check if all docs are present (either in user.documents or uploadedDocs)
+              const allDocsPresent = ['dl', 'rc', 'insurance', 'vehicleFront'].every(
+                key => user?.documents?.[key as keyof typeof user.documents] || uploadedDocs[key]
+              );
+
+              if (!allDocsPresent) {
+                alert("Please upload all required documents first.");
+                return;
+              }
+
+              const confirmVerify = window.confirm("Submit documents for verification?");
+              if (confirmVerify) {
+                // Merge existing docs with new uploads
+                const finalDocs = { ...user?.documents, ...uploadedDocs };
+
+                await updateUser({
+                  verificationStatus: 'verified', // Auto-verify for now
+                  documents: finalDocs
+                });
+                alert("Documents submitted and verified! You can now post rides.");
+              }
+            }}
+            className="w-full mt-6 bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg shadow-yellow-900/20 hover:scale-[1.02] active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Submit for Verification
+          </button>
         )}
       </div>
     </div>
   );
-};
 
-const ProfileView = () => (
-  <div className="px-6 animate-in slide-in-from-right duration-300 pb-20">
-    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
-      <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => alert("Edit Vehicle Details feature coming soon!")}>
-        <Edit size={16} />
+  return (
+    <div className="bg-[var(--driver-bg)] min-h-screen pb-24 relative">
+      <SideMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onNavigate={handleNavigate}
+      />
+
+      <DriverHeader />
+
+      {currentView === 'marketplace' && <MarketplaceView />}
+      {currentView === 'all-rides' && <AllRidesView />}
+      {currentView === 'my-rides' && <MyRidesView />}
+      {currentView === 'profile' && <ProfileView />}
+      {/* {currentView === 'wallet' && <WalletView />} */}
+      {currentView === 'support' && <div className="p-6 text-center text-gray-500">Support coming soon...</div>}
+
+      {/* Floating Action Button for Post Ride */}
+      <button
+        onClick={() => {
+          if (user?.verificationStatus === 'verified') {
+            setShowAddRide(true);
+          } else {
+            alert("Please upload your documents in the Profile section to verify your account before posting rides.");
+            setCurrentView('profile');
+          }
+        }}
+        className={`fixed bottom-24 right-6 p-4 rounded-full shadow-2xl transition z-40 animate-in zoom-in duration-300 ${user?.verificationStatus === 'verified' ? 'bg-[var(--driver-primary)] text-[var(--login-btn-text)] hover:opacity-90' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
+      >
+        <Plus size={28} />
       </button>
-      <h3 className="font-bold text-lg text-white mb-4">Vehicle Details</h3>
-      <div className="space-y-4">
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400 text-sm">Vehicle Number</span>
-          <span className="font-bold text-white">{user?.vehicleNo}</span>
-        </div>
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400 text-sm">Vehicle Type</span>
-          <span className="font-bold text-white">{user?.vehicleType}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400 text-sm">Driver Name</span>
-          <span className="font-bold text-white">{user?.name}</span>
-        </div>
-      </div>
-    </div>
 
-    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
-      <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => alert("Edit Personal Info feature coming soon!")}>
-        <Edit size={16} />
-      </button>
-      <h3 className="font-bold text-lg text-white mb-4">Personal Info</h3>
-      <div className="space-y-4">
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400 text-sm">Mobile</span>
-          <span className="font-bold text-white">+91 {user?.mobile}</span>
-        </div>
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400 text-sm">Email</span>
-          <span className="font-bold text-white">{user?.name.toLowerCase().replace(' ', '.')}@example.com</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400 text-sm">Joined</span>
-          <span className="font-bold text-white">Jan 2024</span>
-        </div>
-      </div>
-    </div>
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[var(--driver-card)] border-t border-gray-800 p-4 flex justify-around items-center z-50 pb-6 rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
+        <button
+          onClick={() => setCurrentView('marketplace')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'marketplace' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <Home size={24} fill={currentView === 'marketplace' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">Home</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('my-rides')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'my-rides' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <Navigation size={24} fill={currentView === 'my-rides' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">My Trips</span>
+        </button >
+        <button
+          onClick={() => setCurrentView('profile')}
+          className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'profile' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
+        >
+          <User size={24} fill={currentView === 'profile' ? 'currentColor' : 'none'} />
+          <span className="text-xs font-bold">Account</span>
+        </button>
+      </div >
 
-    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
-      <h3 className="font-bold text-lg text-white mb-4">Statistics</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gray-800 p-4 rounded-2xl text-center">
-          <p className="text-2xl font-black text-[var(--driver-primary)]">{completedTrips.length}</p>
-          <p className="text-xs text-gray-400 font-bold uppercase">Trips Done</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-2xl text-center">
-          <p className="text-2xl font-black text-yellow-400 flex items-center justify-center gap-1">4.8 <Star size={16} fill="currentColor" /></p>
-          <p className="text-xs text-gray-400 font-bold uppercase">Rating</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-2xl text-center">
-          <p className="text-2xl font-black text-green-400">92%</p>
-          <p className="text-xs text-gray-400 font-bold uppercase">Acceptance</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-2xl text-center">
-          <p className="text-2xl font-black text-white">₹{totalEarnings}</p>
-          <p className="text-xs text-gray-400 font-bold uppercase">Earnings</p>
-        </div>
-      </div>
-    </div>
+      {/* Add Ride Modal */}
+      {
+        showAddRide && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
-    <button
-      onClick={logout}
-      className="w-full bg-[#E02E49] text-black py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
-    >
-      <LogOut size={22} /> LOGOUT
-    </button>
-
-    <button
-      onClick={() => {
-        if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-          // Assuming deleteAccount is available in useApp (it was added in previous steps)
-          // We need to destructure it from useApp at the top of the component
-          deleteAccount();
-        }
-      }}
-      className="w-full mt-4 text-red-500 py-3 rounded-2xl font-bold text-sm hover:bg-red-900/20 transition flex items-center justify-center gap-2"
-    >
-      <Trash2 size={18} /> Delete Account
-    </button>
-
-    <button
-      onClick={handleClearAllData}
-      className="w-full mt-4 text-orange-500 py-3 rounded-2xl font-bold text-sm hover:bg-orange-900/20 transition flex items-center justify-center gap-2 border border-dashed border-orange-500/50"
-    >
-      <Trash2 size={18} /> Clean DB (Debug)
-    </button>
-
-    {/* Documents Section */}
-    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mt-6 mb-6">
-      <h3 className="font-bold text-lg text-white mb-4 flex items-center gap-2">
-        <FileText size={20} className="text-[var(--driver-primary)]" /> My Documents
-      </h3>
-
-      {user?.verificationStatus !== 'verified' && (
-        <div className="bg-yellow-900/20 border border-yellow-700/50 p-3 rounded-xl mb-4 flex items-start gap-2">
-          <AlertCircle className="text-yellow-500 shrink-0 mt-0.5" size={16} />
-          <p className="text-xs text-yellow-200">
-            Please upload all documents to verify your account and start posting rides.
-          </p>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {[
-          { id: 'dl', label: 'Driving License' },
-          { id: 'rc', label: 'Vehicle Registration' },
-          { id: 'insurance', label: 'Vehicle Insurance' },
-          { id: 'vehicleFront', label: 'Vehicle Photo' }
-        ].map((doc) => (
-          <div key={doc.id} className="flex items-center justify-between bg-black/20 p-3 rounded-xl border border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'bg-green-900/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
-                {user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? <Check size={16} /> : <FileText size={16} />}
+              {/* Header */}
+              <div className="bg-[var(--driver-bg)] p-5 flex justify-between items-center text-white border-b border-gray-800 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Plus className="bg-white/10 p-1 rounded-lg" size={28} />
+                  <div>
+                    <h3 className="font-bold text-lg leading-tight">Post New Ride</h3>
+                    <p className="text-xs text-gray-400 opacity-90">Fill details to get passengers</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowAddRide(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+                  <X size={20} />
+                </button>
               </div>
-              <div className="text-left">
-                <p className="text-base text-gray-300 font-medium">{doc.label}</p>
-                {(user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]) && <p className="text-xs text-green-400">Uploaded</p>}
+
+              <div className="p-6 space-y-5 bg-[var(--driver-card)] overflow-y-auto">
+                {/* Route Section */}
+                <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
+                  <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
+                    <MapPin size={12} /> Select Route
+                  </label>
+                  <select
+                    value={`${newRide.from}-${newRide.to}`}
+                    onChange={e => {
+                      const [from, to] = e.target.value.split('-');
+                      const routeKey = `${from}-${to}`;
+                      const autoPrice = BASE_RATES[routeKey] || 2500;
+                      // Reset active seats on new route? Optional.
+                      setNewRide({ ...newRide, from, to, price: autoPrice });
+                    }}
+                    className="w-full font-bold text-white bg-transparent outline-none"
+                  >
+                    {ROUTE_WHITELIST.map(route => (
+                      <option key={route} className="bg-[var(--driver-bg)]" value={route}>{route.replace('-', ' → ')}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Vehicle Selection */}
+                <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
+                  <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
+                    <Users size={12} /> Vehicle Type
+                  </label>
+                  <select
+                    value={newRide.vehicleType}
+                    onChange={e => setNewRide({ ...newRide, vehicleType: e.target.value })}
+                    className="w-full font-bold text-white bg-transparent outline-none"
+                  >
+                    {VEHICLE_WHITELIST.map(v => (
+                      <option key={v} className="bg-[var(--driver-bg)]" value={v}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Date & Time */}
+                <div className="flex gap-4">
+                  <div className="flex-[2] border-b border-gray-700 pb-1">
+                    <DatePicker
+                      label="Departure Date"
+                      selectedDate={newRide.date}
+                      onDateSelect={(d) => setNewRide({ ...newRide, date: d })}
+                      isDark={true}
+                    />
+                  </div>
+                  <div className="flex-1 bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
+                    <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
+                      <Clock size={12} /> Time
+                    </label>
+                    <select
+                      value={newRide.time}
+                      onChange={e => setNewRide({ ...newRide, time: e.target.value })}
+                      className="w-full font-bold text-white bg-transparent outline-none appearance-none"
+                    >
+                      <option className="bg-[var(--driver-bg)]" value="06:00 AM">06:00 AM</option>
+                      <option className="bg-[var(--driver-bg)]" value="07:00 AM">07:00 AM</option>
+                      <option className="bg-[var(--driver-bg)]" value="08:00 AM">08:00 AM</option>
+                      <option className="bg-[var(--driver-bg)]" value="09:00 AM">09:00 AM</option>
+                      <option className="bg-[var(--driver-bg)]" value="10:00 AM">10:00 AM</option>
+                      <option className="bg-[var(--driver-bg)]" value="02:00 PM">02:00 PM</option>
+                      <option className="bg-[var(--driver-bg)]" value="05:00 PM">05:00 PM</option>
+                      <option className="bg-[var(--driver-bg)]" value="08:00 PM">08:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Visual Seat Selection */}
+                <div className="border-t border-gray-700 pt-4">
+                  <h4 className="text-sm font-bold text-white mb-2">Select Available Seats</h4>
+                  <p className="text-xs text-gray-400 mb-4">Tap on seats to select availability.</p>
+
+                  <div className="bg-gray-200 rounded-3xl p-6 relative flex flex-col items-center">
+                    <div className="w-56 bg-white rounded-[2.5rem] p-4 shadow-xl border-4 border-gray-100 flex flex-col gap-4 items-center">
+
+                      {/* Front Row */}
+                      <div className="flex gap-6 w-full justify-between px-2">
+                        <div className="flex flex-col items-center gap-1">
+                          <button
+                            className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${(newRide.activeSeats?.includes(1)) ? 'bg-green-500 text-white shadow-green-200' : 'bg-gray-100 text-gray-300'
+                              }`}
+                            onClick={() => {
+                              const current = newRide.activeSeats || [];
+                              const updated = current.includes(1)
+                                ? current.filter((s: number) => s !== 1)
+                                : [...current, 1];
+                              setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
+                            }}
+                          >
+                            {newRide.activeSeats?.includes(1) ? <Check size={18} /> : '1'}
+                          </button>
+                          <span className="text-[10px] text-gray-400 font-bold">Front</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1 opacity-50">
+                          <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-white">
+                            <img src="https://cdn-icons-png.flaticon.com/512/5108/5108609.png" className="w-6 h-6 invert opacity-50" alt="steering" />
+                          </div>
+                          <span className="text-[10px] text-gray-400 font-bold">Driver</span>
+                        </div>
+                      </div>
+
+                      {/* Middle Row */}
+                      <div className="flex gap-2 w-full justify-center">
+                        {[2, 3, 4].map(seatNum => (
+                          <div key={seatNum} className="flex flex-col items-center gap-1">
+                            <button
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${newRide.activeSeats?.includes(seatNum) ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
+                                }`}
+                              onClick={() => {
+                                const current = newRide.activeSeats || [];
+                                const updated = current.includes(seatNum)
+                                  ? current.filter((s: number) => s !== seatNum)
+                                  : [...current, seatNum];
+                                setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
+                              }}
+                            >
+                              {newRide.activeSeats?.includes(seatNum) ? <Check size={14} /> : seatNum}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Back Row */}
+                      <div className="flex gap-2 w-full justify-center">
+                        {[5, 6, 7].map(seatNum => (
+                          <div key={seatNum} className="flex flex-col items-center gap-1">
+                            <button
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${newRide.activeSeats?.includes(seatNum) ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
+                                }`}
+                              onClick={() => {
+                                const current = newRide.activeSeats || [];
+                                const updated = current.includes(seatNum)
+                                  ? current.filter((s: number) => s !== seatNum)
+                                  : [...current, seatNum];
+                                setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
+                              }}
+                            >
+                              {newRide.activeSeats?.includes(seatNum) ? <Check size={14} /> : seatNum}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-white font-bold">Total Seats: <span className="text-[var(--driver-primary)] text-xl">{newRide.totalSeats || 0}</span></p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handlePublish}
+                  className="w-full bg-[var(--driver-primary)] text-[var(--login-btn-text)] py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition flex items-center justify-center gap-2 flex-shrink-0"
+                >
+                  Publish Ride <ChevronRight size={20} />
+                </button>
               </div>
             </div>
-
-            {uploading[doc.id] ? (
-              <Loader2 size={18} className="animate-spin text-[var(--driver-primary)]" />
-            ) : (
-              <div className="flex gap-2">
-                {(user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]) && (
-                  <a
-                    href={user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-lg text-sm font-bold bg-gray-700 hover:bg-gray-600 text-white transition flex items-center"
-                  >
-                    View
-                  </a>
-                )}
-
-                <label className={`cursor-pointer px-3 py-1.5 rounded-lg text-sm font-bold transition flex items-center ${user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'bg-gray-800 text-gray-400' : 'bg-[var(--driver-primary)]/10 hover:bg-[var(--driver-primary)]/20 text-[var(--driver-primary)]'}`}>
-                  {user?.documents?.[doc.id as keyof typeof user.documents] || uploadedDocs[doc.id] ? 'Change' : 'Upload'}
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/jpeg,image/jpg,image/png"
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) {
-                        handleFileUpload(e.target.files[0], doc.id);
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            )}
           </div>
-        ))}
-      </div>
+        )
+      }
 
-      {/* Submit Verification Button */}
-      {user?.verificationStatus !== 'verified' && (
-        <button
-          onClick={async () => {
-            // Check if all docs are present (either in user.documents or uploadedDocs)
-            const allDocsPresent = ['dl', 'rc', 'insurance', 'vehicleFront'].every(
-              key => user?.documents?.[key as keyof typeof user.documents] || uploadedDocs[key]
-            );
-
-            if (!allDocsPresent) {
-              alert("Please upload all required documents first.");
-              return;
-            }
-
-            const confirmVerify = window.confirm("Submit documents for verification?");
-            if (confirmVerify) {
-              // Merge existing docs with new uploads
-              const finalDocs = { ...user?.documents, ...uploadedDocs };
-
-              await updateUser({
-                verificationStatus: 'verified', // Auto-verify for now
-                documents: finalDocs
-              });
-              alert("Documents submitted and verified! You can now post rides.");
-            }
-          }}
-          className="w-full mt-6 bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg shadow-yellow-900/20 hover:scale-[1.02] active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Submit for Verification
-        </button>
-      )}
-    </div>
-  </div>
-);
-
-return (
-  <div className="bg-[var(--driver-bg)] min-h-screen pb-24 relative">
-    <SideMenu
-      isOpen={isMenuOpen}
-      onClose={() => setIsMenuOpen(false)}
-      onNavigate={handleNavigate}
-    />
-
-    <DriverHeader />
-
-    {currentView === 'marketplace' && <MarketplaceView />}
-    {currentView === 'all-rides' && <AllRidesView />}
-    {currentView === 'my-rides' && <MyRidesView />}
-    {currentView === 'profile' && <ProfileView />}
-    {/* {currentView === 'wallet' && <WalletView />} */}
-    {currentView === 'support' && <div className="p-6 text-center text-gray-500">Support coming soon...</div>}
-
-    {/* Floating Action Button for Post Ride */}
-    <button
-      onClick={() => {
-        if (user?.verificationStatus === 'verified') {
-          setShowAddRide(true);
-        } else {
-          alert("Please upload your documents in the Profile section to verify your account before posting rides.");
-          setCurrentView('profile');
-        }
-      }}
-      className={`fixed bottom-24 right-6 p-4 rounded-full shadow-2xl transition z-40 animate-in zoom-in duration-300 ${user?.verificationStatus === 'verified' ? 'bg-[var(--driver-primary)] text-[var(--login-btn-text)] hover:opacity-90' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
-    >
-      <Plus size={28} />
-    </button>
-
-    {/* Bottom Navigation */}
-    <div className="fixed bottom-0 left-0 right-0 bg-[var(--driver-card)] border-t border-gray-800 p-4 flex justify-around items-center z-50 pb-6 rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
-      <button
-        onClick={() => setCurrentView('marketplace')}
-        className={`flex flex - col items - center gap - 1 px - 6 py - 2 rounded - full transition - all ${currentView === 'marketplace' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
-      >
-        <Home size={24} fill={currentView === 'marketplace' ? 'currentColor' : 'none'} />
-        <span className="text-xs font-bold">Home</span>
-      </button>
-      <button
-        onClick={() => setCurrentView('my-rides')}
-        className={`flex flex-col items-center gap-1 px-6 py-2 rounded-full transition-all ${currentView === 'my-rides' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
-      >
-        <Navigation size={24} fill={currentView === 'my-rides' ? 'currentColor' : 'none'} />
-        <span className="text-xs font-bold">My Trips</span>
-      </button >
-      <button
-        onClick={() => setCurrentView('profile')}
-        className={`flex flex - col items - center gap - 1 px - 6 py - 2 rounded - full transition - all ${currentView === 'profile' ? 'bg-yellow-900/40 text-[var(--driver-primary)]' : 'text-gray-500'} `}
-      >
-        <User size={24} fill={currentView === 'profile' ? 'currentColor' : 'none'} />
-        <span className="text-xs font-bold">Account</span>
-      </button>
-    </div >
-
-    {/* Add Ride Modal */}
-    {
-      showAddRide && (
+      {/* Edit Ride Modal */}
+      {showEditRide && editingRide && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
             {/* Header */}
             <div className="bg-[var(--driver-bg)] p-5 flex justify-between items-center text-white border-b border-gray-800 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <Plus className="bg-white/10 p-1 rounded-lg" size={28} />
+                <Edit className="bg-white/10 p-1 rounded-lg" size={28} />
                 <div>
-                  <h3 className="font-bold text-lg leading-tight">Post New Ride</h3>
-                  <p className="text-xs text-gray-400 opacity-90">Fill details to get passengers</p>
+                  <h3 className="font-bold text-lg leading-tight">Manage Ride</h3>
+                  <p className="text-xs text-gray-400 opacity-90">Update ride details</p>
                 </div>
               </div>
-              <button onClick={() => setShowAddRide(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+              <button onClick={() => setShowEditRide(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
                 <X size={20} />
               </button>
             </div>
 
             <div className="p-6 space-y-5 bg-[var(--driver-card)] overflow-y-auto">
               {/* Route Section */}
-              <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
+              <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700">
                 <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
-                  <MapPin size={12} /> Select Route
+                  <MapPin size={12} /> Route
                 </label>
-                <select
-                  value={`${newRide.from}-${newRide.to}`}
-                  onChange={e => {
-                    const [from, to] = e.target.value.split('-');
-                    const routeKey = `${from}-${to}`;
-                    const autoPrice = BASE_RATES[routeKey] || 2500;
-                    // Reset active seats on new route? Optional.
-                    setNewRide({ ...newRide, from, to, price: autoPrice });
-                  }}
-                  className="w-full font-bold text-white bg-transparent outline-none"
-                >
-                  {ROUTE_WHITELIST.map(route => (
-                    <option key={route} className="bg-[var(--driver-bg)]" value={route}>{route.replace('-', ' → ')}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Vehicle Selection */}
-              <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
-                <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
-                  <Users size={12} /> Vehicle Type
-                </label>
-                <select
-                  value={newRide.vehicleType}
-                  onChange={e => setNewRide({ ...newRide, vehicleType: e.target.value })}
-                  className="w-full font-bold text-white bg-transparent outline-none"
-                >
-                  {VEHICLE_WHITELIST.map(v => (
-                    <option key={v} className="bg-[var(--driver-bg)]" value={v}>{v}</option>
-                  ))}
-                </select>
+                <div className="font-bold text-white text-lg">{editingRide.from} → {editingRide.to}</div>
               </div>
 
               {/* Date & Time */}
               <div className="flex gap-4">
-                <div className="flex-[2] border-b border-gray-700 pb-1">
-                  <DatePicker
-                    label="Departure Date"
-                    selectedDate={newRide.date}
-                    onDateSelect={(d) => setNewRide({ ...newRide, date: d })}
-                    isDark={true}
-                  />
+                <div className="flex-[2] bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 opacity-75">
+                  <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
+                    <Calendar size={12} /> Date
+                  </label>
+                  <div className="text-white font-bold">{new Date(editingRide.date).toLocaleDateString()}</div>
                 </div>
-                <div className="flex-1 bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 focus-within:border-[var(--driver-primary)] transition-all">
+                <div className="flex-1 bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 opacity-75">
                   <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
                     <Clock size={12} /> Time
                   </label>
-                  <select
-                    value={newRide.time}
-                    onChange={e => setNewRide({ ...newRide, time: e.target.value })}
-                    className="w-full font-bold text-white bg-transparent outline-none appearance-none"
-                  >
-                    <option className="bg-[var(--driver-bg)]" value="06:00 AM">06:00 AM</option>
-                    <option className="bg-[var(--driver-bg)]" value="07:00 AM">07:00 AM</option>
-                    <option className="bg-[var(--driver-bg)]" value="08:00 AM">08:00 AM</option>
-                    <option className="bg-[var(--driver-bg)]" value="09:00 AM">09:00 AM</option>
-                    <option className="bg-[var(--driver-bg)]" value="10:00 AM">10:00 AM</option>
-                    <option className="bg-[var(--driver-bg)]" value="02:00 PM">02:00 PM</option>
-                    <option className="bg-[var(--driver-bg)]" value="05:00 PM">05:00 PM</option>
-                    <option className="bg-[var(--driver-bg)]" value="08:00 PM">08:00 PM</option>
-                  </select>
+                  <div className="text-white font-bold">{editingRide.time}</div>
                 </div>
               </div>
 
-              {/* Visual Seat Selection */}
+              {/* Visual Seat Selection (Edit Mode) */}
               <div className="border-t border-gray-700 pt-4">
-                <h4 className="text-sm font-bold text-white mb-2">Select Available Seats</h4>
-                <p className="text-xs text-gray-400 mb-4">Tap on seats to select availability.</p>
+                <h4 className="text-sm font-bold text-white mb-2">Available Seats</h4>
+                <p className="text-xs text-gray-400 mb-4">Tap on seats to change capacity. Note: You cannot unselect already booked seats.</p>
 
                 <div className="bg-gray-200 rounded-3xl p-6 relative flex flex-col items-center">
                   <div className="w-56 bg-white rounded-[2.5rem] p-4 shadow-xl border-4 border-gray-100 flex flex-col gap-4 items-center">
@@ -1132,19 +1267,33 @@ return (
                     {/* Front Row */}
                     <div className="flex gap-6 w-full justify-between px-2">
                       <div className="flex flex-col items-center gap-1">
-                        <button
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${(newRide.activeSeats?.includes(1)) ? 'bg-green-500 text-white shadow-green-200' : 'bg-gray-100 text-gray-300'
-                            }`}
-                          onClick={() => {
-                            const current = newRide.activeSeats || [];
-                            const updated = current.includes(1)
-                              ? current.filter((s: number) => s !== 1)
-                              : [...current, 1];
-                            setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
-                          }}
-                        >
-                          {newRide.activeSeats?.includes(1) ? <Check size={18} /> : '1'}
-                        </button>
+                        {/* Helper function to check if a seat is "active" in edit mode. 
+                             If we don't have activeSeats, we assume 1..totalSeats are active */}
+                        {(() => {
+                          const isActive = editingRide.activeSeats
+                            ? editingRide.activeSeats.includes(1)
+                            : editingRide.totalSeats >= 1; // Fallback
+                          const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(1);
+
+                          return (
+                            <button
+                              disabled={isBooked}
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
+                                isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-gray-100 text-gray-300'
+                                }`}
+                              onClick={() => {
+                                // Initialize activeSeats if missing
+                                const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
+                                const updated = current.includes(1)
+                                  ? current.filter((s: any) => s !== 1)
+                                  : [...current, 1];
+                                setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
+                              }}
+                            >
+                              {isBooked ? 'B' : (isActive ? <Check size={18} /> : '1')}
+                            </button>
+                          );
+                        })()}
                         <span className="text-[10px] text-gray-400 font-bold">Front</span>
                       </div>
                       <div className="flex flex-col items-center gap-1 opacity-50">
@@ -1157,239 +1306,86 @@ return (
 
                     {/* Middle Row */}
                     <div className="flex gap-2 w-full justify-center">
-                      {[2, 3, 4].map(seatNum => (
-                        <div key={seatNum} className="flex flex-col items-center gap-1">
-                          <button
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${newRide.activeSeats?.includes(seatNum) ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
-                              }`}
-                            onClick={() => {
-                              const current = newRide.activeSeats || [];
-                              const updated = current.includes(seatNum)
-                                ? current.filter((s: number) => s !== seatNum)
-                                : [...current, seatNum];
-                              setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
-                            }}
-                          >
-                            {newRide.activeSeats?.includes(seatNum) ? <Check size={14} /> : seatNum}
-                          </button>
-                        </div>
-                      ))}
+                      {[2, 3, 4].map(seatNum => {
+                        const isActive = editingRide.activeSeats
+                          ? editingRide.activeSeats.includes(seatNum)
+                          : (editingRide.totalSeats >= seatNum || (editingRide.activeSeats === undefined && seatNum <= editingRide.totalSeats)); // Basic Fallback
+                        const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(seatNum);
+
+                        return (
+                          <div key={seatNum} className="flex flex-col items-center gap-1">
+                            <button
+                              disabled={isBooked}
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
+                                isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
+                                }`}
+                              onClick={() => {
+                                const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
+                                const updated = current.includes(seatNum)
+                                  ? current.filter((s: any) => s !== seatNum)
+                                  : [...current, seatNum];
+                                setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
+                              }}
+                            >
+                              {isBooked ? 'B' : (isActive ? <Check size={14} /> : seatNum)}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {/* Back Row */}
                     <div className="flex gap-2 w-full justify-center">
-                      {[5, 6, 7].map(seatNum => (
-                        <div key={seatNum} className="flex flex-col items-center gap-1">
-                          <button
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${newRide.activeSeats?.includes(seatNum) ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
-                              }`}
-                            onClick={() => {
-                              const current = newRide.activeSeats || [];
-                              const updated = current.includes(seatNum)
-                                ? current.filter((s: number) => s !== seatNum)
-                                : [...current, seatNum];
-                              setNewRide({ ...newRide, activeSeats: updated, totalSeats: updated.length });
-                            }}
-                          >
-                            {newRide.activeSeats?.includes(seatNum) ? <Check size={14} /> : seatNum}
-                          </button>
-                        </div>
-                      ))}
+                      {[5, 6, 7].map(seatNum => {
+                        // Complex logic to guess if seat is active when activeSeats is missing
+                        // If totalSeats=5, we assume 1,2,3,4,5 are active.
+                        const isActive = editingRide.activeSeats
+                          ? editingRide.activeSeats.includes(seatNum)
+                          : (editingRide.totalSeats >= seatNum);
+                        const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(seatNum);
+
+                        return (
+                          <div key={seatNum} className="flex flex-col items-center gap-1">
+                            <button
+                              disabled={isBooked}
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
+                                isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
+                                }`}
+                              onClick={() => {
+                                const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
+                                const updated = current.includes(seatNum)
+                                  ? current.filter((s: any) => s !== seatNum)
+                                  : [...current, seatNum];
+                                setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
+                              }}
+                            >
+                              {isBooked ? 'B' : (isActive ? <Check size={14} /> : seatNum)}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 text-center">
-                  <p className="text-sm text-white font-bold">Total Seats: <span className="text-[var(--driver-primary)] text-xl">{newRide.totalSeats || 0}</span></p>
+                  <p className="text-sm text-white font-bold">Total Capacity: <span className="text-[var(--driver-primary)] text-xl">{editingRide.totalSeats}</span></p>
                 </div>
               </div>
 
+
               <button
-                onClick={handlePublish}
+                onClick={handleUpdateRide}
                 className="w-full bg-[var(--driver-primary)] text-[var(--login-btn-text)] py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition flex items-center justify-center gap-2 flex-shrink-0"
               >
-                Publish Ride <ChevronRight size={20} />
+                Save Changes <CheckCircle size={20} />
               </button>
             </div>
           </div>
         </div>
-      )
-    }
+      )}
 
-    {/* Edit Ride Modal */}
-    {showEditRide && editingRide && (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-
-          {/* Header */}
-          <div className="bg-[var(--driver-bg)] p-5 flex justify-between items-center text-white border-b border-gray-800 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Edit className="bg-white/10 p-1 rounded-lg" size={28} />
-              <div>
-                <h3 className="font-bold text-lg leading-tight">Manage Ride</h3>
-                <p className="text-xs text-gray-400 opacity-90">Update ride details</p>
-              </div>
-            </div>
-            <button onClick={() => setShowEditRide(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-5 bg-[var(--driver-card)] overflow-y-auto">
-            {/* Route Section */}
-            <div className="bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700">
-              <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
-                <MapPin size={12} /> Route
-              </label>
-              <div className="font-bold text-white text-lg">{editingRide.from} → {editingRide.to}</div>
-            </div>
-
-            {/* Date & Time */}
-            <div className="flex gap-4">
-              <div className="flex-[2] bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 opacity-75">
-                <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
-                  <Calendar size={12} /> Date
-                </label>
-                <div className="text-white font-bold">{new Date(editingRide.date).toLocaleDateString()}</div>
-              </div>
-              <div className="flex-1 bg-[var(--driver-bg)] p-3 rounded-xl border border-gray-700 opacity-75">
-                <label className="text-xs font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
-                  <Clock size={12} /> Time
-                </label>
-                <div className="text-white font-bold">{editingRide.time}</div>
-              </div>
-            </div>
-
-            {/* Visual Seat Selection (Edit Mode) */}
-            <div className="border-t border-gray-700 pt-4">
-              <h4 className="text-sm font-bold text-white mb-2">Available Seats</h4>
-              <p className="text-xs text-gray-400 mb-4">Tap on seats to change capacity. Note: You cannot unselect already booked seats.</p>
-
-              <div className="bg-gray-200 rounded-3xl p-6 relative flex flex-col items-center">
-                <div className="w-56 bg-white rounded-[2.5rem] p-4 shadow-xl border-4 border-gray-100 flex flex-col gap-4 items-center">
-
-                  {/* Front Row */}
-                  <div className="flex gap-6 w-full justify-between px-2">
-                    <div className="flex flex-col items-center gap-1">
-                      {/* Helper function to check if a seat is "active" in edit mode. 
-                             If we don't have activeSeats, we assume 1..totalSeats are active */}
-                      {(() => {
-                        const isActive = editingRide.activeSeats
-                          ? editingRide.activeSeats.includes(1)
-                          : editingRide.totalSeats >= 1; // Fallback
-                        const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(1);
-
-                        return (
-                          <button
-                            disabled={isBooked}
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
-                              isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-gray-100 text-gray-300'
-                              }`}
-                            onClick={() => {
-                              // Initialize activeSeats if missing
-                              const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
-                              const updated = current.includes(1)
-                                ? current.filter((s: any) => s !== 1)
-                                : [...current, 1];
-                              setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
-                            }}
-                          >
-                            {isBooked ? 'B' : (isActive ? <Check size={18} /> : '1')}
-                          </button>
-                        );
-                      })()}
-                      <span className="text-[10px] text-gray-400 font-bold">Front</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 opacity-50">
-                      <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-white">
-                        <img src="https://cdn-icons-png.flaticon.com/512/5108/5108609.png" className="w-6 h-6 invert opacity-50" alt="steering" />
-                      </div>
-                      <span className="text-[10px] text-gray-400 font-bold">Driver</span>
-                    </div>
-                  </div>
-
-                  {/* Middle Row */}
-                  <div className="flex gap-2 w-full justify-center">
-                    {[2, 3, 4].map(seatNum => {
-                      const isActive = editingRide.activeSeats
-                        ? editingRide.activeSeats.includes(seatNum)
-                        : (editingRide.totalSeats >= seatNum || (editingRide.activeSeats === undefined && seatNum <= editingRide.totalSeats)); // Basic Fallback
-                      const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(seatNum);
-
-                      return (
-                        <div key={seatNum} className="flex flex-col items-center gap-1">
-                          <button
-                            disabled={isBooked}
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
-                              isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
-                              }`}
-                            onClick={() => {
-                              const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
-                              const updated = current.includes(seatNum)
-                                ? current.filter((s: any) => s !== seatNum)
-                                : [...current, seatNum];
-                              setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
-                            }}
-                          >
-                            {isBooked ? 'B' : (isActive ? <Check size={14} /> : seatNum)}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Back Row */}
-                  <div className="flex gap-2 w-full justify-center">
-                    {[5, 6, 7].map(seatNum => {
-                      // Complex logic to guess if seat is active when activeSeats is missing
-                      // If totalSeats=5, we assume 1,2,3,4,5 are active.
-                      const isActive = editingRide.activeSeats
-                        ? editingRide.activeSeats.includes(seatNum)
-                        : (editingRide.totalSeats >= seatNum);
-                      const isBooked = editingRide.bookedSeats && editingRide.bookedSeats.includes(seatNum);
-
-                      return (
-                        <div key={seatNum} className="flex flex-col items-center gap-1">
-                          <button
-                            disabled={isBooked}
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-all ${isBooked ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-600' :
-                              isActive ? 'bg-green-500 text-white shadow-green-200' : 'bg-orange-100 text-orange-300'
-                              }`}
-                            onClick={() => {
-                              const current = editingRide.activeSeats || Array.from({ length: editingRide.totalSeats }, (_, i) => i + 1);
-                              const updated = current.includes(seatNum)
-                                ? current.filter((s: any) => s !== seatNum)
-                                : [...current, seatNum];
-                              setEditingRide({ ...editingRide, activeSeats: updated, totalSeats: updated.length });
-                            }}
-                          >
-                            {isBooked ? 'B' : (isActive ? <Check size={14} /> : seatNum)}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 text-center">
-                <p className="text-sm text-white font-bold">Total Capacity: <span className="text-[var(--driver-primary)] text-xl">{editingRide.totalSeats}</span></p>
-              </div>
-            </div>
-
-
-            <button
-              onClick={handleUpdateRide}
-              className="w-full bg-[var(--driver-primary)] text-[var(--login-btn-text)] py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition flex items-center justify-center gap-2 flex-shrink-0"
-            >
-              Save Changes <CheckCircle size={20} />
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-
-    {/* Withdrawal Modal - DISABLED 
+      {/* Withdrawal Modal - DISABLED 
       <PaymentModal
         isOpen={showWithdrawModal}
         onClose={() => setShowWithdrawModal(false)}
@@ -1397,6 +1393,6 @@ return (
         balance={driverBalance}
         onConfirm={handleWithdraw}
       /> */}
-  </div>
-);
+    </div>
+  );
 };
