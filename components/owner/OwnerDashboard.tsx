@@ -617,7 +617,7 @@ export const OwnerDashboard: React.FC = () => {
                                       </p>
                                       {isBooked ? (
                                         <div className="flex flex-col gap-0.5">
-                                          <span className="text-sm text-white font-medium">{booking?.passengerId}</span>
+                                          <span className="text-sm text-white font-medium">{booking?.passengerName || booking?.passengerId}</span>
                                           <span className="text-xs text-gray-400 font-mono tracking-wide">+91 {booking?.passengerMobile || 'N/A'}</span>
                                           {booking?.status === 'WAITING_CONFIRMATION' && <span className="text-[10px] text-yellow-400 font-bold uppercase mt-1 animate-pulse">Waiting Confirmation</span>}
                                         </div>

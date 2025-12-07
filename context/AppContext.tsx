@@ -402,7 +402,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
 
-      alert("Trip Booked Successfully!");
+      alert("Booking Request Sent! Waiting for driver confirmation.");
       return true;
 
     } catch (error: any) {
