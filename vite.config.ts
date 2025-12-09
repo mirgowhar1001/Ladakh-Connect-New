@@ -18,6 +18,9 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       }
     },
+    build: {
+      outDir: 'build'
+    },
     test: {
       globals: true,
       environment: 'jsdom',

@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "configurations": {
+    "gemini": {
+      "type": "gemini-mcp-server",
+      "port": 5173,
+      "command": [
+        "npm",
+        "run",
+        "dev"
+      ],
+      "log": "stream"
+    }
+  }
+}

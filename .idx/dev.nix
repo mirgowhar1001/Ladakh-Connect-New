@@ -4,7 +4,7 @@
     pkgs.nodejs_22
   ];
   idx.extensions = [
-    "svelte.svelte-vscode",
+    "svelte.svelte-vscode"
     "vue.volar"
   ];
   idx.previews = {
