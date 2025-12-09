@@ -2,7 +2,7 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { PassengerFlow } from './components/passenger/PassengerFlow';
-import { OwnerDashboard } from './components/owner/OwnerDashboard';
+import OwnerDashboard from './components/owner/OwnerDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const LadakhConnectApp = () => {

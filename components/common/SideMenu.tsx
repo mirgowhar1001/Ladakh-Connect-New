@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, CreditCard, Ticket, HelpCircle, LogOut, X, ChevronRight } from 'lucide-react';
+import { User, Ticket, HelpCircle, LogOut, X, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 interface SideMenuProps {

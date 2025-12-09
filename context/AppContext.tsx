@@ -21,9 +21,6 @@ import { onAuthStateChanged, signOut, EmailAuthProvider, linkWithCredential, sig
 
 interface AppContextType {
   user: User | null;
-  passengerBalance: number;
-  driverBalance: number;
-  appVault: number;
   trips: Trip[];
   rideOffers: RideOffer[];
   login: (role: UserRole, data: Omit<User, 'role'>) => Promise<void>;
@@ -32,8 +29,6 @@ interface AppContextType {
   bookTrip: (tripDetails: Omit<Trip, 'id' | 'status' | 'passengerId' | 'driverName' | 'vehicleNo' | 'messages'> & { driverName?: string; vehicleNo?: string }, cost: number, offerId?: string) => Promise<boolean>;
   publishRide: (offer: Omit<RideOffer, 'id' | 'driverName' | 'driverId' | 'bookedSeats' | 'rating'>) => Promise<void>;
   updateTripStatus: (tripId: string, status: TripStatus) => Promise<void>;
-  releaseFunds: (tripId: string, cost: number) => Promise<void>;
-  depositToWallet: (amount: number, paymentId?: string) => void;
   sendMessage: (tripId: string, text: string) => Promise<void>;
   rateTrip: (tripId: string, rating: number) => Promise<void>;
   requestPayment: (tripId: string) => Promise<void>;
@@ -45,7 +40,6 @@ interface AppContextType {
   loginWithPassword: (mobile: string, pass: string) => Promise<void>;
   setupPassword: (mobile: string, pass: string) => Promise<void>;
   resetPassword: (newPass: string) => Promise<void>;
-  withdrawFromWallet: (amount: number) => Promise<boolean>;
   deleteAccount: () => Promise<void>;
 }
 
@@ -53,13 +47,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [appVault, setAppVault] = useState(0);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [rideOffers, setRideOffers] = useState<RideOffer[]>([]);
-
-  // Simulated Wallets (In a real app, these would be in Firestore 'wallets' collection)
-  const [passengerBalance, setPassengerBalance] = useState(0);
-  const [driverBalance, setDriverBalance] = useState(0);
 
   // 1. Auth Listener
   useEffect(() => {
@@ -73,13 +62,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           if (userDoc.exists()) {
             const userData = userDoc.data() as User;
             setUser({ ...userData, uid: firebaseUser.uid });
-
-            // Sync local wallet state from Firestore
-            if (userData.role === 'passenger') {
-              setPassengerBalance(userData.walletBalance || 0);
-            } else if (userData.role === 'owner') {
-              setDriverBalance(userData.walletBalance || 0);
-            }
           }
         } catch (error) {
           console.error("Error fetching user profile:", error);
@@ -242,8 +224,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       role,
       uid,
       verificationStatus: (data as any).verificationStatus || 'none',
-      walletBalance: (data as any).walletBalance || 0,
-      escrowBalance: (data as any).escrowBalance || 0,
       documents: (data as any).documents || {}
     };
 
@@ -340,8 +320,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setUser(null);
       setTrips([]);
       setRideOffers([]);
-      setPassengerBalance(0);
-      setDriverBalance(0);
 
       alert("Account and all associated data deleted successfully.");
 
@@ -355,75 +333,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [user]);
 
-  const depositToWallet = useCallback(async (amount: number, paymentId?: string) => {
-    if (!user || !user.uid) return;
-
-    // Update local state
-    setPassengerBalance(prev => prev + amount);
-
-    // Update Firestore User Balance
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, {
-      walletBalance: (user.walletBalance || 0) + amount
-    });
-
-    // Log Transaction to 'payments' collection
-    if (paymentId) {
-      try {
-        await addDoc(collection(db, 'payments'), {
-          userId: user.uid,
-          userName: user.name,
-          amount: amount,
-          type: 'DEPOSIT',
-          paymentId: paymentId,
-          status: 'success',
-          timestamp: Date.now()
-        });
-      } catch (e) {
-        console.error("Error logging payment:", e);
-      }
-    }
-
-    // Update user state
-    setUser(prev => prev ? { ...prev, walletBalance: (prev.walletBalance || 0) + amount } : null);
-  }, [user]);
-
-  const withdrawFromWallet = useCallback(async (amount: number) => {
-    if (!user || !user.uid) return false;
-
-    // Use the state balance (what the user sees) as the source of truth for the check
-    // This handles the case where we show a simulated "Signup Bonus" (2500) that hasn't been persisted to Firestore yet.
-    const currentBalance = user.role === 'owner' ? driverBalance : passengerBalance;
-
-    if (currentBalance < amount) {
-      alert("Insufficient balance!");
-      return false;
-    }
-
-    // Update Firestore
-    // We persist the new balance (realizing the bonus if it was virtual)
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, {
-      walletBalance: currentBalance - amount
-    });
-
-    // Update local state
-    if (user.role === 'owner') {
-      setDriverBalance(prev => prev - amount);
-    } else {
-      setPassengerBalance(prev => prev - amount);
-    }
-
-    // Update user state
-    setUser(prev => prev ? { ...prev, walletBalance: currentBalance - amount } : null);
-    return true;
-  }, [user, driverBalance, passengerBalance]);
-
   const bookTrip = useCallback(async (tripDetails: any, cost: number, offerId?: string) => {
     if (!user) return false;
-
-    // 1. Check Balance (Passenger) - REMOVED
-
 
     try {
       // 2. Check Seat Availability (if offerId provided)
@@ -461,9 +372,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         driverId: tripDetails.driverId || null, // CRITICAL FIX: Save driverId so they receive the booking
         messages: []
       });
-
-      // 4. Deduct Balance (Move to Escrow/Vault) - DISABLED FOR CASH FLOW
-      /* Logic Removed as per User Request */
 
       // 5. Update Ride Offer (Book Seats)
       if (offerId && tripDetails.seats) {
@@ -553,69 +461,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         hoursUntilDeparture = 12;
       }
 
-      let refundPercentage = 0;
-      let policyText = "";
-
-      if (hoursUntilDeparture > 24) {
-        refundPercentage = 1.0; // 100% Refund
-        policyText = "Full Refund (> 24h notice)";
-      } else if (hoursUntilDeparture > 2) {
-        refundPercentage = 0.5; // 50% Refund
-        policyText = "50% Refund (< 24h notice)";
-      } else {
-        refundPercentage = 0.0; // 0% Refund
-        policyText = "No Refund (< 2h notice)";
-      }
-
-      const refundAmount = trip.cost * refundPercentage;
-      const driverCompensation = trip.cost * (1 - refundPercentage);
-
-      // 1. Deduct from Escrow
-      setAppVault(prev => prev - trip.cost);
-
-      // 2. Refund Passenger
-      if (refundAmount > 0) {
-        setPassengerBalance(prev => prev + refundAmount);
-        if (trip.passengerUid) {
-          const passRef = doc(db, 'users', trip.passengerUid);
-          const passDoc = await getDoc(passRef);
-          if (passDoc.exists()) {
-            await updateDoc(passRef, {
-              walletBalance: (passDoc.data().walletBalance || 0) + refundAmount,
-              escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
-            });
-          }
-        }
-      } else {
-        // If no refund, just remove from escrow tracking for passenger
-        if (trip.passengerUid) {
-          const passRef = doc(db, 'users', trip.passengerUid);
-          const passDoc = await getDoc(passRef);
-          if (passDoc.exists()) {
-            await updateDoc(passRef, {
-              escrowBalance: (passDoc.data().escrowBalance || 0) - trip.cost
-            });
-          }
-        }
-      }
-
-      // 3. Compensate Driver
-      if (driverCompensation > 0) {
-        if (trip.driverId && trip.driverId !== 'admin') {
-          try {
-            const driverRef = doc(db, 'users', trip.driverId);
-            const driverDoc = await getDoc(driverRef);
-            if (driverDoc.exists()) {
-              await updateDoc(driverRef, {
-                walletBalance: (driverDoc.data().walletBalance || 0) + driverCompensation
-              });
-            }
-          } catch (e) {
-            console.warn("Could not update driver wallet directly", e);
-          }
-        }
-      }
-
+      
       // 4. Free up seats in RideOffer
       if (trip.offerId && trip.seats && trip.seats.length > 0) {
         try {
@@ -628,7 +474,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      alert(`Ride Cancelled. ${policyText}. Refund: ₹${refundAmount}. Driver Compensation: ₹${driverCompensation}.`);
+      alert(`Ride Cancelled.`);
     }
 
     const tripRef = doc(db, 'trips', tripId);
@@ -688,13 +534,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const trip = tripSnap.data() as Trip;
 
     if (confirmed) {
-      // Release funds from Escrow to Driver
-      setAppVault(prev => prev - trip.cost);
-      setDriverBalance(prev => prev + trip.cost);
-
-      // Update Driver's Wallet in Firestore
-      // Assuming we have the driver's UID or can query it. 
-      // For now, updating local state simulation.
 
       await updateDoc(tripRef, {
         status: 'COMPLETED',
@@ -710,11 +549,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       alert("Ride marked as Disputed. Support will contact you.");
     }
   }, []);
-
-  // Deprecated: releaseFunds (kept for backward compatibility if needed, but replaced by confirmRideCompletion)
-  const releaseFunds = useCallback(async (tripId: string, cost: number) => {
-    await confirmRideCompletion(tripId, true);
-  }, [confirmRideCompletion]);
 
   const sendMessage = useCallback(async (tripId: string, text: string) => {
     if (!user) return;
@@ -801,12 +635,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return (
     <AppContext.Provider value={{
       user, login, updateUser, logout,
-      passengerBalance, driverBalance, appVault,
-      trips, rideOffers, bookTrip, publishRide, updateTripStatus, releaseFunds, depositToWallet,
+      trips, rideOffers, bookTrip, publishRide, updateTripStatus,
       sendMessage, rateTrip, requestPayment, cancelRideOffer, updateRideOfferPrice, updateRideOffer,
       completeRide, confirmRideCompletion,
-
-      loginWithPassword, setupPassword, resetPassword, withdrawFromWallet,
+      loginWithPassword, setupPassword, resetPassword,
       deleteAccount
     }}>
       {children}
