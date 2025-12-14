@@ -14,7 +14,7 @@ interface Message {
     timestamp: Date;
 }
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
+const API_KEY = 'AIzaSyBQgZd_firT2HqgHeGtp49bIOa_gYuUacw'; // Replace with your actual API key
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const GeminiChat: React.FC<GeminiChatProps> = ({ onBack }) => {
@@ -30,8 +30,6 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({ onBack }) => {
     ]);
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,22 +54,33 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({ onBack }) => {
         setIsTyping(true);
 
         try {
-            const result = await model.generateContent(input);
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+            const chat = model.startChat({
+                history: messages.map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                })),
+                generationConfig: {
+                    maxOutputTokens: 500,
+                },
+            });
+
+            const result = await chat.sendMessage(userMessage.text);
             const response = await result.response;
-            const text = response.text();
+            const responseText = response.text();
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: text,
+                text: responseText,
                 sender: 'bot',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, botMessage]);
         } catch (error) {
-            console.error("Error generating content:", error);
+            console.error('Error sending message to Gemini API:', error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "Oops! Something went wrong while fetching the response. Please try again.",
+                text: "Sorry, I'm having trouble connecting to Gemini right now. Please try again later.",
                 sender: 'bot',
                 timestamp: new Date()
             };
