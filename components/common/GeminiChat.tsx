@@ -67,11 +67,18 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({ onBack }) => {
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating content:", error);
+            
+            let errorText = "Oops! Something went wrong while fetching the response. Please try again.";
+            
+            if (error?.message?.includes('429') || error?.message?.toLowerCase().includes('quota') || error?.message?.toLowerCase().includes('exhausted')) {
+                errorText = "I'm currently overloaded (Quota Exhausted). Please check your API usage limits or try again later.";
+            }
+
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "Oops! Something went wrong while fetching the response. Please try again.",
+                text: errorText,
                 sender: 'bot',
                 timestamp: new Date()
             };
