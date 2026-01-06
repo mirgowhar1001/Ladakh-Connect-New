@@ -4,7 +4,7 @@ import { storage, db } from '../../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, getDocs, deleteDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { RealSeat } from '../common/RealSeat';
-import { Navigation, User, LogOut, MapPin, ShieldCheck, Wallet, ChevronRight, MessageCircle, Plus, Calendar, Clock, IndianRupee, X, ArrowRight, History, Home, Phone, Star, Menu, CheckCircle, Search, Users, Edit, Trash2, FileText, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Navigation, User, LogOut, MapPin, ShieldCheck, Wallet, ChevronRight, MessageCircle, Plus, Calendar, Clock, IndianRupee, X, ArrowRight, History, Home, Phone, Star, Menu, CheckCircle, Search, Users, Edit, Trash2, FileText, Loader2, Check, AlertCircle, Lock } from 'lucide-react';
 import { ChatScreen } from '../common/ChatScreen';
 import { DatePicker } from '../common/DatePicker';
 import { VEHICLE_WHITELIST } from '../../constants';
@@ -680,8 +680,16 @@ export default function OwnerDashboard() {
                               <CheckCircle size={18} /> Ride Completed
                             </div>
                           )}
-                          <button onClick={() => { if (confirm("Are you sure you want to cancel this ENTIRE ride offer?")) cancelRideOffer(offer.id); }} className={`px-4 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${passengers.length === 0 ? 'bg-red-900/20 text-red-500 w-full hover:bg-red-900/30' : 'bg-gray-800 text-gray-400 hover:bg-red-900/20 hover:text-red-500'}`}>
-                            {passengers.length === 0 ? 'Cancel Ride' : <Trash2 size={20} />}
+                          <button
+                            disabled={passengers.length > 0}
+                            onClick={() => { if (passengers.length === 0 && confirm("Are you sure you want to cancel this ENTIRE ride offer?")) cancelRideOffer(offer.id); }}
+                            className={`px-4 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${passengers.length === 0 ? 'bg-red-900/20 text-red-500 w-full hover:bg-red-900/30' : 'bg-gray-800/50 text-gray-500 w-full cursor-not-allowed border border-gray-700'}`}
+                          >
+                            {passengers.length > 0 ? (
+                              <><Lock size={16} /> Ride Booked (Cannot Cancel)</>
+                            ) : (
+                              <><Trash2 size={18} /> Cancel Ride</>
+                            )}
                           </button>
                         </div>
                       </div>
