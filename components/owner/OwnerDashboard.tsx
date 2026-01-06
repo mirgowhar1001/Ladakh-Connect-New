@@ -944,7 +944,7 @@ export default function OwnerDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
-                  <input type="date" value={newRide.date} onChange={e => setNewRide({ ...newRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition text-white scheme-dark" min={new Date().toISOString().split('T')[0]} />
+                  <input type="date" value={newRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setNewRide({ ...newRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
@@ -990,7 +990,7 @@ export default function OwnerDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
-                  <input type="date" value={editingRide.date} onChange={e => setEditingRide({ ...editingRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold text-white scheme-dark" min={new Date().toISOString().split('T')[0]} />
+                  <input type="date" value={editingRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setEditingRide({ ...editingRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
