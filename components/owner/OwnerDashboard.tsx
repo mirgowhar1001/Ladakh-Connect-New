@@ -273,6 +273,14 @@ export default function OwnerDashboard() {
     }
   };
 
+  const handlePostRide = async () => {
+    // Basic Validation
+    if (!newRide.from || !newRide.to || !newRide.date || !newRide.time) {
+      alert("Please fill all fields");
+      return;
+    }
+  };
+
   const handleUpdateRide = () => {
     if (!editingRide) return;
     updateRideOffer(editingRide.id, {
