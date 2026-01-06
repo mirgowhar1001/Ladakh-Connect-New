@@ -480,26 +480,17 @@ export default function OwnerDashboard() {
   };
 
   const MyRidesView = () => {
-    // FIX: Filter by driverId (UID) instead of name for reliability
-    // Also handle undefined bookedSeats with fallback
-    const postedRides = rideOffers.filter(o => o.driverId === user?.uid && (o.bookedSeats?.length || 0) === 0);
-    const bookedRides = rideOffers.filter(o => o.driverId === user?.uid && (o.bookedSeats?.length || 0) > 0);
+    // UNIFIED VIEW: Show all active rides for this driver to ensure nothing is hidden by logic gaps
+    // This combines posted (open), booked, and in-progress rides into one list.
+    const allMyActiveRides = rideOffers.filter(o =>
+      o.driverId === user?.uid &&
+      o.status !== 'CANCELLED' &&
+      o.status !== 'COMPLETED'
+    );
 
     const getPassengersForOffer = (offerId: string) => {
       return trips.filter(t => t.offerId === offerId && t.status !== 'CANCELLED');
     };
-
-    const pendingBookedRides = rideOffers.filter(o => {
-      // FIX: Filter by driverId
-      if (o.driverId !== user?.uid) return false;
-      const offersTrips = getPassengersForOffer(o.id);
-      const hasBookings = offersTrips.some(t => t.status === 'BOOKED' || t.status === 'WAITING_CONFIRMATION');
-      if (!hasBookings && o.bookedSeats.length === 0) return false;
-      const isStarted = offersTrips.some(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED' || t.status === 'COMPLETED');
-      return !isStarted;
-    });
-
-    const inProgressTrips = activeTrips.filter(t => t.status === 'EN_ROUTE' || t.status === 'ARRIVED');
 
     return (
       <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
@@ -517,211 +508,80 @@ export default function OwnerDashboard() {
                 : 'text-gray-400 hover:text-white'
                 }`}
             >
-              {tab}
+              {tab === 'posted' ? 'My Active Rides' : 'History'}
             </button>
           ))}
         </div>
 
         {activeTab === 'posted' && (
           <div className="space-y-6">
-            <h3 className="text-gray-400 text-sm font-bold uppercase mb-2">My Active Rides</h3>
-            {[...postedRides, ...pendingBookedRides, ...inProgressTrips].length === 0 ? (
+            {allMyActiveRides.length === 0 ? (
               <div className="text-center py-12 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-                <p className="text-gray-400 text-base">No active rides.</p>
+                <p className="text-gray-400 text-base">No active rides found.</p>
+                <p className="text-xs text-gray-500 mt-2">Post a ride to get started.</p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {[...inProgressTrips, ...pendingBookedRides, ...postedRides]
-                  .filter((ride, index, self) => index === self.findIndex((t) => t.id === ride.id))
-                  .map(ride => {
-                    let offer: any = ride;
-                    if ((ride as any).passengerId) {
-                      const parentOffer = rideOffers.find(o => o.id === (ride as any).offerId);
-                      if (parentOffer) offer = parentOffer;
-                    }
+              allMyActiveRides.map(offer => {
+                const passengers = getPassengersForOffer(offer.id);
+                const isEnRoute = passengers.some(t => t.status === 'EN_ROUTE');
+                const isArrived = passengers.some(t => t.status === 'ARRIVED');
+                const isBooked = passengers.length > 0;
 
-                    const passengers = getPassengersForOffer(offer.id);
-                    const isEnRoute = passengers.some(t => t.status === 'EN_ROUTE');
-                    const isArrived = passengers.some(t => t.status === 'ARRIVED');
+                return (
+                  <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-lg p-6 border border-gray-800 relative overflow-hidden mb-4">
+                    <div className={`absolute top-0 left-0 w-2 h-full ${isEnRoute ? 'bg-orange-500' : isArrived ? 'bg-green-500' : 'bg-[var(--driver-primary)]'}`}></div>
 
-                    return (
-                      <div key={offer.id} className="bg-[var(--driver-card)] rounded-3xl shadow-lg p-6 border border-gray-800 relative overflow-hidden">
-                        <div className={`absolute top-0 left-0 w-2 h-full ${isEnRoute ? 'bg-orange-500' : isArrived ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-
-                        <div className="flex justify-between items-start mb-6 pl-2">
-                          <div>
-                            <div className="mb-2">
-                              {isEnRoute ? <span className="bg-orange-900/40 text-orange-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">In Progress</span> :
-                                isArrived ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Arrived</span> :
-                                  passengers.length > 0 ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Active ({passengers.length} Booked)</span> :
-                                    <span className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Open</span>
-                              }
-                            </div>
-                            <div className="flex items-center justify-between gap-4 w-full mb-4">
-                              <div className="text-left">
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">From</p>
-                                <h3 className="font-bold text-white text-2xl leading-none">{offer.from}</h3>
-                              </div>
-                              <div className="flex-1 flex flex-col items-center px-2">
-                                <div className="w-full h-[2px] bg-green-500/50 relative flex items-center justify-between">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                                </div>
-                                <p className="text-[10px] text-green-400 font-bold uppercase mt-1 tracking-wider">Direct</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">To</p>
-                                <h3 className="font-bold text-white text-2xl leading-none">{offer.to}</h3>
-                              </div>
-                            </div>
-                            <p className="text-sm font-medium text-gray-400 flex items-center gap-2 mb-2">
-                              <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{new Date(offer.date).toDateString()}</span>
-                              <span className="text-gray-600">•</span>
-                              <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{offer.time}</span>
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <button onClick={() => { setEditingRide(offer); setShowEditRide(true); }} className="text-xs bg-gray-700 px-4 py-2 rounded-xl text-white mt-3 hover:bg-gray-600 font-bold transition-colors">Edit Details</button>
-                          </div>
+                    <div className="flex justify-between items-start mb-6 pl-2">
+                      <div>
+                        <div className="mb-2">
+                          {isEnRoute ? <span className="bg-orange-900/40 text-orange-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">In Progress</span> :
+                            isArrived ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Arrived</span> :
+                              passengers.length > 0 ? <span className="bg-green-900/40 text-green-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Active ({passengers.length} Booked)</span> :
+                                <span className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Open for Booking</span>
+                          }
                         </div>
-
-                        <div className="bg-black/30 rounded-2xl p-5 mb-6 space-y-3">
-                          <h4 className="text-gray-400 text-xs font-bold uppercase mb-3 tracking-wider">Seat Status</h4>
-                          <div className="space-y-3">
-                            {Array.from({ length: offer.totalSeats }, (_, i) => i + 1).map(seatNum => {
-                              // DEBUG LOGGING
-                              // console.log(`Checking Seat ${seatNum} for Offer ${offer.id}. Passengers:`, passengers);
-                              const booking = passengers.find(p => p.seats && p.seats.includes(seatNum));
-                              // console.log(`Found Booking for Seat ${seatNum}?`, booking);
-
-                              const isBooked = !!booking;
-
-                              return (
-                                <div key={seatNum} className="flex items-center justify-between bg-[var(--driver-bg)]/60 p-4 rounded-xl border border-gray-700/50 hover:border-gray-600 transition-colors">
-                                  <div className="flex items-center gap-5">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner ${isBooked
-                                      ? (booking?.status === 'WAITING_CONFIRMATION'
-                                        ? 'bg-gradient-to-br from-yellow-600 to-amber-800 text-white shadow-yellow-900/50'
-                                        : 'bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-green-900/50')
-                                      : 'bg-gradient-to-br from-red-500 to-rose-700 text-white shadow-red-900/50'
-                                      }`}>
-                                      {seatNum}
-                                    </div>
-                                    <div>
-                                      <p className={`text-base font-bold mb-1 ${isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'text-yellow-400' : 'text-green-400') : 'text-red-400'}`}>
-                                        {isBooked ? (booking?.status === 'WAITING_CONFIRMATION' ? 'Approval Needed' : 'Booked') : 'Available'}
-                                      </p>
-                                      {isBooked ? (
-                                        <div className="flex flex-col gap-0.5">
-                                          <span className="text-sm text-white font-medium">{booking?.passengerName || booking?.passengerId}</span>
-                                          <span className="text-xs text-gray-400 font-mono tracking-wide">+91 {booking?.passengerMobile || 'N/A'}</span>
-                                          {booking?.status === 'WAITING_CONFIRMATION' && <span className="text-[10px] text-yellow-400 font-bold uppercase mt-1 animate-pulse">Waiting Confirmation</span>}
-                                        </div>
-                                      ) : (
-                                        <span className="text-sm text-gray-500">Empty Seat</span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <div>
-                                    {isBooked ? (
-                                      booking?.status === 'WAITING_CONFIRMATION' ? (
-                                        <div className="flex gap-2">
-                                          <button
-                                            onClick={() => updateTripStatus(booking.id, 'CONFIRMED')}
-                                            className="px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-600/30 font-bold text-xs uppercase hover:bg-green-600/30 transition"
-                                          >
-                                            Confirm
-                                          </button>
-                                          <button
-                                            onClick={() => updateTripStatus(booking.id, 'CANCELLED')}
-                                            className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg border border-red-600/30 font-bold text-xs uppercase hover:bg-red-600/30 transition"
-                                          >
-                                            Reject
-                                          </button>
-                                        </div>
-                                      ) : (
-                                        booking?.status === 'CONFIRMED' ? (
-                                          <span className="text-xs text-green-400 font-bold uppercase border border-green-400/30 px-3 py-2 rounded-lg bg-green-400/10">Confirmed</span>
-                                        ) : (
-                                          <a href={`tel:${booking?.passengerMobile}`} className="p-3 bg-green-900/20 text-green-400 rounded-xl hover:bg-green-900/40 inline-flex items-center justify-center transition-colors">
-                                            <Phone size={20} />
-                                          </a>
-                                        )
-                                      )
-                                    ) : (
-                                      <button
-                                        onClick={() => {
-                                          updateRideOffer(offer.id, { totalSeats: offer.totalSeats - 1 });
-                                        }}
-                                        className="text-xs text-red-400 hover:text-red-200 font-bold px-4 py-2 bg-red-900/10 rounded-lg border border-red-900/30 transition-colors uppercase tracking-wide"
-                                      >
-                                        Cancel
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                        <div className="flex items-center justify-between gap-4 w-full mb-4">
+                          <h3 className="font-bold text-white text-xl leading-none flex items-center gap-2">
+                            {offer.from} <ArrowRight size={16} className="text-gray-500" /> {offer.to}
+                          </h3>
                         </div>
-
-                        <div className="flex flex-wrap gap-3">
-                          {!isEnRoute && !isArrived && passengers.length > 0 && (
-                            <button onClick={() => { passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); setActiveTab('posted'); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                              Start Ride <ChevronRight size={20} />
-                            </button>
-                          )}
-                          {isEnRoute && (
-                            <button onClick={() => { passengers.forEach(p => completeRide(p.id)); }} className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                              Finish Ride <CheckCircle size={20} />
-                            </button>
-                          )}
-                          {isArrived && (
-                            <div className="flex-1 bg-gray-800 text-gray-400 py-4 rounded-xl font-bold text-sm text-center border border-gray-700 flex items-center justify-center gap-2">
-                              <CheckCircle size={18} /> Ride Completed
-                            </div>
-                          )}
-                          <button
-                            disabled={passengers.length > 0}
-                            onClick={() => { if (passengers.length === 0 && confirm("Are you sure you want to cancel this ENTIRE ride offer?")) cancelRideOffer(offer.id); }}
-                            className={`px-4 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${passengers.length === 0 ? 'bg-red-900/20 text-red-500 w-full hover:bg-red-900/30' : 'bg-gray-800/50 text-gray-500 w-full cursor-not-allowed border border-gray-700'}`}
-                          >
-                            {passengers.length > 0 ? (
-                              <><Lock size={16} /> Ride Booked (Cannot Cancel)</>
-                            ) : (
-                              <><Trash2 size={18} /> Cancel Ride</>
-                            )}
-                          </button>
-                        </div>
+                        <p className="text-sm font-medium text-gray-400 flex items-center gap-2 mb-2">
+                          <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{new Date(offer.date).toDateString()}</span>
+                          <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{offer.time}</span>
+                        </p>
                       </div>
-                    );
-                  })
-                }
-              </div>
+
+                      {/* Quick Action Button */}
+                      <div className="flex flex-col gap-2 relative z-10">
+                        {!isEnRoute && !isArrived && passengers.length > 0 && (
+                          <button onClick={() => { if (confirm("Start Ride?")) passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
+                        )}
+                        {isEnRoute && (
+                          <button onClick={() => { if (confirm("Finish Ride?")) passengers.forEach(p => completeRide(p.id)); }} className="px-4 py-2 bg-[var(--driver-primary)] text-black rounded-lg font-bold text-xs shadow hover:scale-105 transition">Finish Ride</button>
+                        )}
+                        {passengers.length === 0 && (
+                          <button onClick={() => { if (confirm("Delete Offer?")) cancelRideOffer(offer.id); }} className="px-4 py-2 bg-red-900/20 text-red-500 rounded-lg font-bold text-xs border border-red-900/30 hover:bg-red-900/40">Delete</button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mini Seat Map Info */}
+                    <div className="bg-black/20 p-3 rounded-xl flex justify-between items-center text-xs">
+                      <span className="text-gray-500">Seats: <span className="text-white font-bold">{offer.totalSeats}</span></span>
+                      <span className="text-gray-500">Booked: <span className="text-white font-bold">{offer.bookedSeats?.length || 0}</span></span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
             {/* DEBUG PANEL */}
             <div className="bg-gray-900 p-4 rounded-xl border border-gray-800 mt-8 text-xs font-mono text-gray-400 overflow-x-auto">
-              <p className="border-b border-gray-700 pb-2 mb-2 font-bold text-white">DEBUG INFO</p>
-              <p>Your UID: <span className="text-green-400">{user?.uid}</span></p>
-              <p>Your Name: <span className="text-green-400">{user?.name}</span></p>
-              <p>Total Offers Fetched: {rideOffers.length}</p>
-              <div className="mt-2 space-y-1">
-                {rideOffers.slice(0, 5).map(o => (
-                  <div key={o.id} className={`p-2 rounded ${o.driverId === user?.uid ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
-                    <span className="text-white">{o.from}-{o.to}</span> |
-                    ID: {o.driverId?.slice(0, 5)}... |
-                    Match: {o.driverId === user?.uid ? 'YES' : 'NO'} |
-                    Seats: {o.totalSeats} - {o.bookedSeats?.length || 0}
-                  </div>
-                ))}
-              </div>
+              <p className="border-b border-gray-700 pb-2 mb-2 font-bold text-white">DEBUG INFO - UNIFIED VIEW</p>
+              <p>UID: <span className="text-green-400">{user?.uid}</span></p>
+              <p>Active Rides Fetched: {allMyActiveRides.length}</p>
+              <p>Total Offers in DB: {rideOffers.length}</p>
             </div>
-
-            {postedRides.length === 0 && bookedRides.length === 0 && pendingBookedRides.length === 0 && (
-              <div className="text-center py-12 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-                <p className="text-gray-400 text-base">No active rides.</p>
-              </div>
-            )}
           </div>
         )}
 
