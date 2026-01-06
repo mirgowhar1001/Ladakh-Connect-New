@@ -480,22 +480,22 @@ export default function OwnerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="w-full md:w-auto flex items-center gap-3 bg-gray-800/30 px-3 py-2 rounded-lg border border-gray-700/50">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300">
+                  <div className="md:w-auto flex items-center gap-3 bg-gray-800/30 px-3 py-2 rounded-lg border border-gray-700/50 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 shrink-0">
                       <User size={14} />
                     </div>
-                    <div className="flex flex-col">
-                      <p className="text-xs font-bold text-white uppercase">{offer.driverName}</p>
-                      <p className="text-xs font-bold text-white">{offer.driverMobile}</p>
+                    <div className="flex flex-row items-center gap-3 overflow-hidden whitespace-nowrap">
+                      <p className="text-xs font-bold text-white uppercase truncate">{offer.driverName}</p>
                       <p className="text-xs font-bold text-white uppercase">{offer.vehicleNo}</p>
+                      <p className="text-xs font-bold text-white">{offer.driverMobile}</p>
                       <p className="text-xs font-bold text-gray-400 capitalize">{offer.vehicleType}</p>
                     </div>
                   </div>
-                  <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6">
+                  <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 shrink-0">
                     <div className="text-right">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Seats</p>
-                      <p className={`text-lg font-black ${offer.totalSeats - (offer.bookedSeats?.length || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {offer.totalSeats - (offer.bookedSeats?.length || 0)}
+                      <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Booked</p>
+                      <p className={`text-lg font-black ${offer.bookedSeats?.length >= offer.totalSeats ? 'text-red-400' : 'text-green-400'}`}>
+                        {offer.bookedSeats?.length || 0} <span className="text-xs text-gray-500 font-medium">/ {offer.totalSeats}</span>
                       </p>
                     </div>
                   </div>
