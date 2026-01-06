@@ -378,7 +378,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [user]);
 
   const publishRide = useCallback(async (offerData: Omit<RideOffer, 'id' | 'driverName' | 'driverId' | 'bookedSeats' | 'rating'>) => {
-    if (!user || user.role !== 'owner') return;
+    if (!user) throw new Error("User not valid. Please log in again.");
+    if (user.role !== 'owner') throw new Error(`Permission Denied. Role is '${user.role}', expected 'owner'.`);
 
     // 60-Day Horizon Rule
     const rideDate = new Date(offerData.date);
@@ -386,8 +387,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     maxDate.setDate(maxDate.getDate() + 60);
 
     if (rideDate > maxDate) {
-      alert("Cannot post rides more than 60 days in advance.");
-      return;
+      throw new Error("Cannot post rides more than 60 days in advance.");
     }
 
     const newOffer = {

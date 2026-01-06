@@ -262,9 +262,15 @@ export default function OwnerDashboard() {
 
     if (hasOverlap) return alert("You already have a ride scheduled at this time. Please choose a different time.");
 
-    setShowAddRide(false);
-    alert('Ride Published Successfully!');
-    setCurrentView('my-rides');
+    try {
+      await publishRide(newRide);
+      setShowAddRide(false);
+      alert('Ride Published Successfully!');
+      setCurrentView('my-rides');
+    } catch (error: any) {
+      console.error("Post Ride Error:", error);
+      alert(error.message || "Failed to post ride. Please try again.");
+    }
   };
 
   const handleUpdateRide = () => {
@@ -579,6 +585,7 @@ export default function OwnerDashboard() {
             <div className="bg-gray-900 p-4 rounded-xl border border-gray-800 mt-8 text-xs font-mono text-gray-400 overflow-x-auto">
               <p className="border-b border-gray-700 pb-2 mb-2 font-bold text-white">DEBUG INFO - UNIFIED VIEW</p>
               <p>UID: <span className="text-green-400">{user?.uid}</span></p>
+              <p>Role: <span className="text-yellow-400">{user?.role}</span></p>
               <p>Active Rides Fetched: {allMyActiveRides.length}</p>
               <p>Total Offers in DB: {rideOffers.length}</p>
             </div>
