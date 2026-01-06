@@ -442,16 +442,22 @@ export const LoginScreen: React.FC = () => {
         ))}
       </div>
       <div className="flex justify-center mb-6">
-        {resendTimer > 0 ? (
-          <p className="text-xs font-bold text-gray-400 uppercase">Resend in <span className="text-[#E02E49]">{resendTimer}s</span></p>
-        ) : (
-          <button
-            onClick={handleSendOtp}
-            className="w-full py-3 border-2 border-[#7209b7] text-[#7209b7] rounded-xl font-bold text-sm uppercase flex items-center justify-center gap-2 hover:bg-[#7209b7] hover:text-white transition-colors"
-          >
-            <RefreshCw size={16} /> Resend OTP
-          </button>
-        )}
+        <button
+          onClick={handleSendOtp}
+          disabled={resendTimer > 0}
+          className={`w-full py-3 border-2 rounded-xl font-bold text-sm uppercase flex items-center justify-center gap-2 transition-colors ${resendTimer > 0
+              ? "border-gray-200 text-gray-400 cursor-not-allowed"
+              : "border-[#7209b7] text-[#7209b7] hover:bg-[#7209b7] hover:text-white"
+            }`}
+        >
+          {resendTimer > 0 ? (
+            <span>Resend in <span className="text-[#E02E49]">{resendTimer}s</span></span>
+          ) : (
+            <>
+              <RefreshCw size={16} /> Resend OTP
+            </>
+          )}
+        </button>
       </div>
       <button onClick={handleVerifyOtp} disabled={loading} className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg">
         {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Verify OTP'}
