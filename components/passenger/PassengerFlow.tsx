@@ -322,8 +322,8 @@ export const PassengerFlow: React.FC = () => {
           <div className="flex justify-center gap-4 mb-6 relative z-10">
             <button
               onClick={() => setView('search')}
-              style={{ background: 'linear-gradient(to right, #2563eb, #3b82f6)' }}
-              className={`flex items-center justify-center px-8 py-4 rounded-full font-black text-xl transition-all text-white shadow-2xl border-none w-full max-w-md mx-auto hover:scale-105 active:scale-95`}
+              style={{ background: 'linear-gradient(135deg, #8B2131 0%, #E02E49 100%)' }}
+              className={`flex items-center justify-center px-8 py-4 rounded-full font-black text-xl transition-all text-white shadow-2xl border-2 border-white/20 w-full max-w-md mx-auto hover:scale-105 active:scale-95`}
             >
               <span className="uppercase tracking-[0.2em] drop-shadow-sm">TAXI BOOKING LADAKH</span>
             </button>
