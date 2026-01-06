@@ -904,9 +904,7 @@ export default function OwnerDashboard() {
           <button onClick={() => setCurrentView('my-rides')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'my-rides' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
             <Calendar size={22} fill={currentView === 'my-rides' ? "currentColor" : "none"} />
           </button>
-          <button onClick={() => setCurrentView('wallet')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'wallet' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
-            <Wallet size={22} fill={currentView === 'wallet' ? "currentColor" : "none"} />
-          </button>
+
           <button onClick={() => setCurrentView('profile')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'profile' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
             <User size={22} fill={currentView === 'profile' ? "currentColor" : "none"} />
           </button>
