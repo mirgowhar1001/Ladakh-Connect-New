@@ -699,475 +699,490 @@ export default function OwnerDashboard() {
                   })
                 }
               </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'completed' && (
-          <div className="space-y-4">
-            {completedTrips.length === 0 ? (
-              <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-                <p className="text-gray-400 text-xs text-center">No completed rides history.</p>
-              </div>
-            ) : (
-              completedTrips.map(trip => (
-                <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex flex-col gap-3 opacity-90 hover:opacity-100 transition">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-white mb-1 flex items-center gap-2">{trip.from} <ArrowRight size={14} className="text-gray-500" /> {trip.to}</h4>
-                      <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                        <Calendar size={10} /> {new Date(trip.date).toDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] bg-green-900/30 text-green-400 px-2.5 py-1 rounded-lg font-bold border border-green-900/50">COMPLETED</span>
-                    </div>
+            {/* DEBUG PANEL */}
+            <div className="bg-gray-900 p-4 rounded-xl border border-gray-800 mt-8 text-xs font-mono text-gray-400 overflow-x-auto">
+              <p className="border-b border-gray-700 pb-2 mb-2 font-bold text-white">DEBUG INFO</p>
+              <p>Your UID: <span className="text-green-400">{user?.uid}</span></p>
+              <p>Your Name: <span className="text-green-400">{user?.name}</span></p>
+              <p>Total Offers Fetched: {rideOffers.length}</p>
+              <div className="mt-2 space-y-1">
+                {rideOffers.slice(0, 5).map(o => (
+                  <div key={o.id} className={`p-2 rounded ${o.driverId === user?.uid ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
+                    <span className="text-white">{o.from}-{o.to}</span> |
+                    ID: {o.driverId?.slice(0, 5)}... |
+                    Match: {o.driverId === user?.uid ? 'YES' : 'NO'} |
+                    Seats: {o.totalSeats} - {o.bookedSeats?.length || 0}
                   </div>
-                  <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Patient/Passenger Details</p>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-bold text-white flex items-center gap-2">
-                          <User size={14} className="text-[var(--driver-primary)]" /> {trip.passengerName || 'Unknown'}
-                        </p>
-                        <p className="text-xs text-gray-400 pl-6">{trip.id.slice(0, 8).toUpperCase()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-white tracking-wide">{trip.passengerMobile || 'N/A'}</p>
-                        <p className="text-[10px] text-gray-500">Mobile</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-  const WalletView = () => {
-    const pendingPayouts = activeTrips.reduce((acc, t) => acc + t.cost, 0);
-    const availableBalance = driverBalance;
-
-    return (
-      <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
-        <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-          <Wallet size={18} className="text-[var(--driver-primary)]" /> My Wallet
-        </h2>
-
-        <div className="bg-gradient-to-br from-gray-800 to-black p-6 rounded-3xl shadow-lg border border-gray-700 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--driver-primary)]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-
-          <div className="relative z-10">
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Available Balance</p>
-            <h1 className="text-4xl font-black text-white mb-4">\u20B9 {availableBalance.toLocaleString()}</h1>
-
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
-                <p className="text-[10px] text-gray-400 uppercase font-bold">Pending Payouts</p>
-                <p className="text-lg font-bold text-yellow-400">\u20B9 {pendingPayouts.toLocaleString()}</p>
-              </div>
-              <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
-                <p className="text-[10px] text-gray-400 uppercase font-bold">Total Earned</p>
-                <p className="text-lg font-bold text-green-400">\u20B9 {totalEarnings.toLocaleString()}</p>
+                ))}
               </div>
             </div>
 
-            <button
-              onClick={() => setShowWithdrawModal(true)}
-              className="w-full bg-[var(--driver-primary)] text-black py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition flex items-center justify-center gap-2"
-            >
-              <Wallet size={18} /> Withdraw Funds
-            </button>
+            {postedRides.length === 0 && bookedRides.length === 0 && pendingBookedRides.length === 0 && (
+              <div className="text-center py-12 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
+                <p className="text-gray-400 text-base">No active rides.</p>
+              </div>
+            )}
+          </div>
+        ) : (
+              completedTrips.map(trip => (
+        <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex flex-col gap-3 opacity-90 hover:opacity-100 transition">
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-bold text-white mb-1 flex items-center gap-2">{trip.from} <ArrowRight size={14} className="text-gray-500" /> {trip.to}</h4>
+              <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                <Calendar size={10} /> {new Date(trip.date).toDateString()}
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] bg-green-900/30 text-green-400 px-2.5 py-1 rounded-lg font-bold border border-green-900/50">COMPLETED</span>
+            </div>
+          </div>
+          <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Patient/Passenger Details</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-bold text-white flex items-center gap-2">
+                  <User size={14} className="text-[var(--driver-primary)]" /> {trip.passengerName || 'Unknown'}
+                </p>
+                <p className="text-xs text-gray-400 pl-6">{trip.id.slice(0, 8).toUpperCase()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-white tracking-wide">{trip.passengerMobile || 'N/A'}</p>
+                <p className="text-[10px] text-gray-500">Mobile</p>
+              </div>
+            </div>
           </div>
         </div>
+        ))
+            )}
+      </div>
+    )
+  }
+      </div >
+    );
+};
+const WalletView = () => {
+  const pendingPayouts = activeTrips.reduce((acc, t) => acc + t.cost, 0);
+  const availableBalance = driverBalance;
 
-        <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Recent Transactions</h3>
-        <div className="space-y-4">
-          {completedTrips.length === 0 ? (
-            <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
-              <p className="text-gray-400 text-xs">No transactions yet.</p>
+  return (
+    <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
+      <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+        <Wallet size={18} className="text-[var(--driver-primary)]" /> My Wallet
+      </h2>
+
+      <div className="bg-gradient-to-br from-gray-800 to-black p-6 rounded-3xl shadow-lg border border-gray-700 mb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--driver-primary)]/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+
+        <div className="relative z-10">
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Available Balance</p>
+          <h1 className="text-4xl font-black text-white mb-4">\u20B9 {availableBalance.toLocaleString()}</h1>
+
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
+              <p className="text-[10px] text-gray-400 uppercase font-bold">Pending Payouts</p>
+              <p className="text-lg font-bold text-yellow-400">\u20B9 {pendingPayouts.toLocaleString()}</p>
             </div>
-          ) : (
-            completedTrips.slice(0, 10).map(trip => (
-              <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
-                    <ArrowRight size={18} className="-rotate-45" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white text-sm">Ride Payment</h4>
-                    <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} • {trip.from} → {trip.to}</p>
-                  </div>
+            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/10">
+              <p className="text-[10px] text-gray-400 uppercase font-bold">Total Earned</p>
+              <p className="text-lg font-bold text-green-400">\u20B9 {totalEarnings.toLocaleString()}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowWithdrawModal(true)}
+            className="w-full bg-[var(--driver-primary)] text-black py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02] transition flex items-center justify-center gap-2"
+          >
+            <Wallet size={18} /> Withdraw Funds
+          </button>
+        </div>
+      </div>
+
+      <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Recent Transactions</h3>
+      <div className="space-y-4">
+        {completedTrips.length === 0 ? (
+          <div className="text-center py-8 bg-[var(--driver-card)] rounded-2xl border border-gray-800">
+            <p className="text-gray-400 text-xs">No transactions yet.</p>
+          </div>
+        ) : (
+          completedTrips.slice(0, 10).map(trip => (
+            <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-900/20 flex items-center justify-center text-green-400">
+                  <ArrowRight size={18} className="-rotate-45" />
                 </div>
-                <span className="font-bold text-green-400">+ \u20B9{trip.cost}</span>
+                <div>
+                  <h4 className="font-bold text-white text-sm">Ride Payment</h4>
+                  <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} • {trip.from} → {trip.to}</p>
+                </div>
               </div>
-            ))
+              <span className="font-bold text-green-400">+ \u20B9{trip.cost}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ProfileView = () => (
+  <div className="px-6 animate-in slide-in-from-right duration-300 pb-20">
+    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
+      <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => setShowEditProfile(true)}>
+        <Edit size={16} />
+      </button>
+      <h3 className="font-bold text-lg text-white mb-4">Vehicle Details</h3>
+      <div className="space-y-4">
+        <div className="flex justify-between border-b border-gray-700 pb-2">
+          <span className="text-gray-400 text-sm">Vehicle Number</span>
+          <span className="font-bold text-white">{user?.vehicleNo}</span>
+        </div>
+        <div className="flex justify-between border-b border-gray-700 pb-2">
+          <span className="text-gray-400 text-sm">Vehicle Type</span>
+          <span className="font-bold text-white">{user?.vehicleType}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400 text-sm">Driver Name</span>
+          <span className="font-bold text-white">{user?.name}</span>
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
+      <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => setShowEditProfile(true)}>
+        <Edit size={16} />
+      </button>
+      <h3 className="font-bold text-lg text-white mb-4">Personal Info</h3>
+      <div className="space-y-4">
+        <div className="flex justify-between border-b border-gray-700 pb-2">
+          <span className="text-gray-400 text-sm">Mobile</span>
+          <span className="font-bold text-white">+91 {user?.mobile}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400 text-sm">Member Since</span>
+          <span className="font-bold text-white">{new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Existing Statistics Section can be kept or removed - preserving for completeness */}
+    <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Performance Stats</h3>
+    <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
+        <p className="text-gray-500 text-xs mb-1">Trips Completed</p>
+        <p className="text-2xl font-bold text-white">{completedTrips.length}</p>
+      </div>
+      <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
+        <p className="text-gray-500 text-xs mb-1">Pass. Rating</p>
+        <div className="flex items-center gap-1 text-yellow-400">
+          <Star size={16} fill="currentColor" />
+          <span className="text-2xl font-bold text-white">{averageRating}</span>
+        </div>
+      </div>
+    </div>
+
+
+    {/* My Documents Section */}
+    <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
+      <h3 className="font-bold text-lg text-white mb-4">My Documents</h3>
+      <div className="space-y-4">
+        <div className="p-4 bg-black/20 rounded-xl border border-gray-700/50">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-3">
+              <FileText className="text-[var(--driver-primary)]" size={20} />
+              <span className="font-bold text-white text-sm">Vehicle Photo (Side)</span>
+            </div>
+            {uploadedDocs.vehicleSide || user?.documents?.vehicleSide ? (
+              <CheckCircle className="text-green-500" size={18} />
+            ) : (
+              <span className="text-xs text-orange-400 font-bold bg-orange-900/20 px-2 py-1 rounded">Required</span>
+            )}
+          </div>
+          {uploading.vehicleSide ? (
+            <div className="text-center py-2"><Loader2 className="animate-spin mx-auto text-[var(--driver-primary)]" size={20} /></div>
+          ) : (uploadedDocs.vehicleSide || user?.documents?.vehicleSide) ? (
+            <div className="mt-2 text-xs text-green-400 flex items-center gap-1"><Check size={12} /> File Uploaded</div>
+          ) : (
+            <label className="block w-full text-center py-3 bg-[var(--driver-primary)]/10 text-[var(--driver-primary)] rounded-xl text-xs font-bold cursor-pointer hover:bg-[var(--driver-primary)]/20 transition border border-dashed border-[var(--driver-primary)]/30">
+              Upload Photo
+              <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files && handleFileUpload(e.target.files[0], 'vehicleSide')} />
+            </label>
           )}
         </div>
       </div>
-    );
-  };
-
-  const ProfileView = () => (
-    <div className="px-6 animate-in slide-in-from-right duration-300 pb-20">
-      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
-        <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => setShowEditProfile(true)}>
-          <Edit size={16} />
-        </button>
-        <h3 className="font-bold text-lg text-white mb-4">Vehicle Details</h3>
-        <div className="space-y-4">
-          <div className="flex justify-between border-b border-gray-700 pb-2">
-            <span className="text-gray-400 text-sm">Vehicle Number</span>
-            <span className="font-bold text-white">{user?.vehicleNo}</span>
-          </div>
-          <div className="flex justify-between border-b border-gray-700 pb-2">
-            <span className="text-gray-400 text-sm">Vehicle Type</span>
-            <span className="font-bold text-white">{user?.vehicleType}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400 text-sm">Driver Name</span>
-            <span className="font-bold text-white">{user?.name}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6 relative">
-        <button className="absolute top-6 right-6 p-2 bg-gray-800 rounded-lg text-[var(--driver-primary)] hover:bg-gray-700 transition" onClick={() => setShowEditProfile(true)}>
-          <Edit size={16} />
-        </button>
-        <h3 className="font-bold text-lg text-white mb-4">Personal Info</h3>
-        <div className="space-y-4">
-          <div className="flex justify-between border-b border-gray-700 pb-2">
-            <span className="text-gray-400 text-sm">Mobile</span>
-            <span className="font-bold text-white">+91 {user?.mobile}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400 text-sm">Member Since</span>
-            <span className="font-bold text-white">{new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Existing Statistics Section can be kept or removed - preserving for completeness */}
-      <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Performance Stats</h3>
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-          <p className="text-gray-500 text-xs mb-1">Trips Completed</p>
-          <p className="text-2xl font-bold text-white">{completedTrips.length}</p>
-        </div>
-        <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-          <p className="text-gray-500 text-xs mb-1">Pass. Rating</p>
-          <div className="flex items-center gap-1 text-yellow-400">
-            <Star size={16} fill="currentColor" />
-            <span className="text-2xl font-bold text-white">{averageRating}</span>
-          </div>
-        </div>
-      </div>
-
-
-      {/* My Documents Section */}
-      <div className="bg-[var(--driver-card)] rounded-3xl p-6 shadow-sm border border-gray-800 mb-6">
-        <h3 className="font-bold text-lg text-white mb-4">My Documents</h3>
-        <div className="space-y-4">
-          <div className="p-4 bg-black/20 rounded-xl border border-gray-700/50">
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-3">
-                <FileText className="text-[var(--driver-primary)]" size={20} />
-                <span className="font-bold text-white text-sm">Vehicle Photo (Side)</span>
-              </div>
-              {uploadedDocs.vehicleSide || user?.documents?.vehicleSide ? (
-                <CheckCircle className="text-green-500" size={18} />
-              ) : (
-                <span className="text-xs text-orange-400 font-bold bg-orange-900/20 px-2 py-1 rounded">Required</span>
-              )}
-            </div>
-            {uploading.vehicleSide ? (
-              <div className="text-center py-2"><Loader2 className="animate-spin mx-auto text-[var(--driver-primary)]" size={20} /></div>
-            ) : (uploadedDocs.vehicleSide || user?.documents?.vehicleSide) ? (
-              <div className="mt-2 text-xs text-green-400 flex items-center gap-1"><Check size={12} /> File Uploaded</div>
-            ) : (
-              <label className="block w-full text-center py-3 bg-[var(--driver-primary)]/10 text-[var(--driver-primary)] rounded-xl text-xs font-bold cursor-pointer hover:bg-[var(--driver-primary)]/20 transition border border-dashed border-[var(--driver-primary)]/30">
-                Upload Photo
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files && handleFileUpload(e.target.files[0], 'vehicleSide')} />
-              </label>
-            )}
-          </div>
-        </div>
-        <button onClick={() => {
-          if (user?.documents?.vehicleSide) {
-            updateUser({ verificationStatus: 'verified' }); alert("Documents submitted! You can now post rides.");
-          } else { alert("Please upload Vehicle Photo first."); }
-        }} className={`w-full py-4 rounded-xl font-bold mt-6 shadow-lg transition flex items-center justify-center gap-2 ${user?.verificationStatus === 'verified' ? 'bg-green-600 text-white cursor-default' : 'bg-green-600 text-white hover:bg-green-700'}`}>
-          {user?.verificationStatus === 'verified' ? <><CheckCircle size={20} /> Verified Driver</> : 'Upload'}
-        </button>
-      </div>
-
-      <button onClick={logout} className="w-full bg-gray-800 text-gray-300 py-4 rounded-xl font-bold hover:bg-gray-700 transition flex items-center justify-center gap-2 mb-4"><LogOut size={18} /> Sign Out</button>
-      <button onClick={handleClearAllData} className="w-full bg-red-900/20 text-red-500 py-4 rounded-xl font-bold hover:bg-red-900/30 transition flex items-center justify-center gap-2"><Trash2 size={18} /> Reset All Data (Dev)</button>
+      <button onClick={() => {
+        if (user?.documents?.vehicleSide) {
+          updateUser({ verificationStatus: 'verified' }); alert("Documents submitted! You can now post rides.");
+        } else { alert("Please upload Vehicle Photo first."); }
+      }} className={`w-full py-4 rounded-xl font-bold mt-6 shadow-lg transition flex items-center justify-center gap-2 ${user?.verificationStatus === 'verified' ? 'bg-green-600 text-white cursor-default' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+        {user?.verificationStatus === 'verified' ? <><CheckCircle size={20} /> Verified Driver</> : 'Upload'}
+      </button>
     </div>
-  );
 
-  return (
-    <div className="bg-black min-h-screen font-sans text-white pb-24">
-      <DriverHeader />
+    <button onClick={logout} className="w-full bg-gray-800 text-gray-300 py-4 rounded-xl font-bold hover:bg-gray-700 transition flex items-center justify-center gap-2 mb-4"><LogOut size={18} /> Sign Out</button>
+    <button onClick={handleClearAllData} className="w-full bg-red-900/20 text-red-500 py-4 rounded-xl font-bold hover:bg-red-900/30 transition flex items-center justify-center gap-2"><Trash2 size={18} /> Reset All Data (Dev)</button>
+  </div>
+);
 
-      {/* Main View Render */}
-      {currentView === 'marketplace' && <MarketplaceView />}
-      {currentView === 'my-rides' && <MyRidesView />}
-      {currentView === 'wallet' && <WalletView />}
-      {currentView === 'profile' && <ProfileView />}
+return (
+  <div className="bg-black min-h-screen font-sans text-white pb-24">
+    <DriverHeader />
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-gray-800 p-4 pb-6 z-40">
-        <div className="flex justify-around items-center max-w-lg mx-auto bg-gray-900/80 rounded-full p-2 border border-gray-800 shadow-2xl">
-          <button onClick={() => setCurrentView('marketplace')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'marketplace' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
-            <Home size={22} fill={currentView === 'marketplace' ? "currentColor" : "none"} />
-          </button>
-          <button onClick={() => setCurrentView('my-rides')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'my-rides' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
-            <Calendar size={22} fill={currentView === 'my-rides' ? "currentColor" : "none"} />
-          </button>
+    {/* Main View Render */}
+    {currentView === 'marketplace' && <MarketplaceView />}
+    {currentView === 'my-rides' && <MyRidesView />}
+    {currentView === 'wallet' && <WalletView />}
+    {currentView === 'profile' && <ProfileView />}
 
-          <button onClick={() => setCurrentView('profile')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'profile' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
-            <User size={22} fill={currentView === 'profile' ? "currentColor" : "none"} />
-          </button>
-        </div>
-      </div>
-
-      {/* Floating Action Button for New Ride */}
-      {currentView === 'marketplace' && (
-        <button onClick={() => setShowAddRide(true)} className="fixed bottom-24 right-6 bg-[var(--driver-primary)] text-black p-4 rounded-full shadow-2xl hover:scale-105 transition z-40 animate-in zoom-in duration-300 border-2 border-black">
-          <Plus size={24} strokeWidth={3} />
+    {/* Bottom Navigation */}
+    <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-gray-800 p-4 pb-6 z-40">
+      <div className="flex justify-around items-center max-w-lg mx-auto bg-gray-900/80 rounded-full p-2 border border-gray-800 shadow-2xl">
+        <button onClick={() => setCurrentView('marketplace')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'marketplace' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
+          <Home size={22} fill={currentView === 'marketplace' ? "currentColor" : "none"} />
         </button>
-      )}
+        <button onClick={() => setCurrentView('my-rides')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'my-rides' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
+          <Calendar size={22} fill={currentView === 'my-rides' ? "currentColor" : "none"} />
+        </button>
 
-      {/* Add Ride Modal */}
-      {showAddRide && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#1a1a1a] text-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
-            <button onClick={() => setShowAddRide(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
-            <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><Plus className="text-[var(--driver-primary)]" /> Post New Ride</h3>
+        <button onClick={() => setCurrentView('profile')} className={`p-3 rounded-full transition-all duration-300 ${currentView === 'profile' ? 'bg-[var(--driver-primary)] text-black scale-110 shadow-lg shadow-[var(--driver-primary)]/20' : 'text-gray-400 hover:text-white'}`}>
+          <User size={22} fill={currentView === 'profile' ? "currentColor" : "none"} />
+        </button>
+      </div>
+    </div>
 
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">From</label>
-                  <select value={newRide.from} onChange={e => setNewRide({ ...newRide, from: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
-                    {['Leh', 'Kargil', 'Srinagar', 'Jammu', 'Drass'].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">To</label>
-                  <select value={newRide.to} onChange={e => setNewRide({ ...newRide, to: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
-                    {['Leh', 'Kargil', 'Srinagar', 'Jammu', 'Drass'].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
+    {/* Floating Action Button for New Ride */}
+    {currentView === 'marketplace' && (
+      <button onClick={() => setShowAddRide(true)} className="fixed bottom-24 right-6 bg-[var(--driver-primary)] text-black p-4 rounded-full shadow-2xl hover:scale-105 transition z-40 animate-in zoom-in duration-300 border-2 border-black">
+        <Plus size={24} strokeWidth={3} />
+      </button>
+    )}
+
+    {/* Add Ride Modal */}
+    {showAddRide && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-[#1a1a1a] text-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
+          <button onClick={() => setShowAddRide(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
+          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><Plus className="text-[var(--driver-primary)]" /> Post New Ride</h3>
+
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">From</label>
+                <select value={newRide.from} onChange={e => setNewRide({ ...newRide, from: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
+                  {['Leh', 'Kargil', 'Srinagar', 'Jammu', 'Drass'].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
-                  <input type="date" value={newRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setNewRide({ ...newRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
-                  <select value={newRide.time} onChange={e => setNewRide({ ...newRide, time: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
-                    {Array.from({ length: 24 }).map((_, i) => {
-                      const h = i % 12 || 12;
-                      const ampm = i < 12 ? 'AM' : 'PM';
-                      const time = `${h.toString().padStart(2, '0')}:00 ${ampm}`;
-                      return <option key={time} value={time}>{time}</option>;
-                    })}
-                  </select>
-                </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">To</label>
+                <select value={newRide.to} onChange={e => setNewRide({ ...newRide, to: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
+                  {['Leh', 'Kargil', 'Srinagar', 'Jammu', 'Drass'].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
+            </div>
 
-              {/* Auto-Price Display */}
-              {/* <div className="bg-gray-800/50 p-4 rounded-xl border border-dashed border-gray-700">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
+                <input type="date" value={newRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setNewRide({ ...newRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
+                <select value={newRide.time} onChange={e => setNewRide({ ...newRide, time: e.target.value })} className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold focus:border-[var(--driver-primary)] focus:outline-none transition">
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const h = i % 12 || 12;
+                    const ampm = i < 12 ? 'AM' : 'PM';
+                    const time = `${h.toString().padStart(2, '0')}:00 ${ampm}`;
+                    return <option key={time} value={time}>{time}</option>;
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {/* Auto-Price Display */}
+            {/* <div className="bg-gray-800/50 p-4 rounded-xl border border-dashed border-gray-700">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 text-sm">Recommended Price</span>
                      <span className="text-xl font-bold text-[var(--driver-primary)]">\u20B9{newRide.price}</span>
                   </div>
                </div> */}
-              {/* Seat Matrix Selection */}
-              <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
-                <p className="text-gray-400 text-xs font-bold uppercase mb-4 text-center tracking-wider">Select Available Seats</p>
+            {/* Seat Matrix Selection */}
+            <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
+              <p className="text-gray-400 text-xs font-bold uppercase mb-4 text-center tracking-wider">Select Available Seats</p>
 
-                {/* Car Chassis Container - Synced with Passenger View */}
-                <div className="bg-white rounded-[3rem] shadow-xl border-4 border-gray-300 px-6 py-10 w-full max-w-[320px] mx-auto relative mt-4">
-                  {/* Front Windshield Hint */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-blue-100/50 rounded-b-xl"></div>
+              {/* Car Chassis Container - Synced with Passenger View */}
+              <div className="bg-white rounded-[3rem] shadow-xl border-4 border-gray-300 px-6 py-10 w-full max-w-[320px] mx-auto relative mt-4">
+                {/* Front Windshield Hint */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-blue-100/50 rounded-b-xl"></div>
 
-                  {/* Front Row (Driver + Passenger) */}
-                  <div className="flex justify-between gap-8 mb-6 border-b border-dashed border-gray-200 pb-4 relative z-10">
+                {/* Front Row (Driver + Passenger) */}
+                <div className="flex justify-between gap-8 mb-6 border-b border-dashed border-gray-200 pb-4 relative z-10">
+                  <RealSeat
+                    seatNum={1}
+                    status={newRide.activeSeats.includes(1) ? 'selected' : 'inactive'}
+                    onClick={() => {
+                      const seats = newRide.activeSeats.includes(1)
+                        ? newRide.activeSeats.filter(s => s !== 1)
+                        : [...newRide.activeSeats, 1];
+                      setNewRide({ ...newRide, activeSeats: seats });
+                    }}
+                  />
+                  <RealSeat status="driver" />
+                </div>
+
+                {/* Middle Row */}
+                <div className="flex justify-center gap-8 mb-4 relative z-10">
+                  {[2, 3, 4].map(s => (
                     <RealSeat
-                      seatNum={1}
-                      status={newRide.activeSeats.includes(1) ? 'selected' : 'inactive'}
+                      key={s}
+                      seatNum={s}
+                      status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
                       onClick={() => {
-                        const seats = newRide.activeSeats.includes(1)
-                          ? newRide.activeSeats.filter(s => s !== 1)
-                          : [...newRide.activeSeats, 1];
+                        const seats = newRide.activeSeats.includes(s)
+                          ? newRide.activeSeats.filter(x => x !== s)
+                          : [...newRide.activeSeats, s];
                         setNewRide({ ...newRide, activeSeats: seats });
                       }}
                     />
-                    <RealSeat status="driver" />
-                  </div>
-
-                  {/* Middle Row */}
-                  <div className="flex justify-center gap-8 mb-4 relative z-10">
-                    {[2, 3, 4].map(s => (
-                      <RealSeat
-                        key={s}
-                        seatNum={s}
-                        status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
-                        onClick={() => {
-                          const seats = newRide.activeSeats.includes(s)
-                            ? newRide.activeSeats.filter(x => x !== s)
-                            : [...newRide.activeSeats, s];
-                          setNewRide({ ...newRide, activeSeats: seats });
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Back Row */}
-                  <div className="flex justify-center gap-8 relative z-10">
-                    {[5, 6, 7].map(s => (
-                      <RealSeat
-                        key={s}
-                        seatNum={s}
-                        status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
-                        onClick={() => {
-                          const seats = newRide.activeSeats.includes(s)
-                            ? newRide.activeSeats.filter(x => x !== s)
-                            : [...newRide.activeSeats, s];
-                          setNewRide({ ...newRide, activeSeats: seats });
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Legend Overlay */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 uppercase tracking-widest font-bold">Rear</div>
-                </div>
-                <p className="text-center text-xs text-gray-500 mt-4">Tap seats to toggle availability (<span className="text-green-400 font-bold">{newRide.activeSeats.length} Selected</span>)</p>
-              </div>
-
-              <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30 text-yellow-500 text-xs font-mono">
-                Market prices are fixed for this route.
-              </div>
-
-              <button onClick={handlePublish} className="w-full bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#e6c200] transition transform active:scale-95">
-                Publish Ride
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Ride Modal */}
-      {showEditRide && editingRide && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#1a1a1a] text-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
-            <button onClick={() => setShowEditRide(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
-            <h3 className="text-xl font-bold mb-6">Edit Ride</h3>
-            <div className="space-y-4">
-              {/* Simplified Edit - Just Active/Inactive seats logic mostly but for now user just wants basic edit date/time maybe? */}
-              {/* Reusing New Ride inputs for simplicity but bound to editingRide */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
-                  <input type="date" value={editingRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setEditingRide({ ...editingRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
-                  <select value={editingRide.time} onChange={e => setEditingRide({ ...editingRide, time: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold">
-                    {Array.from({ length: 24 }).map((_, i) => {
-                      const h = i % 12 || 12;
-                      const ampm = i < 12 ? 'AM' : 'PM';
-                      const time = `${h.toString().padStart(2, '0')}:00 ${ampm}`;
-                      return <option key={time} value={time}>{time}</option>;
-                    })}
-                  </select>
-                </div>
-              </div>
-              <button onClick={handleUpdateRide} className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-blue-700 transition mt-4">
-                Update Ride
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Withdraw Modal */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#1a1a1a] text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
-            <button onClick={() => setShowWithdrawModal(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Wallet size={20} /> Withdraw</h3>
-            <p className="text-gray-400 text-sm mb-6">Enter amount to withdraw from your available balance of \u20B9{driverBalance}.</p>
-
-            <form onSubmit={(e) => { e.preventDefault(); const amt = Number((e.target as any).amount.value); if (amt > driverBalance) return alert("Insufficient balance"); handleWithdraw(amt, {}); }}>
-              <input name="amount" type="number" placeholder="Enter Amount" className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold text-xl mb-4 focus:border-[var(--driver-primary)] outline-none" max={driverBalance} min={100} required />
-              <button type="submit" className="w-full bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg hover:bg-[#e6c200] transition">Send Request</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Profile Modal */}
-      {showEditProfile && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white text-black w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
-            <button onClick={() => setShowEditProfile(false)} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-              <X size={20} />
-            </button>
-            <h3 className="text-xl font-bold mb-6">Edit Profile</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Full Name</label>
-                <input type="text" value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Vehicle Number</label>
-                <input type="text" value={editFormData.vehicleNo} onChange={e => setEditFormData({ ...editFormData, vehicleNo: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Vehicle Type</label>
-                <select
-                  className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]"
-                  value={editFormData.vehicleType}
-                  onChange={e => setEditFormData({ ...editFormData, vehicleType: e.target.value })}
-                >
-                  {Object.keys(VEHICLE_WHITELIST).map(type => (
-                    <option key={type} value={type}>{type}</option>
                   ))}
+                </div>
+
+                {/* Back Row */}
+                <div className="flex justify-center gap-8 relative z-10">
+                  {[5, 6, 7].map(s => (
+                    <RealSeat
+                      key={s}
+                      seatNum={s}
+                      status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
+                      onClick={() => {
+                        const seats = newRide.activeSeats.includes(s)
+                          ? newRide.activeSeats.filter(x => x !== s)
+                          : [...newRide.activeSeats, s];
+                        setNewRide({ ...newRide, activeSeats: seats });
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Legend Overlay */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 uppercase tracking-widest font-bold">Rear</div>
+              </div>
+              <p className="text-center text-xs text-gray-500 mt-4">Tap seats to toggle availability (<span className="text-green-400 font-bold">{newRide.activeSeats.length} Selected</span>)</p>
+            </div>
+
+            <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30 text-yellow-500 text-xs font-mono">
+              Market prices are fixed for this route.
+            </div>
+
+            <button onClick={handlePublish} className="w-full bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#e6c200] transition transform active:scale-95">
+              Publish Ride
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Edit Ride Modal */}
+    {showEditRide && editingRide && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-[#1a1a1a] text-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
+          <button onClick={() => setShowEditRide(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
+          <h3 className="text-xl font-bold mb-6">Edit Ride</h3>
+          <div className="space-y-4">
+            {/* Simplified Edit - Just Active/Inactive seats logic mostly but for now user just wants basic edit date/time maybe? */}
+            {/* Reusing New Ride inputs for simplicity but bound to editingRide */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Date</label>
+                <input type="date" value={editingRide.date} onClick={(e) => e.currentTarget.showPicker()} onChange={e => setEditingRide({ ...editingRide, date: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold text-white scheme-dark cursor-pointer" min={new Date().toISOString().split('T')[0]} />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Time</label>
+                <select value={editingRide.time} onChange={e => setEditingRide({ ...editingRide, time: e.target.value })} className="w-full bg-black border border-gray-700 p-3 rounded-xl font-bold">
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const h = i % 12 || 12;
+                    const ampm = i < 12 ? 'AM' : 'PM';
+                    const time = `${h.toString().padStart(2, '0')}:00 ${ampm}`;
+                    return <option key={time} value={time}>{time}</option>;
+                  })}
                 </select>
               </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Mobile Number</label>
-                <input type="tel" value={editFormData.mobile} onChange={e => setEditFormData({ ...editFormData, mobile: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
-                {editFormData.mobile !== user?.mobile && (
-                  <p className="text-[10px] text-orange-500 mt-1 font-bold flex items-center gap-1"><AlertCircle size={10} /> Verification required</p>
-                )}
-              </div>
-
-              {otpSent && (
-                <div className="animate-in slide-in-from-top duration-300">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Enter OTP (Mock: 123456)</label>
-                  <input type="text" value={otp} onChange={e => setOtp(e.target.value)} className="w-full bg-yellow-50 p-3 rounded-xl font-bold border-2 border-yellow-400 text-center tracking-widest text-xl" placeholder="XXXXXX" />
-                </div>
-              )}
-
-              <button onClick={handleProfileUpdate} className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 transition mt-4">
-                {otpSent ? 'Verify & Update' : 'Save Changes'}
-              </button>
             </div>
+            <button onClick={handleUpdateRide} className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-blue-700 transition mt-4">
+              Update Ride
+            </button>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+
+    {/* Withdraw Modal */}
+    {showWithdrawModal && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-[#1a1a1a] text-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-800 relative">
+          <button onClick={() => setShowWithdrawModal(false)} className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400 transition"><X size={20} /></button>
+          <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Wallet size={20} /> Withdraw</h3>
+          <p className="text-gray-400 text-sm mb-6">Enter amount to withdraw from your available balance of \u20B9{driverBalance}.</p>
+
+          <form onSubmit={(e) => { e.preventDefault(); const amt = Number((e.target as any).amount.value); if (amt > driverBalance) return alert("Insufficient balance"); handleWithdraw(amt, {}); }}>
+            <input name="amount" type="number" placeholder="Enter Amount" className="w-full bg-black border border-gray-700 p-4 rounded-xl font-bold text-xl mb-4 focus:border-[var(--driver-primary)] outline-none" max={driverBalance} min={100} required />
+            <button type="submit" className="w-full bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg hover:bg-[#e6c200] transition">Send Request</button>
+          </form>
+        </div>
+      </div>
+    )}
+
+    {/* Edit Profile Modal */}
+    {showEditProfile && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="bg-white text-black w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
+          <button onClick={() => setShowEditProfile(false)} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+            <X size={20} />
+          </button>
+          <h3 className="text-xl font-bold mb-6">Edit Profile</h3>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Full Name</label>
+              <input type="text" value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Vehicle Number</label>
+              <input type="text" value={editFormData.vehicleNo} onChange={e => setEditFormData({ ...editFormData, vehicleNo: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Vehicle Type</label>
+              <select
+                className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]"
+                value={editFormData.vehicleType}
+                onChange={e => setEditFormData({ ...editFormData, vehicleType: e.target.value })}
+              >
+                {Object.keys(VEHICLE_WHITELIST).map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Mobile Number</label>
+              <input type="tel" value={editFormData.mobile} onChange={e => setEditFormData({ ...editFormData, mobile: e.target.value })} className="w-full bg-gray-100 p-3 rounded-xl font-bold border-none focus:ring-2 focus:ring-[var(--driver-primary)]" />
+              {editFormData.mobile !== user?.mobile && (
+                <p className="text-[10px] text-orange-500 mt-1 font-bold flex items-center gap-1"><AlertCircle size={10} /> Verification required</p>
+              )}
+            </div>
+
+            {otpSent && (
+              <div className="animate-in slide-in-from-top duration-300">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Enter OTP (Mock: 123456)</label>
+                <input type="text" value={otp} onChange={e => setOtp(e.target.value)} className="w-full bg-yellow-50 p-3 rounded-xl font-bold border-2 border-yellow-400 text-center tracking-widest text-xl" placeholder="XXXXXX" />
+              </div>
+            )}
+
+            <button onClick={handleProfileUpdate} className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 transition mt-4">
+              {otpSent ? 'Verify & Update' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
