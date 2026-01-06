@@ -23,7 +23,8 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
-      outDir: 'dist'
+      outDir: 'dist',
+      chunkSizeWarningLimit: 1600,
     },
     test: {
       globals: true,
