@@ -397,7 +397,7 @@ export default function OwnerDashboard() {
                     onClick={() => setSelectedRouteFilter(route)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex justify-between items-center ${selectedRouteFilter === route ? 'bg-[var(--driver-primary)] text-black font-bold' : 'text-gray-400 hover:bg-gray-800'}`}
                   >
-                    <span>{route.replace('-', ' \u2192 ')}</span>
+                    <span className="flex items-center gap-2">{route.split('-')[0]} <ArrowRight size={12} /> {route.split('-')[1]}</span>
                     <span className="text-xs opacity-70">({count})</span>
                   </button>
                 );
@@ -420,7 +420,7 @@ export default function OwnerDashboard() {
               onClick={() => setSelectedRouteFilter(route)}
               className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${selectedRouteFilter === route ? 'bg-[var(--driver-primary)] text-black' : 'bg-gray-800 text-gray-400 border border-gray-700'}`}
             >
-              {route.replace('-', ' \u2192 ')}
+              <span className="flex items-center gap-1">{route.split('-')[0]} <ArrowRight size={10} /> {route.split('-')[1]}</span>
             </button>
           ))}
         </div>
@@ -429,7 +429,7 @@ export default function OwnerDashboard() {
         <div className="flex-1">
           <div className="mb-4">
             <h2 className="text-xl font-bold text-white">Available Rides</h2>
-            <p className="text-gray-400 text-sm">{selectedRouteFilter ? `Showing rides for ${selectedRouteFilter.replace('-', ' \u2192 ')}` : 'All posted rides'}</p>
+            <p className="text-gray-400 text-sm">{selectedRouteFilter ? `Showing rides for ${selectedRouteFilter.replace('-', ' → ')}` : 'All posted rides'}</p>
           </div>
 
           <div className="space-y-4">
@@ -561,8 +561,28 @@ export default function OwnerDashboard() {
                                     <span className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">Open</span>
                               }
                             </div>
-                            <h3 className="font-bold text-white text-3xl mb-2">{offer.from} \u2192 {offer.to}</h3>
-                            <p className="text-base text-gray-300">{new Date(offer.date).toDateString()} \u2022 {offer.time}</p>
+                            <div className="flex items-center justify-between gap-4 w-full mb-4">
+                              <div className="text-left">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">From</p>
+                                <h3 className="font-bold text-white text-2xl leading-none">{offer.from}</h3>
+                              </div>
+                              <div className="flex-1 flex flex-col items-center px-2">
+                                <div className="w-full h-[2px] bg-green-500/50 relative flex items-center justify-between">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                </div>
+                                <p className="text-[10px] text-green-400 font-bold uppercase mt-1 tracking-wider">Direct</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">To</p>
+                                <h3 className="font-bold text-white text-2xl leading-none">{offer.to}</h3>
+                              </div>
+                            </div>
+                            <p className="text-sm font-medium text-gray-400 flex items-center gap-2 mb-2">
+                              <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{new Date(offer.date).toDateString()}</span>
+                              <span className="text-gray-600">•</span>
+                              <span className="text-white bg-gray-800 px-2 py-1 rounded text-xs">{offer.time}</span>
+                            </p>
                           </div>
                           <div className="text-right">
                             <button onClick={() => { setEditingRide(offer); setShowEditRide(true); }} className="text-xs bg-gray-700 px-4 py-2 rounded-xl text-white mt-3 hover:bg-gray-600 font-bold transition-colors">Edit Details</button>
@@ -690,7 +710,7 @@ export default function OwnerDashboard() {
                 <div key={trip.id} className="bg-[var(--driver-card)] p-4 rounded-2xl shadow-sm border border-gray-800 flex flex-col gap-3 opacity-90 hover:opacity-100 transition">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-bold text-white mb-1">{trip.from} \u2192 {trip.to}</h4>
+                      <h4 className="font-bold text-white mb-1 flex items-center gap-2">{trip.from} <ArrowRight size={14} className="text-gray-500" /> {trip.to}</h4>
                       <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
                         <Calendar size={10} /> {new Date(trip.date).toDateString()}
                       </p>
@@ -774,7 +794,7 @@ export default function OwnerDashboard() {
                   </div>
                   <div>
                     <h4 className="font-bold text-white text-sm">Ride Payment</h4>
-                    <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} \u2022 {trip.from} \u2192 {trip.to}</p>
+                    <p className="text-[10px] text-gray-400">{new Date(trip.date).toDateString()} • {trip.from} → {trip.to}</p>
                   </div>
                 </div>
                 <span className="font-bold text-green-400">+ \u20B9{trip.cost}</span>
