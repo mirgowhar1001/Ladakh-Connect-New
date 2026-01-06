@@ -248,7 +248,8 @@ export default function OwnerDashboard() {
       const [tHours, tMinutes] = tTime.split(':');
       let th = parseInt(tHours);
       if (tAmpm === 'PM' && th !== 12) th += 12;
-      if (tAmpm === 'AM' && th === 12) th = 0;
+      if (tAmpm === 'AM' && th === 12) th = 0; // Fix 12 AM -> 0
+      // 12 PM stays 12. Correct.
       const tripDateObj = new Date(trip.date);
       tripDateObj.setHours(th, parseInt(tMinutes), 0, 0);
 
