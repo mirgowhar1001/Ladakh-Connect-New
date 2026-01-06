@@ -875,8 +875,8 @@ export default function OwnerDashboard() {
           if (user?.documents?.vehicleSide) {
             updateUser({ verificationStatus: 'verified' }); alert("Documents submitted! You can now post rides.");
           } else { alert("Please upload Vehicle Photo first."); }
-        }} className={`w-full py-4 rounded-xl font-bold mt-6 shadow-lg transition flex items-center justify-center gap-2 ${user?.verificationStatus === 'verified' ? 'bg-green-600 text-white cursor-default' : 'bg-white text-black hover:bg-gray-200'}`}>
-          {user?.verificationStatus === 'verified' ? <><CheckCircle size={20} /> Verified Driver</> : 'Submit for Verification'}
+        }} className={`w-full py-4 rounded-xl font-bold mt-6 shadow-lg transition flex items-center justify-center gap-2 ${user?.verificationStatus === 'verified' ? 'bg-green-600 text-white cursor-default' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+          {user?.verificationStatus === 'verified' ? <><CheckCircle size={20} /> Verified Driver</> : 'Upload'}
         </button>
       </div>
 
