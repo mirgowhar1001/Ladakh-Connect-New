@@ -18,9 +18,9 @@ const db = getFirestore(app);
 
 const seedDriver = async () => {
     try {
-        const email = "driver@test.com";
-        const password = "TestDriver123";
         const mobile = "9876543211";
+        const email = `${mobile}@ladakhconnect.com`;
+        const password = "TestDriver123";
 
         console.log("Creating Driver Auth User...");
         let userCredential;
@@ -62,6 +62,7 @@ const seedDriver = async () => {
         console.log("Driver Firestore Document Created.");
 
         console.log("SUCCESS: Driver Account Seeded.");
+        // Keep process alive briefly to ensure writes flush? No, setDoc is awaited.
         process.exit(0);
     } catch (error) {
         console.error("ERROR Seeding Driver:", error);

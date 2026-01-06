@@ -224,43 +224,56 @@ export default function OwnerDashboard() {
 
   const myPostedRides = rideOffers.filter(o => (o.driverId === user?.uid || o.driverName === user?.name) && (o.totalSeats - (o.bookedSeats?.length || 0) > 0) && o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const activeCount = activeTrips.length + myPostedRides.length;
     if (activeCount >= 10) return alert("You can only have a maximum of 10 active rides.");
 
+    // ROBUST DATE PARSING
+    const [year, month, day] = newRide.date.split('-').map(Number);
+    const rideDateObj = new Date(year, month - 1, day); // Local Time Midnight
+
+    // Parse Time
     const [timePart, ampm] = newRide.time.split(' ');
     const [hours, minutes] = timePart.split(':');
     let h = parseInt(hours);
     if (ampm === 'PM' && h !== 12) h += 12;
     if (ampm === 'AM' && h === 12) h = 0;
 
-    const rideDateObj = new Date(newRide.date);
     rideDateObj.setHours(h, parseInt(minutes), 0, 0);
 
-    const oneHourFromNow = new Date();
-    oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
+    const now = new Date();
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
 
-    if (rideDateObj < new Date()) return alert("Passed time! You cannot create a ride in the past.");
+    // Debug Log
+    console.log("Validation:", { rideDate: rideDateObj.toString(), now: now.toString() });
+
+    if (rideDateObj < now) return alert("Passed time! The time you selected is in the past.");
     if (rideDateObj < oneHourFromNow) return alert("You must post rides at least 1 hour in advance.");
 
     const hasOverlap = [...activeTrips, ...myPostedRides].some(trip => {
-      const [tTime, tAmpm] = trip.time.split(' ');
-      const [tHours, tMinutes] = tTime.split(':');
-      let th = parseInt(tHours);
-      if (tAmpm === 'PM' && th !== 12) th += 12;
-      if (tAmpm === 'AM' && th === 12) th = 0; // Fix 12 AM -> 0
-      // 12 PM stays 12. Correct.
-      const tripDateObj = new Date(trip.date);
-      tripDateObj.setHours(th, parseInt(tMinutes), 0, 0);
+      // Fix Trip Date Parsing for Overlap Check
+      try {
+        const tripDate = new Date(trip.date);
+        // Note: trip.date is stored as YYYY-MM-DD string. 
+        // Ideally we should parse it same as above, but for now let's be careful.
+        // Re-parsing strictly:
+        const [tY, tM, tD] = trip.date.split('-').map(Number);
+        const tObj = new Date(tY, tM - 1, tD);
 
-      const diffHours = Math.abs(rideDateObj.getTime() - tripDateObj.getTime()) / 36e5;
+        const [tTime, tAmpm] = trip.time.split(' ');
+        const [tHours, tMinutes] = tTime.split(':');
+        let th = parseInt(tHours);
+        if (tAmpm === 'PM' && th !== 12) th += 12;
+        if (tAmpm === 'AM' && th === 12) th = 0;
 
-      // Rule: Driver cannot physically drive two rides at the same time.
-      // Blocking any overlapping rides within 1 hour buffer.
-      return diffHours < 1;
+        tObj.setHours(th, parseInt(tMinutes), 0, 0);
+
+        const diffHours = Math.abs(rideDateObj.getTime() - tObj.getTime()) / 36e5;
+        return diffHours < 1;
+      } catch (e) { return false; }
     });
 
-    if (hasOverlap) return alert("You already have a ride scheduled at this time. Please choose a different time.");
+    if (hasOverlap) return alert("You already have a ride scheduled within 1 hour of this time.");
 
     try {
       await publishRide(newRide);
@@ -1059,8 +1072,8 @@ export default function OwnerDashboard() {
                 </div>
               )}
 
-              <button onClick={handleProfileUpdate} className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 transition mt-4">
-                {otpSent ? 'Verify & Update' : 'Save Changes'}
+              <button onClick={handleProfileUpdate} className="w-full bg-[var(--driver-primary)] text-black py-4 rounded-xl font-bold shadow-lg mt-4">
+                {otpSent ? 'Verify & Save' : 'Save Changes'}
               </button>
             </div>
           </div>
