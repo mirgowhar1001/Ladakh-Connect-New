@@ -204,10 +204,13 @@ export const LoginScreen: React.FC = () => {
       setLoading(false);
     } catch (error: any) {
       setLoading(false);
+      console.error("Verification Error Full Object:", error);
       if (error.code === 'auth/invalid-verification-code') {
-        setError("Wrong OTP. Please check the code sent to your phone.");
+        setError(`Incorrect OTP (${error.code}). Please check the code and try again.`);
+      } else if (error.code === 'auth/code-expired') {
+        setError(`OTP Expired (${error.code}). Please resend.`);
       } else {
-        setError(`Verify Error: ${error.message}`);
+        setError(`Error (${error.code || 'Unknown'}): ${error.message}`);
       }
     }
   };
