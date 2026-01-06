@@ -8,26 +8,26 @@ export const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | '
     const isInactive = status === 'inactive';
     const isUnavailable = status === 'unavailable';
 
-    // Colors for Beige Leather Look
-    const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#d1d5db' : isSelected ? '#22c55e' : isInactive ? '#f3f4f6' : 'url(#leatherGradient)';
-    const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#9ca3af' : isSelected ? '#16a34a' : isInactive ? '#e5e7eb' : '#C7B299';
-    const textColor = isSelected ? 'white' : isBooked ? '#9ca3af' : isInactive ? '#d1d5db' : '#8B735B';
+    // Colors for Black Leather Look
+    const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#374151' : isSelected ? '#22c55e' : isInactive ? '#000000' : 'url(#leatherGradient)'; // Inactive = Black
+    const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#4b5563' : isSelected ? '#16a34a' : isInactive ? '#333333' : '#333333';
+    const textColor = isSelected ? 'white' : isBooked ? '#9ca3af' : isInactive ? '#666666' : '#8B735B';
 
     return (
         <div
             onClick={!isDriver && !isBooked && !isUnavailable ? onClick : undefined}
-            className={`relative w-16 h-20 flex flex-col items-center justify-center transition-transform duration-200 
+            className={`relative w-10 h-12 flex flex-col items-center justify-center transition-transform duration-200 
         ${!isDriver && !isBooked && !isInactive && !isUnavailable ? 'cursor-pointer active:scale-95' : ''} 
         ${isSelected ? 'scale-105' : ''}
         ${isBooked || isUnavailable ? 'opacity-40 cursor-not-allowed grayscale' : ''}
-        ${isInactive ? 'opacity-60 cursor-pointer hover:opacity-80' : ''}
+        ${isInactive ? 'opacity-100 cursor-pointer hover:opacity-80' : ''} 
       `}
         >
             <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-md">
                 <defs>
                     <linearGradient id="leatherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#F5E6D3', stopOpacity: 1 }} />
-                        <stop offset="100%" style={{ stopColor: '#DBC3A3', stopOpacity: 1 }} />
+                        <stop offset="0%" style={{ stopColor: '#2C2C2C', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#1A1A1A', stopOpacity: 1 }} />
                     </linearGradient>
                     <filter id="insetShadow">
                         <feOffset dx="0" dy="2" />

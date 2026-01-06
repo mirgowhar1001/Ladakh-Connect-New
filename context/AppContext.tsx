@@ -407,7 +407,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const newOffer = {
       driverName: user.name,
-      driverId: user.uid || user.mobile,
+      driverId: auth.currentUser?.uid || user.uid, // Force consistent UID
       driverMobile: user.mobile, // Save mobile directly
       vehicleImage: user.documents?.vehicleSide || null, // Include vehicle image from profile
       bookedSeats: [],
@@ -461,7 +461,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         hoursUntilDeparture = 12;
       }
 
-      
+
       // 4. Free up seats in RideOffer
       if (trip.offerId && trip.seats && trip.seats.length > 0) {
         try {
