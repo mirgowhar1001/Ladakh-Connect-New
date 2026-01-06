@@ -183,7 +183,7 @@ export default function OwnerDashboard() {
     activeSeats: [1, 2, 3, 4, 5, 6, 7] as number[]
   });
 
-  const myTrips = trips.filter(t => t.driverId === user?.uid || t.driverName === user?.name);
+  const myTrips = trips.filter(t => t.driverId === user?.uid);
   const activeTrips = myTrips.filter(t => t.status !== 'COMPLETED' && t.status !== 'CANCELLED');
   const completedTrips = myTrips.filter(t => t.status === 'COMPLETED');
   const totalEarnings = myTrips.filter(t => t.status === 'COMPLETED').reduce((acc, t) => acc + t.cost, 0);
@@ -481,15 +481,18 @@ export default function OwnerDashboard() {
   };
 
   const MyRidesView = () => {
-    const postedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length === 0);
-    const bookedRides = rideOffers.filter(o => o.driverName === user?.name && o.bookedSeats.length > 0);
+    // FIX: Filter by driverId (UID) instead of name for reliability
+    // Also handle undefined bookedSeats with fallback
+    const postedRides = rideOffers.filter(o => o.driverId === user?.uid && (o.bookedSeats?.length || 0) === 0);
+    const bookedRides = rideOffers.filter(o => o.driverId === user?.uid && (o.bookedSeats?.length || 0) > 0);
 
     const getPassengersForOffer = (offerId: string) => {
       return trips.filter(t => t.offerId === offerId && t.status !== 'CANCELLED');
     };
 
     const pendingBookedRides = rideOffers.filter(o => {
-      if (o.driverName !== user?.name) return false;
+      // FIX: Filter by driverId
+      if (o.driverId !== user?.uid) return false;
       const offersTrips = getPassengersForOffer(o.id);
       const hasBookings = offersTrips.some(t => t.status === 'BOOKED' || t.status === 'WAITING_CONFIRMATION');
       if (!hasBookings && o.bookedSeats.length === 0) return false;
