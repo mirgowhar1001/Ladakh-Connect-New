@@ -255,14 +255,12 @@ export default function OwnerDashboard() {
 
       const diffHours = Math.abs(rideDateObj.getTime() - tripDateObj.getTime()) / 36e5;
 
-      // Rule: Driver can create multiple rides at same time ONLY if route is different.
-      // So block only if Time is overlapping (< 1 hr) AND Route is SAME.
-      const isSameRoute = trip.from === newRide.from && trip.to === newRide.to;
-
-      return diffHours < 1 && isSameRoute;
+      // Rule: Driver cannot physically drive two rides at the same time.
+      // Blocking any overlapping rides within 1 hour buffer.
+      return diffHours < 1;
     });
 
-    if (hasOverlap) return alert("You already have a ride scheduled for this route at this time. Duplicate rides are not allowed.");
+    if (hasOverlap) return alert("You already have a ride scheduled at this time. Please choose a different time.");
 
     setShowAddRide(false);
     alert('Ride Published Successfully!');
