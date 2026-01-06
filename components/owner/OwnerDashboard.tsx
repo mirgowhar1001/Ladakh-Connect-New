@@ -484,16 +484,18 @@ export default function OwnerDashboard() {
                     <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300">
                       <User size={14} />
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">{offer.vehicleNo}</p>
-                      <p className="text-[10px] text-gray-400">{offer.driverName} \u2022 {offer.vehicleType}</p>
+                    <div className="flex flex-col">
+                      <p className="text-xs font-bold text-white uppercase">{offer.driverName}</p>
+                      <p className="text-xs font-bold text-white">{offer.driverMobile}</p>
+                      <p className="text-xs font-bold text-white uppercase">{offer.vehicleNo}</p>
+                      <p className="text-xs font-bold text-gray-400 capitalize">{offer.vehicleType}</p>
                     </div>
                   </div>
                   <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6">
                     <div className="text-right">
                       <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Seats</p>
-                      <p className={`text-lg font-black ${offer.totalSeats - offer.bookedSeats.length > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {offer.totalSeats - offer.bookedSeats.length} <span className="text-xs text-gray-500 font-medium">/ {offer.totalSeats}</span>
+                      <p className={`text-lg font-black ${offer.totalSeats - (offer.bookedSeats?.length || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {offer.totalSeats - (offer.bookedSeats?.length || 0)}
                       </p>
                     </div>
                   </div>
