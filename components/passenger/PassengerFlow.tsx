@@ -24,83 +24,7 @@ type ViewState = 'search' | 'results' | 'seats' | 'history' | 'chat' | 'profile'
 // --- VISUAL ASSETS & SUB-COMPONENTS ---
 
 // 1. Realistic Seat Component (SVG)
-const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | 'selected' | 'driver' | 'booked' | 'unavailable', seatNum?: number, onClick?: () => void }) => {
-  const isDriver = status === 'driver';
-  const isBooked = status === 'booked';
-  const isSelected = status === 'selected';
-
-  // Colors for Beige Leather Look
-  const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#d1d5db' : isSelected ? '#22c55e' : 'url(#leatherGradient)';
-  const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#9ca3af' : isSelected ? '#16a34a' : '#C7B299';
-  const textColor = isSelected ? 'white' : isBooked ? '#9ca3af' : '#8B735B';
-
-  return (
-    <div
-      onClick={!isDriver && !isBooked ? onClick : undefined}
-      className={`relative w-16 h-20 flex flex-col items-center justify-center transition-transform duration-200 
-        ${!isDriver && !isBooked && status !== 'unavailable' ? 'cursor-pointer active:scale-95' : ''} 
-        ${isSelected ? 'scale-105' : ''}
-        ${isBooked || status === 'unavailable' ? 'opacity-40 cursor-not-allowed grayscale' : ''}
-      `}
-    >
-      <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-md">
-        <defs>
-          <linearGradient id="leatherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#F5E6D3', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#DBC3A3', stopOpacity: 1 }} />
-          </linearGradient>
-          <filter id="insetShadow">
-            <feOffset dx="0" dy="2" />
-            <feGaussianBlur stdDeviation="2" result="offset-blur" />
-            <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
-            <feFlood floodColor="black" floodOpacity="0.2" result="color" />
-            <feComposite operator="in" in="color" in2="inverse" result="shadow" />
-            <feComposite operator="over" in="shadow" in2="SourceGraphic" />
-          </filter>
-        </defs>
-
-        {/* Headrest */}
-        <path d="M20 15 Q20 5 50 5 Q80 5 80 15 L80 25 Q80 32 50 32 Q20 32 20 25 Z" fill={baseColor} stroke={strokeColor} strokeWidth="1.5" />
-
-        {/* Main Body */}
-        <path d="M10 40 Q10 30 20 30 L80 30 Q90 30 90 40 L95 100 Q95 110 85 110 L15 110 Q5 110 5 100 Z" fill={baseColor} stroke={strokeColor} strokeWidth="1.5" />
-
-        {/* Center Stitching/Pattern */}
-        {!isDriver && !isBooked && !isSelected && (
-          <>
-            <path d="M30 30 L30 110" stroke={strokeColor} strokeWidth="0.5" strokeDasharray="2,2" opacity="0.5" />
-            <path d="M70 30 L70 110" stroke={strokeColor} strokeWidth="0.5" strokeDasharray="2,2" opacity="0.5" />
-            <path d="M10 70 Q50 80 90 70" stroke={strokeColor} strokeWidth="1" opacity="0.3" fill="none" />
-          </>
-        )}
-
-        {/* Armrests Hint */}
-        {!isDriver && (
-          <>
-            <path d="M5 50 L2 80" stroke={strokeColor} strokeWidth="2" opacity="0.4" fill="none" />
-            <path d="M95 50 L98 80" stroke={strokeColor} strokeWidth="2" opacity="0.4" fill="none" />
-          </>
-        )}
-
-        {/* Steering Wheel for Driver */}
-        {isDriver && (
-          <circle cx="50" cy="70" r="25" fill="none" stroke="#999" strokeWidth="4" />
-        )}
-        {isDriver && (
-          <path d="M50 70 L28 85 M50 70 L72 85 M50 70 L50 45" stroke="#999" strokeWidth="4" />
-        )}
-
-      </svg>
-
-      {/* Seat Number Overlay */}
-      {!isDriver && (
-        <span className={`absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-sm ${textColor}`}>
-          {isBooked ? <span className="text-[10px] uppercase">Booked</span> : seatNum}
-        </span>
-      )}
-    </div>
-  );
-};
+import { RealSeat } from '../common/RealSeat';
 
 // 2. Filter Modal Component
 const FilterModal = ({
@@ -452,7 +376,20 @@ export const PassengerFlow: React.FC = () => {
         r.to === searchParams.to &&
         r.date === searchParams.date &&
         r.date >= today &&
-        (!r.status || r.status === 'OPEN') // Only show OPEN rides
+        (!r.status || r.status === 'OPEN') && // Only show OPEN rides
+        // Extra check: If date is today, check if time has passed
+        (() => {
+          if (r.date > today) return true; // Future date is fine
+          // For today, check time
+          const [tTime, tAmpm] = r.time.split(' ');
+          const [tHours, tMinutes] = tTime.split(':');
+          let th = parseInt(tHours);
+          if (tAmpm === 'PM' && th !== 12) th += 12;
+          if (tAmpm === 'AM' && th === 12) th = 0;
+          const rideDate = new Date(); // Today
+          rideDate.setHours(th, parseInt(tMinutes), 0, 0);
+          return rideDate > new Date(); // Only true if ride is in future
+        })()
     );
 
 
@@ -785,6 +722,18 @@ export const PassengerFlow: React.FC = () => {
             onClick={async () => {
               if (selectedSeats.length > 4) {
                 alert("Maximum 4 seats allowed per booking.");
+                return;
+              }
+
+              // Rule: One booking per passenger per ride
+              const existingBooking = trips.find(t =>
+                t.offerId === selectedRide.id &&
+                t.passengerUid === user?.uid &&
+                t.status !== 'CANCELLED'
+              );
+
+              if (existingBooking) {
+                alert("You have already booked a seat on this ride. You cannot book twice.");
                 return;
               }
 

@@ -240,6 +240,7 @@ export default function OwnerDashboard() {
     const oneHourFromNow = new Date();
     oneHourFromNow.setHours(oneHourFromNow.getHours() + 1);
 
+    if (rideDateObj < new Date()) return alert("Passed time! You cannot create a ride in the past.");
     if (rideDateObj < oneHourFromNow) return alert("You must post rides at least 1 hour in advance.");
 
     const hasOverlap = [...activeTrips, ...myPostedRides].some(trip => {
@@ -250,9 +251,17 @@ export default function OwnerDashboard() {
       if (tAmpm === 'AM' && th === 12) th = 0;
       const tripDateObj = new Date(trip.date);
       tripDateObj.setHours(th, parseInt(tMinutes), 0, 0);
+
       const diffHours = Math.abs(rideDateObj.getTime() - tripDateObj.getTime()) / 36e5;
-      return diffHours < 1;
+
+      // Rule: Driver can create multiple rides at same time ONLY if route is different.
+      // So block only if Time is overlapping (< 1 hr) AND Route is SAME.
+      const isSameRoute = trip.from === newRide.from && trip.to === newRide.to;
+
+      return diffHours < 1 && isSameRoute;
     });
+
+    if (hasOverlap) return alert("You already have a ride scheduled for this route at this time. Duplicate rides are not allowed.");
 
     setShowAddRide(false);
     alert('Ride Published Successfully!');
