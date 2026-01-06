@@ -722,7 +722,6 @@ export default function OwnerDashboard() {
                 <p className="text-gray-400 text-base">No active rides.</p>
               </div>
             )}
-            )}
           </div>
         )}
 
