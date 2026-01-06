@@ -445,8 +445,11 @@ export const LoginScreen: React.FC = () => {
         {resendTimer > 0 ? (
           <p className="text-xs font-bold text-gray-400 uppercase">Resend in <span className="text-[#E02E49]">{resendTimer}s</span></p>
         ) : (
-          <button onClick={handleSendOtp} className="text-xs font-bold text-[#7209b7] uppercase flex items-center gap-1">
-            <RefreshCw size={12} /> Resend OTP
+          <button
+            onClick={handleSendOtp}
+            className="w-full py-3 border-2 border-[#7209b7] text-[#7209b7] rounded-xl font-bold text-sm uppercase flex items-center justify-center gap-2 hover:bg-[#7209b7] hover:text-white transition-colors"
+          >
+            <RefreshCw size={16} /> Resend OTP
           </button>
         )}
       </div>
