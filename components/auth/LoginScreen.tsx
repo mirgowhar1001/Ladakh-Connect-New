@@ -4,7 +4,7 @@ import { VEHICLES } from '../../constants';
 import { useApp } from '../../context/AppContext';
 import { auth, db } from '../../firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, signInWithPopup, ConfirmationResult, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 declare global {
   interface Window {
@@ -27,6 +27,7 @@ export const LoginScreen: React.FC = () => {
   const [vehicleNo, setVehicleNo] = useState('');
   const [vehicleType, setVehicleType] = useState(VEHICLES[0].type);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
 
   // Firebase State
   const [confirmResult, setConfirmResult] = useState<ConfirmationResult | null>(null);
@@ -80,6 +81,17 @@ export const LoginScreen: React.FC = () => {
     };
   }, []);
 
+  // Resend Timer Effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
   const resetState = () => {
     setMobile('');
     setPassword('');
@@ -90,6 +102,7 @@ export const LoginScreen: React.FC = () => {
     setOtpVerified(false);
     setError(null);
     setLoading(false);
+    setResendTimer(0);
   };
 
   const handleSendOtp = async () => {
@@ -100,9 +113,25 @@ export const LoginScreen: React.FC = () => {
     setError(null);
     setLoading(true);
 
+    // Check if user already exists during registration
+    if (view.startsWith('REGISTER')) {
+      try {
+        const q = query(collection(db, 'users'), where('mobile', '==', mobile));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          setError("User already registered. Please Login.");
+          setLoading(false);
+          return;
+        }
+      } catch (err: any) {
+        console.warn("Pre-check error (Permissions?):", err.message);
+      }
+    }
+
     if (mobile === '9999999999') {
-      setConfirmResult({} as any); // Dummy confirmation result
+      setConfirmResult({} as any);
       setLoading(false);
+      setResendTimer(30);
       return;
     }
 
@@ -112,13 +141,13 @@ export const LoginScreen: React.FC = () => {
       }
       const confirmation = await signInWithPhoneNumber(auth, `+91${mobile}`, verifierRef.current);
       setConfirmResult(confirmation);
+      setResendTimer(30);
     } catch (err: any) {
       console.error("OTP Error", err);
-      setError(err.message || "Failed to send OTP. Try again.");
-      if (err.code === 'auth/invalid-app-credential') {
-        setError("Domain Blocked. Add localhost to Firebase Console.");
-      } else if (err.code === 'auth/billing-not-enabled') {
-        setError("SMS Limit Exceeded/Billing Required. Use Google Login or Mock Login.");
+      if (err.code === 'auth/too-many-requests') {
+        setError("Blocked due to unusual activity. Try again in 20 mins or use dummy 9999999999.");
+      } else {
+        setError(err.message || "Failed to send OTP.");
       }
     } finally {
       setLoading(false);
@@ -136,7 +165,12 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
 
     if (mobile === '9999999999') {
-      setOtpVerified(true);
+      if (otpString === '123456') {
+        setOtpVerified(true);
+        setError(null);
+      } else {
+        setError("Incorrect OTP for dummy number. Use 123456.");
+      }
       setLoading(false);
       return;
     }
@@ -144,37 +178,41 @@ export const LoginScreen: React.FC = () => {
     try {
       const credential = await confirmResult.confirm(otpString);
 
-      // Check if user already exists (Prevent Re-registration)
       if (view.startsWith('REGISTER')) {
-        const userDocRef = doc(db, 'users', credential.user.uid);
-        const userDoc = await getDoc(userDocRef);
+        try {
+          const userDocRef = doc(db, 'users', credential.user.uid);
+          const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-          const existingRole = userDoc.data().role;
-          const requestedRole = view === 'REGISTER_DRIVER' ? 'owner' : 'passenger';
-
-          await signOut(auth);
-
-          if (existingRole === 'passenger' && requestedRole === 'owner') {
-            setError("User already registered as passenger. Please login or use 'Forgot password'.");
-          } else if (existingRole === 'owner' && requestedRole === 'passenger') {
-            setError("User already registered as driver. Please login or use 'Forgot password'.");
-          } else {
-            setError("Account already registered. Please login or use 'Forgot password'.");
+          if (userDoc.exists()) {
+            await signOut(auth);
+            setError("Account already exists. Please login.");
+            setLoading(false);
+            return;
           }
-
+        } catch (dbErr: any) {
+          console.error("Firestore Permission Error:", dbErr);
+          // If Firestore fails but OTP is correct, we might have a permission issue.
+          // We'll show the actual error to the user.
+          setError(`Database Error: ${dbErr.message}. Please check Firestore Rules.`);
           setLoading(false);
           return;
         }
       }
 
       setOtpVerified(true);
+      setError(null);
       setLoading(false);
     } catch (error: any) {
       setLoading(false);
-      setError("Incorrect OTP. Please check.");
+      if (error.code === 'auth/invalid-verification-code') {
+        setError("Wrong OTP. Please check the code sent to your phone.");
+      } else {
+        setError(`Verify Error: ${error.message}`);
+      }
     }
   };
+
+  // ... rest of the component remains same ...
 
   const handleLogin = async () => {
     if (mobile.length !== 10 || !password) {
@@ -184,55 +222,31 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       await loginWithPassword(mobile, password);
-      // AppContext will detect login and redirect
     } catch (error: any) {
       setLoading(false);
-      console.error("Login Error:", error);
-      if (error.message.includes("User not registered")) {
-        setError("User not found. register please");
-      } else {
-        setError("Invalid Credentials. Please check or reset password.");
-      }
+      setError(error.message || "Login failed.");
     }
   };
 
   const handleCompleteRegistration = async () => {
-    if (!password) {
-      setError("Please fill all fields");
-      return;
-    }
-    if (password.length < 6) {
+    if (!password || password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
-
     setLoading(true);
     try {
-      // 1. Link Password Credential
       if (mobile !== '9999999999') {
         await setupPassword(mobile, password);
       }
-
-      // 2. Save Profile
       const role = view === 'REGISTER_DRIVER' ? 'owner' : 'passenger';
       await login(role, {
         name: role === 'owner' ? name : 'New Passenger',
         mobile,
         ...(role === 'owner' ? { vehicleNo, vehicleType } : {})
       });
-      // AppContext will detect doc and redirect
     } catch (error: any) {
       setLoading(false);
-      console.error("Registration Error:", error);
-      if (error.code === 'auth/operation-not-allowed') {
-        setError("Configuration Error: Email/Password Auth is not enabled in Firebase Console.");
-      } else if (error.code === 'auth/email-already-in-use') {
-        setError("Account already exists. Please Login.");
-      } else if (error.message.includes("User already registered")) {
-        setError(error.message);
-      } else {
-        setError("Registration Failed: " + error.message);
-      }
+      setError(error.message || "Registration failed.");
     }
   };
 
@@ -244,16 +258,14 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       await resetPassword(password);
-      alert("Password Reset Successfully! Please Login.");
+      alert("Success! Please Login.");
       resetState();
       setView('LOGIN');
     } catch (error: any) {
       setLoading(false);
-      setError("Reset Failed: " + error.message);
+      setError(error.message);
     }
   };
-
-
 
   const handleOtpChange = (element: HTMLInputElement, index: number) => {
     if (isNaN(Number(element.value))) return;
@@ -298,153 +310,86 @@ export const LoginScreen: React.FC = () => {
   const renderLogin = () => (
     <div className="animate-in fade-in slide-in-from-right duration-300">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Login</h2>
-
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-bold text-[var(--login-text)] uppercase tracking-wide">Mobile Number</label>
-          <div className="flex items-center border-b-2 border-gray-200 py-2 focus-within:border-[var(--login-focus)] transition-colors">
+          <label className="text-xs font-bold text-gray-500 uppercase">Mobile Number</label>
+          <div className="flex items-center border-b-2 border-gray-200 py-2">
             <span className="text-gray-800 font-bold mr-3 text-xl">+91</span>
             <input
               type="tel"
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-              className="flex-1 outline-none font-bold text-2xl text-[var(--login-text)] bg-[var(--login-input-bg)]"
+              className="flex-1 outline-none font-bold text-2xl text-black bg-transparent"
               placeholder="99999 99999"
               maxLength={10}
             />
           </div>
         </div>
-
         <div>
-          <label className="text-xs font-bold text-[var(--login-text)] uppercase tracking-wide">Password</label>
-          <div className="flex items-center border-b-2 border-gray-200 py-2 focus-within:border-[var(--login-focus)] transition-colors">
+          <label className="text-xs font-bold text-gray-500 uppercase">Password</label>
+          <div className="flex items-center border-b-2 border-gray-200 py-2">
             <Lock size={20} className="text-gray-400 mr-2" />
             <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 outline-none font-bold text-xl text-[var(--login-text)] bg-[var(--login-input-bg)]"
+              className="flex-1 outline-none font-bold text-xl text-black bg-transparent"
               placeholder="Enter Password"
             />
-            <button onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setShowPassword(!showPassword)} className="text-gray-400">
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
-
         <div className="flex justify-end">
-          <button onClick={() => { resetState(); setView('FORGOT_PASSWORD'); }} className="text-xs font-bold text-[#7209b7] hover:underline">
+          <button onClick={() => { resetState(); setView('FORGOT_PASSWORD'); }} className="text-xs font-bold text-[#7209b7]">
             Forgot Password?
           </button>
         </div>
-
         <button
           onClick={handleLogin}
           disabled={loading || mobile.length < 10 || !password}
-          className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:opacity-90 transition"
+          className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg"
         >
           {loading ? <Loader2 className="animate-spin mx-auto" /> : 'LOGIN'}
         </button>
       </div>
-
-
     </div>
   );
 
   const renderRegister = (role: 'passenger' | 'owner') => (
     <div className="animate-in fade-in slide-in-from-right duration-300">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Register as {role === 'passenger' ? 'Passenger' : 'Driver'}</h2>
-
       {!confirmResult ? (
         <div className="space-y-4">
           {role === 'owner' && (
             <>
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold text-gray-800 bg-transparent"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase">Vehicle Number</label>
-                <input
-                  type="text"
-                  value={vehicleNo}
-                  onChange={(e) => setVehicleNo(e.target.value)}
-                  className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold text-gray-800 uppercase bg-transparent"
-                  placeholder="JK-10-XXXX"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase">Vehicle Type</label>
-                <select
-                  value={vehicleType}
-                  onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold text-gray-800 bg-transparent"
-                >
-                  {VEHICLES.map(v => (
-                    <option key={v.type} value={v.type}>{v.type}</option>
-                  ))}
-                </select>
-              </div>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold" placeholder="Full Name" />
+              <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold uppercase" placeholder="Vehicle No (JK-10-XXXX)" />
+              <select value={vehicleType} onChange={(e) => setVehicleType(e.target.value)} className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold">
+                {VEHICLES.map(v => <option key={v.type} value={v.type}>{v.type}</option>)}
+              </select>
             </>
           )}
-
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase">Mobile Number</label>
-            <div className="flex items-center border-b-2 border-gray-200 py-2">
-              <span className="text-gray-800 font-bold mr-3">+91</span>
-              <input
-                type="tel"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                className="flex-1 outline-none font-bold text-xl text-black bg-transparent"
-                placeholder="99999 99999"
-                maxLength={10}
-              />
-            </div>
+          <div className="flex items-center border-b-2 border-gray-200 py-2">
+            <span className="text-gray-800 font-bold mr-3">+91</span>
+            <input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))} className="flex-1 outline-none font-bold text-xl" placeholder="Mobile Number" maxLength={10} />
           </div>
-
-          <button
-            onClick={handleSendOtp}
-            disabled={loading || mobile.length < 10 || (role === 'owner' && (!name || !vehicleNo))}
-            className={`w-full bg-green-600 text-white py-5 rounded-xl font-black text-xl shadow-xl mt-6 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition transform hover:scale-[1.01]`}
-          >
-            {loading ? <Loader2 className="animate-spin mx-auto w-8 h-8" /> : 'Verify & Register'}
+          <button onClick={handleSendOtp} disabled={loading || mobile.length < 10} className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-6">
+            {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Send OTP'}
           </button>
-
         </div>
       ) : !otpVerified ? (
         renderOtpInput()
       ) : (
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase">Set Password</label>
-            <div className="flex items-center border-b-2 border-gray-200 py-2">
-              <Lock size={18} className="text-gray-400 mr-2" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 outline-none font-bold text-lg text-gray-800 bg-transparent"
-                placeholder="Min 6 chars"
-              />
-              <button onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+          <div className="flex items-center border-b-2 border-gray-200 py-2">
+            <Lock size={18} className="text-gray-400 mr-2" />
+            <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 outline-none font-bold text-lg" placeholder="Set Password (Min 6 chars)" />
+            <button onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
           </div>
-
-          <button
-            onClick={handleCompleteRegistration}
-            disabled={loading || !password}
-            className={`w-full bg-green-600 text-white py-5 rounded-xl font-black text-xl shadow-xl mt-6 hover:bg-green-700 transition transform hover:scale-[1.01]`}
-          >
-            {loading ? <Loader2 className="animate-spin mx-auto w-8 h-8" /> : 'Create Account'}
+          <button onClick={handleCompleteRegistration} disabled={loading || !password} className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-6">
+            {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Create Account'}
           </button>
         </div>
       )}
@@ -454,28 +399,13 @@ export const LoginScreen: React.FC = () => {
   const renderForgotPassword = () => (
     <div className="animate-in fade-in slide-in-from-right duration-300">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Reset Password</h2>
-
       {!confirmResult ? (
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase">Mobile Number</label>
-            <div className="flex items-center border-b-2 border-gray-200 py-2">
-              <span className="text-gray-800 font-bold mr-3">+91</span>
-              <input
-                type="tel"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                className="flex-1 outline-none font-bold text-xl text-black bg-transparent"
-                placeholder="99999 99999"
-                maxLength={10}
-              />
-            </div>
+          <div className="flex items-center border-b-2 border-gray-200 py-2">
+            <span className="text-gray-800 font-bold mr-3">+91</span>
+            <input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))} className="flex-1 outline-none font-bold text-xl" placeholder="Mobile Number" maxLength={10} />
           </div>
-          <button
-            onClick={handleSendOtp}
-            disabled={loading || mobile.length < 10}
-            className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-4"
-          >
+          <button onClick={handleSendOtp} disabled={loading || mobile.length < 10} className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-4">
             {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Send OTP'}
           </button>
         </div>
@@ -483,27 +413,8 @@ export const LoginScreen: React.FC = () => {
         renderOtpInput()
       ) : (
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase">New Password</label>
-            <div className="flex items-center border-b-2 border-gray-200 py-2">
-              <Lock size={18} className="text-gray-400 mr-2" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 outline-none font-bold text-lg text-gray-800 bg-transparent"
-                placeholder="Min 6 chars"
-              />
-              <button onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-          <button
-            onClick={handleResetPassword}
-            disabled={loading || !password}
-            className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-4"
-          >
+          <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full py-3 border-b-2 border-gray-200 outline-none font-bold" placeholder="New Password" />
+          <button onClick={handleResetPassword} disabled={loading || !password} className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg mt-4">
             {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Reset Password'}
           </button>
         </div>
@@ -513,8 +424,8 @@ export const LoginScreen: React.FC = () => {
 
   const renderOtpInput = () => (
     <div className="animate-in fade-in slide-in-from-right duration-300">
-      <p className="text-gray-400 text-sm mb-8">Enter OTP sent to <span className="font-bold text-gray-800">+91 {mobile}</span></p>
-      <div className="flex justify-between gap-2 mb-8">
+      <p className="text-gray-400 text-sm mb-6">Enter OTP sent to <span className="font-bold text-gray-800">+91 {mobile}</span></p>
+      <div className="grid grid-cols-6 gap-2 mb-6">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -523,15 +434,20 @@ export const LoginScreen: React.FC = () => {
             value={digit}
             onChange={(e) => handleOtpChange(e.target, index)}
             name={`otp-${index}`}
-            className="w-10 h-10 border-2 border-gray-200 rounded-xl text-center text-lg font-bold focus:border-mmt-blue outline-none bg-white text-black"
+            className="w-full h-12 border-2 border-gray-200 rounded-xl text-center text-xl font-bold focus:border-[#7209b7] outline-none bg-white text-black transition-all"
           />
         ))}
       </div>
-      <button
-        onClick={handleVerifyOtp}
-        disabled={loading}
-        className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg"
-      >
+      <div className="flex justify-center mb-6">
+        {resendTimer > 0 ? (
+          <p className="text-xs font-bold text-gray-400 uppercase">Resend in <span className="text-[#E02E49]">{resendTimer}s</span></p>
+        ) : (
+          <button onClick={handleSendOtp} className="text-xs font-bold text-[#7209b7] uppercase flex items-center gap-1">
+            <RefreshCw size={12} /> Resend OTP
+          </button>
+        )}
+      </div>
+      <button onClick={handleVerifyOtp} disabled={loading} className="w-full bg-[#E02E49] text-white py-4 rounded-xl font-bold text-lg shadow-lg">
         {loading ? <Loader2 className="animate-spin mx-auto" /> : 'Verify OTP'}
       </button>
     </div>
@@ -540,33 +456,27 @@ export const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-[var(--login-bg)] flex flex-col relative">
       <div id="recaptcha-container"></div>
-
-      {/* Header */}
-      <div className={`h-[40vh] bg-violet-700 relative overflow-hidden rounded-b-[40px] shadow-2xl flex items-center justify-center transition-all duration-500`}>
+      <div className={`h-[35vh] bg-violet-700 relative overflow-hidden rounded-b-[40px] shadow-2xl flex items-center justify-center`}>
         <div className="text-center text-white pb-10">
           <div className="w-20 h-20 bg-white/20 backdrop-blur-md p-3 rounded-full mb-4 border border-white/30 mx-auto flex items-center justify-center">
-            <MapPin className="text-white" size={32} fill="currentColor" />
+            <MapPin size={32} fill="currentColor" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Taxi Booking Ladakh</h1>
-          <p className="text-white/80 text-xs font-bold uppercase tracking-widest mt-1">Your Journey Begins Here</p>
+          <h1 className="text-3xl font-extrabold">Taxi Booking Ladakh</h1>
+          <p className="text-white/80 text-xs font-bold uppercase tracking-widest">Your Journey Begins Here</p>
         </div>
       </div>
-
-      {/* Card */}
-      <div className="flex-1 px-6 -mt-16 relative z-20 pb-10">
-        <div className="bg-[var(--login-input-bg)] rounded-[2rem] shadow-floating p-8 min-h-[400px]">
+      <div className="flex-1 px-6 -mt-12 relative z-20 pb-10">
+        <div className="bg-white rounded-[2rem] shadow-xl p-8 min-h-[400px]">
           {view !== 'WELCOME' && (
-            <button onClick={() => { resetState(); setView('WELCOME'); setConfirmResult(null); setError(null); }} className="mb-4 text-gray-400 hover:text-gray-600 flex items-center gap-1 text-xs font-bold uppercase">
+            <button onClick={() => { resetState(); setView('WELCOME'); }} className="mb-4 text-gray-400 flex items-center gap-1 text-xs font-bold uppercase">
               <ChevronLeft size={14} /> Back
             </button>
           )}
-
           {error && (
-            <div className="mb-4 bg-red-50 text-[var(--login-error)] p-3 rounded-xl text-xs font-bold flex items-center gap-2 border border-[var(--login-error)]/20">
+            <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-200">
               <AlertCircle size={16} /> {error}
             </div>
           )}
-
           {view === 'WELCOME' && renderWelcome()}
           {view === 'LOGIN' && renderLogin()}
           {view === 'REGISTER_PASSENGER' && renderRegister('passenger')}

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Passenger Palette (Pic 2) */
   --pass-bg: #F8F9FA;
