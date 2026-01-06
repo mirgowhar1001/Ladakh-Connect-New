@@ -9,8 +9,9 @@ export const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | '
     const isUnavailable = status === 'unavailable';
 
     // Colors for Black Leather Look
-    const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#374151' : isSelected ? '#22c55e' : isInactive ? '#000000' : 'url(#leatherGradient)'; // Inactive = Black
-    const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#4b5563' : isSelected ? '#16a34a' : isInactive ? '#333333' : '#333333';
+    // Colors for Black Leather Look - MATCHING DRIVER SEAT
+    const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#374151' : isSelected ? '#22c55e' : isInactive ? '#4a4a4a' : '#4a4a4a'; // All unselected = Driver Color
+    const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#4b5563' : isSelected ? '#16a34a' : '#2d2d2d'; // Match driver stroke
     const textColor = isSelected ? 'white' : isBooked ? '#9ca3af' : isInactive ? '#666666' : '#8B735B';
 
     return (
