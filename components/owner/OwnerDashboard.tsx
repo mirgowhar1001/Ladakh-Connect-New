@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { storage, db } from '../../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, getDocs, deleteDoc, updateDoc, deleteField } from 'firebase/firestore';
+import { RealSeat } from '../common/RealSeat';
 import { Navigation, User, LogOut, MapPin, ShieldCheck, Wallet, ChevronRight, MessageCircle, Plus, Calendar, Clock, IndianRupee, X, ArrowRight, History, Home, Phone, Star, Menu, CheckCircle, Search, Users, Edit, Trash2, FileText, Loader2, Check, AlertCircle } from 'lucide-react';
 import { ChatScreen } from '../common/ChatScreen';
 import { DatePicker } from '../common/DatePicker';
@@ -173,12 +174,13 @@ export default function OwnerDashboard() {
     from: 'Leh',
     to: 'Srinagar',
     date: new Date().toISOString().split('T')[0],
-    time: '07:00 AM',
-    price: 0,
+    time: '06:00 AM',
+    price: 2000,
     totalSeats: 7,
-    vehicleType: 'Toyota Innova',
+    vehicleType: 'Innova Crysta',
+    vehicleNo: user?.vehicleNo || '',
     seatPrices: {} as { [key: number]: number },
-    activeSeats: [] as number[]
+    activeSeats: [1, 2, 3, 4, 5, 6, 7] as number[]
   });
 
   const myTrips = trips.filter(t => t.driverId === user?.uid || t.driverName === user?.name);
@@ -252,23 +254,6 @@ export default function OwnerDashboard() {
       return diffHours < 1;
     });
 
-    if (hasOverlap) return alert("You have another ride scheduled within 1 hour.");
-
-    publishRide({
-      vehicleNo: user?.vehicleNo || '',
-      vehicleType: newRide.vehicleType,
-      from: newRide.from,
-      to: newRide.to,
-      date: newRide.date,
-      time: newRide.time,
-      pricePerSeat: newRide.price,
-      totalSeats: newRide.totalSeats,
-      activeSeats: newRide.activeSeats.length > 0 ? newRide.activeSeats : Array.from({ length: newRide.totalSeats }, (_, i) => i + 1),
-      seatPrices: newRide.seatPrices,
-      driverName: user?.name,
-      driverId: user?.uid,
-      bookedSeats: []
-    });
     setShowAddRide(false);
     alert('Ride Published Successfully!');
     setCurrentView('my-rides');
@@ -986,6 +971,68 @@ export default function OwnerDashboard() {
                      <span className="text-xl font-bold text-[var(--driver-primary)]">\u20B9{newRide.price}</span>
                   </div>
                </div> */}
+              {/* Seat Matrix Selection */}
+              <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
+                <p className="text-gray-400 text-xs font-bold uppercase mb-4 text-center tracking-wider">Select Available Seats</p>
+
+                {/* Car Container */}
+                <div className="bg-white rounded-[2.5rem] p-6 max-w-[280px] mx-auto relative border-4 border-gray-600 shadow-inner">
+                  {/* Front Row */}
+                  <div className="flex justify-between gap-4 mb-6 relative z-10">
+                    <RealSeat
+                      seatNum={1}
+                      status={newRide.activeSeats.includes(1) ? 'selected' : 'inactive'}
+                      onClick={() => {
+                        const seats = newRide.activeSeats.includes(1)
+                          ? newRide.activeSeats.filter(s => s !== 1)
+                          : [...newRide.activeSeats, 1];
+                        setNewRide({ ...newRide, activeSeats: seats });
+                      }}
+                    />
+                    <RealSeat status="driver" />
+                  </div>
+
+                  {/* Middle Row */}
+                  <div className="flex justify-center gap-4 mb-4 relative z-10">
+                    {[2, 3, 4].map(s => (
+                      <RealSeat
+                        key={s}
+                        seatNum={s}
+                        status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
+                        onClick={() => {
+                          const seats = newRide.activeSeats.includes(s)
+                            ? newRide.activeSeats.filter(x => x !== s)
+                            : [...newRide.activeSeats, s];
+                          setNewRide({ ...newRide, activeSeats: seats });
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Back Row */}
+                  <div className="flex justify-center gap-4 relative z-10">
+                    {[5, 6, 7].map(s => (
+                      <RealSeat
+                        key={s}
+                        seatNum={s}
+                        status={newRide.activeSeats.includes(s) ? 'selected' : 'inactive'}
+                        onClick={() => {
+                          const seats = newRide.activeSeats.includes(s)
+                            ? newRide.activeSeats.filter(x => x !== s)
+                            : [...newRide.activeSeats, s];
+                          setNewRide({ ...newRide, activeSeats: seats });
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="absolute top-2 w-full text-center left-0 pointer-events-none opacity-20 text-[10px] font-bold uppercase tracking-widest text-black">Front</div>
+                  <div className="absolute bottom-2 w-full text-center left-0 pointer-events-none opacity-20 text-[10px] font-bold uppercase tracking-widest text-black">Rear</div>
+                </div>
+                <p className="text-center text-xs text-gray-500 mt-4">Tap seats to toggle availability (<span className="text-green-400 font-bold">{newRide.activeSeats.length} Selected</span>)</p>
+              </div>
+
               <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30 text-yellow-500 text-xs font-mono">
                 Market prices are fixed for this route.
               </div>
