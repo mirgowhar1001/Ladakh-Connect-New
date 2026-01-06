@@ -992,10 +992,13 @@ export default function OwnerDashboard() {
               <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
                 <p className="text-gray-400 text-xs font-bold uppercase mb-4 text-center tracking-wider">Select Available Seats</p>
 
-                {/* Car Container */}
-                <div className="bg-white rounded-[2.5rem] p-6 max-w-[280px] mx-auto relative border-4 border-gray-600 shadow-inner">
-                  {/* Front Row */}
-                  <div className="flex justify-between gap-4 mb-6 relative z-10">
+                {/* Car Chassis Container - Synced with Passenger View */}
+                <div className="bg-white rounded-[3rem] shadow-xl border-4 border-gray-300 px-6 py-10 w-full max-w-[320px] mx-auto relative mt-4">
+                  {/* Front Windshield Hint */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-blue-100/50 rounded-b-xl"></div>
+
+                  {/* Front Row (Driver + Passenger) */}
+                  <div className="flex justify-between gap-8 mb-6 border-b border-dashed border-gray-200 pb-4 relative z-10">
                     <RealSeat
                       seatNum={1}
                       status={newRide.activeSeats.includes(1) ? 'selected' : 'inactive'}
@@ -1010,7 +1013,7 @@ export default function OwnerDashboard() {
                   </div>
 
                   {/* Middle Row */}
-                  <div className="flex justify-center gap-4 mb-4 relative z-10">
+                  <div className="flex justify-center gap-8 mb-4 relative z-10">
                     {[2, 3, 4].map(s => (
                       <RealSeat
                         key={s}
@@ -1027,7 +1030,7 @@ export default function OwnerDashboard() {
                   </div>
 
                   {/* Back Row */}
-                  <div className="flex justify-center gap-4 relative z-10">
+                  <div className="flex justify-center gap-8 relative z-10">
                     {[5, 6, 7].map(s => (
                       <RealSeat
                         key={s}
@@ -1043,9 +1046,8 @@ export default function OwnerDashboard() {
                     ))}
                   </div>
 
-                  {/* Legend */}
-                  <div className="absolute top-2 w-full text-center left-0 pointer-events-none opacity-20 text-[10px] font-bold uppercase tracking-widest text-black">Front</div>
-                  <div className="absolute bottom-2 w-full text-center left-0 pointer-events-none opacity-20 text-[10px] font-bold uppercase tracking-widest text-black">Rear</div>
+                  {/* Legend Overlay */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 uppercase tracking-widest font-bold">Rear</div>
                 </div>
                 <p className="text-center text-xs text-gray-500 mt-4">Tap seats to toggle availability (<span className="text-green-400 font-bold">{newRide.activeSeats.length} Selected</span>)</p>
               </div>
