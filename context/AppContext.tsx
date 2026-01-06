@@ -151,28 +151,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
             if (rideDate < now) {
               // Ride is in the past
-              if (!offer.bookedSeats || offer.bookedSeats.length === 0) {
-                // Rule 1: No bookings -> Delete
-                console.log(`[Cleanup] Deleting expired empty offer: ${docSnap.id}`);
-                batch.delete(doc(db, 'rideOffers', docSnap.id));
-                updatesCount++;
-              } else {
-                // Rule 2: Has bookings but not started -> Cancel
-                if (offer.status !== 'EN_ROUTE') {
-                  console.log(`[Cleanup] Cancelling expired unattended offer: ${docSnap.id}`);
-                  batch.update(doc(db, 'rideOffers', docSnap.id), { status: 'CANCELLED' });
-
-                  // Cancel associated trips
-                  const tripsQuery = query(collection(db, 'trips'), where('offerId', '==', docSnap.id));
-                  const tripsSnap = await getDocs(tripsQuery);
-                  tripsSnap.forEach(tDoc => {
-                    if (tDoc.data().status !== 'CANCELLED') {
-                      batch.update(doc(db, 'trips', tDoc.id), { status: 'CANCELLED' });
-                    }
-                  });
-                  updatesCount++;
-                }
-              }
+              // TEMPORARILY DISABLED CLEANUP TO PREVENT ACCIDENTAL DELETION
+              // if (!offer.bookedSeats || offer.bookedSeats.length === 0) {
+              //   // Rule 1: No bookings -> Delete
+              //   console.log(`[Cleanup] Deleting expired empty offer: ${docSnap.id}`);
+              //   batch.delete(doc(db, 'rideOffers', docSnap.id));
+              //   updatesCount++;
+              // }
             }
           } catch (e) {
             console.warn("Skipping offer with invalid date/time:", offer.id);
