@@ -446,8 +446,8 @@ export const LoginScreen: React.FC = () => {
           onClick={handleSendOtp}
           disabled={resendTimer > 0}
           className={`w-full py-3 border-2 rounded-xl font-bold text-sm uppercase flex items-center justify-center gap-2 transition-colors ${resendTimer > 0
-              ? "border-gray-200 text-gray-400 cursor-not-allowed"
-              : "border-[#7209b7] text-[#7209b7] hover:bg-[#7209b7] hover:text-white"
+            ? "border-gray-200 text-gray-400 cursor-not-allowed"
+            : "border-[#7209b7] text-[#7209b7] hover:bg-[#7209b7] hover:text-white"
             }`}
         >
           {resendTimer > 0 ? (
@@ -473,7 +473,7 @@ export const LoginScreen: React.FC = () => {
           <div className="w-20 h-20 bg-white/20 backdrop-blur-md p-3 rounded-full mb-4 border border-white/30 mx-auto flex items-center justify-center">
             <MapPin size={32} fill="currentColor" />
           </div>
-          <h1 className="text-3xl font-extrabold">Taxi Booking Ladakh</h1>
+          <h1 className="text-3xl font-extrabold">Ladakh Taxi</h1>
           <p className="text-white/80 text-xs font-bold uppercase tracking-widest">Your Journey Begins Here</p>
         </div>
       </div>
