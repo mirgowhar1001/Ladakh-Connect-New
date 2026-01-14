@@ -734,7 +734,8 @@ export const PassengerFlow: React.FC = () => {
                 return;
               }
 
-              // Rule: One booking per passenger per ride
+              /* 
+              // Rule: One booking per passenger per ride - REMOVED PER USER REQUEST
               const existingBooking = trips.find(t =>
                 t.offerId === selectedRide.id &&
                 t.passengerUid === user?.uid &&
@@ -744,7 +745,8 @@ export const PassengerFlow: React.FC = () => {
               if (existingBooking) {
                 alert("You have already booked a seat on this ride. You cannot book twice.");
                 return;
-              }
+              } 
+              */
 
               const totalCost = selectedSeats.reduce((acc, seat) => acc + (seatPrices?.[seat] || price), 0);
 
