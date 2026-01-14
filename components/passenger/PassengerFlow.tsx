@@ -43,11 +43,11 @@ const FilterModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[90vh]">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-          <h3 className="font-bold text-lg text-gray-800">Filter & Sort</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/80 backdrop-blur-sm">
+      <div className="bg-[var(--pass-card)] w-full max-w-lg rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col max-h-[90vh] border-t border-white/10">
+        <div className="p-4 border-b border-white/10 flex justify-between items-center">
+          <h3 className="font-bold text-lg text-white">Filter & Sort</h3>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-white"><X size={20} /></button>
         </div>
 
         <div className="p-6 overflow-y-auto space-y-6">
@@ -55,7 +55,7 @@ const FilterModal = ({
 
           {/* Vehicle Type */}
           <div>
-            <h4 className="text-sm font-bold text-gray-400 uppercase mb-3">Vehicle Type</h4>
+            <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">Vehicle Type</h4>
             <div className="flex flex-wrap gap-2">
               {['Innova Crysta', 'Mahindra Xylo', 'Toyota Innova', 'Tempo Traveler'].map(type => (
                 <button
@@ -259,18 +259,17 @@ export const PassengerFlow: React.FC = () => {
           </div>
         </div>
 
-        {/* Floating Search Card */}
         <div className="px-4 -mt-12 relative z-10">
-          <div className="bg-[var(--pass-card)] rounded-2xl shadow-floating p-6 border border-gray-200">
+          <div className="bg-[var(--pass-card)] rounded-2xl shadow-floating p-6 border border-white/10 shadow-2xl">
 
             {/* Location Input Group */}
             <div className="flex flex-col gap-5">
               {/* FROM */}
               <div className="relative border-b border-gray-100 pb-2 hover:border-pass-primary transition-colors">
-                <span className="text-xs text-gray-400 font-bold tracking-wider uppercase flex items-center gap-1"><MapPin size={12} /> From</span>
+                <span className="text-xs text-gray-500 font-bold tracking-wider uppercase flex items-center gap-1"><MapPin size={12} /> From</span>
                 <div className="flex items-center justify-between mt-1">
                   <select
-                    className="w-full font-black text-xl bg-transparent outline-none text-gray-800 py-1 appearance-none cursor-pointer"
+                    className="w-full font-black text-xl bg-transparent outline-none text-white py-1 appearance-none cursor-pointer [&>option]:text-black"
                     value={searchParams.from}
                     onChange={(e) => setSearchParams({ ...searchParams, from: e.target.value })}
                   >
@@ -288,10 +287,10 @@ export const PassengerFlow: React.FC = () => {
               </div>
 
               {/* TO */}
-              <div className="relative border-b border-gray-100 pb-2 hover:border-pass-primary transition-colors">
-                <span className="text-xs text-gray-400 font-bold tracking-wider uppercase flex items-center gap-1"><MapPin size={12} /> To</span>
+              <div className="relative border-b border-gray-700 pb-2 hover:border-pass-primary transition-colors">
+                <span className="text-xs text-gray-500 font-bold tracking-wider uppercase flex items-center gap-1"><MapPin size={12} /> To</span>
                 <select
-                  className="w-full font-black text-xl bg-transparent outline-none text-gray-800 py-1 appearance-none cursor-pointer mt-1"
+                  className="w-full font-black text-xl bg-transparent outline-none text-white py-1 appearance-none cursor-pointer mt-1 [&>option]:text-black"
                   value={searchParams.to}
                   onChange={(e) => setSearchParams({ ...searchParams, to: e.target.value })}
                 >
@@ -453,7 +452,7 @@ export const PassengerFlow: React.FC = () => {
     const activeTrip = trips.find(t => t.status === 'EN_ROUTE');
 
     return (
-      <div className="bg-mmt-bg min-h-screen pb-24">
+      <div className="bg-[var(--pass-bg)] min-h-screen pb-24">
         {activeTrip && <SOSButton />}
         <Header
           title={`${searchParams.from} → ${searchParams.to}`}
@@ -464,7 +463,7 @@ export const PassengerFlow: React.FC = () => {
         />
 
         {/* Date Filter Strip */}
-        <div className="bg-white py-2 px-4 shadow-sm mb-4">
+        <div className="bg-[var(--pass-card)] py-2 px-4 shadow-sm mb-4 border-b border-white/5">
           <div className="flex gap-4 overflow-x-auto no-scrollbar">
             {[-1, 0, 1, 2].map(offset => {
               const d = new Date(searchParams.date);
@@ -477,7 +476,7 @@ export const PassengerFlow: React.FC = () => {
                 <button
                   key={offset}
                   onClick={() => setSearchParams({ ...searchParams, date: d.toISOString().split('T')[0] })}
-                  className={`flex flex-col items-center min-w-[3rem] ${isSelected ? 'text-[var(--pass-primary)]' : 'text-gray-500'} hover:bg-gray-50 rounded-lg transition p-1`}
+                  className={`flex flex-col items-center min-w-[3rem] ${isSelected ? 'text-[var(--pass-primary)]' : 'text-gray-400'} hover:bg-white/5 rounded-lg transition p-1`}
                 >
                   <span className="text-xs font-bold uppercase">{dayName}</span>
                   <span className={`text-lg font-bold ${isSelected ? 'border-b-2 border-[var(--pass-primary)]' : ''}`}>{dayNum}</span>
@@ -487,8 +486,8 @@ export const PassengerFlow: React.FC = () => {
           </div>
 
           <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
-            <button onClick={() => setFilters({ ...filters, sortBy: 'time' })} className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border ${filters.sortBy === 'time' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200'}`}>Earliest First</button>
-            <button onClick={() => setFilters({ ...filters, sortBy: 'rating' })} className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border ${filters.sortBy === 'rating' ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200'}`}>Top Rated</button>
+            <button onClick={() => setFilters({ ...filters, sortBy: 'time' })} className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border ${filters.sortBy === 'time' ? 'bg-white text-black border-white' : 'bg-transparent text-gray-400 border-gray-600'}`}>Earliest First</button>
+            <button onClick={() => setFilters({ ...filters, sortBy: 'rating' })} className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border ${filters.sortBy === 'rating' ? 'bg-white text-black border-white' : 'bg-transparent text-gray-400 border-gray-600'}`}>Top Rated</button>
           </div>
         </div>
 
@@ -505,7 +504,7 @@ export const PassengerFlow: React.FC = () => {
             const availableSeatsCount = offer.totalSeats - (offer.bookedSeats ? offer.bookedSeats.length : 0);
 
             return (
-              <div key={offer.id} className="bg-white rounded-xl shadow-card overflow-hidden">
+              <div key={offer.id} className="bg-[var(--pass-card)] rounded-xl shadow-lg border border-white/5 overflow-hidden">
                 <div className="p-4 flex gap-4">
                   {/* Car Image */}
                   <div className="w-24 h-20 rounded-lg bg-gray-50 flex-shrink-0 overflow-hidden relative">
@@ -527,22 +526,22 @@ export const PassengerFlow: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-bold text-gray-800 text-base">
-                          {offer.vehicleType} <span className="font-black text-black uppercase">{offer.vehicleNo}</span>
+                        <h3 className="font-bold text-white text-base">
+                          {offer.vehicleType} <span className="font-black text-[var(--pass-primary)] uppercase">{offer.vehicleNo}</span>
                         </h3>
                         <p className="text-xs text-gray-500">{offer.driverName} • <span className="text-green-600 font-bold">★ {offer.rating}</span></p>
                         <p className="text-xs text-gray-500 font-mono mt-0.5 flex items-center gap-1">
                           <span className="font-bold">Mob:</span>
-                          <span className="text-black font-bold">{offer.driverMobile || 'N/A'}</span>
+                          <span className="text-gray-300 font-bold">{offer.driverMobile || 'N/A'}</span>
                         </p>
                       </div>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between text-xs text-gray-600">
                       <div className="flex items-center gap-1">
-                        <span className="font-bold whitespace-nowrap">{offer.time}</span>
-                        <div className="w-4 h-[1px] bg-gray-300 mx-1"></div>
-                        <span className="font-bold text-gray-800 whitespace-nowrap">{offer.from} <span className="text-gray-400">→</span> {offer.to}</span>
+                        <span className="font-bold whitespace-nowrap text-gray-300">{offer.time}</span>
+                        <div className="w-4 h-[1px] bg-gray-600 mx-1"></div>
+                        <span className="font-bold text-white whitespace-nowrap">{offer.from} <span className="text-gray-600">→</span> {offer.to}</span>
                       </div>
                     </div>
                   </div>
@@ -571,7 +570,7 @@ export const PassengerFlow: React.FC = () => {
         </div>
 
         {/* Sticky Filter Bar */}
-        <div className="fixed bottom-0 w-full bg-white border-t border-gray-200 p-3 flex justify-center shadow-2xl z-40">
+        <div className="fixed bottom-0 w-full bg-[var(--pass-card)] border-t border-white/10 p-3 flex justify-center shadow-2xl z-40">
           <button
             onClick={() => setShowFilters(true)}
             className="flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-full font-bold shadow-lg"
@@ -657,7 +656,7 @@ export const PassengerFlow: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center">
 
           {/* Car Chassis Container */}
-          <div className="bg-white rounded-[3rem] shadow-xl border-4 border-gray-300 px-6 py-10 w-full max-w-[320px] relative mt-4">
+          <div className="bg-gray-900 rounded-[3rem] shadow-xl border-4 border-gray-700 px-6 py-10 w-full max-w-[320px] relative mt-4">
             {/* Front Windshield Hint */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-blue-100/50 rounded-b-xl"></div>
 
@@ -715,7 +714,7 @@ export const PassengerFlow: React.FC = () => {
         </div>
 
         {/* Sticky Payment Footer */}
-        <div className="bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-20">
+        <div className="bg-[var(--pass-card)] p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-20 border-t border-white/10">
           <div className="flex justify-between items-center mb-3">
             <div className="flex flex-col">
               {/* <span className="text-xs text-gray-500 font-bold uppercase">Total Fare</span>
@@ -788,7 +787,7 @@ export const PassengerFlow: React.FC = () => {
   /* VaultPayment Component Removed */
 
   return (
-    <>
+    <div className="bg-[var(--pass-bg)] min-h-screen text-[var(--pass-text)]">
       <SideMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
@@ -798,6 +797,7 @@ export const PassengerFlow: React.FC = () => {
       {(() => {
         switch (view) {
           case 'search': return <SearchWidget />;
+          /* ... other cases ... */
           case 'results': return <ResultsList />;
           case 'seats': return <SeatMap />;
           // case 'vault_pay': return <VaultPayment />;
@@ -820,7 +820,7 @@ export const PassengerFlow: React.FC = () => {
 
       {/* Bottom Navigation */}
       {(view === 'search' || view === 'history' || view === 'profile' || view === 'wallet') && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-around items-center z-[100] pb-6 rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 left-0 right-0 bg-[var(--pass-card)] border-t border-white/10 p-4 flex justify-around items-center z-[100] pb-6 rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.2)]">
           <button
             onClick={() => setView('search')}
             className={`flex flex-col items-center gap-1 ${view === 'search' ? 'text-pass-primary' : 'text-gray-400'}`}
@@ -852,13 +852,13 @@ export const PassengerFlow: React.FC = () => {
 
       {/* Booking Success Modal */}
       {showBookingSuccess && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-8 text-center shadow-2xl transform scale-100 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--pass-card)] rounded-3xl p-8 text-center shadow-2xl transform scale-100 animate-in zoom-in-95 duration-200 border border-white/10">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle size={40} className="text-green-600" />
             </div>
-            <h2 className="text-2xl font-black text-gray-800 mb-2">Booking Awaited</h2>
-            <p className="text-gray-500 font-medium">Waiting for driver confirmation...</p>
+            <h2 className="text-2xl font-black text-white mb-2">Booking Awaited</h2>
+            <p className="text-gray-400 font-medium">Waiting for driver confirmation...</p>
           </div>
         </div>
       )}
@@ -871,6 +871,6 @@ export const PassengerFlow: React.FC = () => {
           onClose={() => setRatingModal(null)}
         />
       )}
-    </>
+    </div>
   );
 };

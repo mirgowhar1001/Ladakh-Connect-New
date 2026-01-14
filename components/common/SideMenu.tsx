@@ -27,7 +27,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigate 
             ></div>
 
             {/* Menu Content */}
-            <div className="relative w-[80%] max-w-xs bg-white h-full shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col">
+            <div className="relative w-[80%] max-w-xs bg-[var(--pass-card)] h-full shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col border-r border-white/5">
 
                 {/* Header */}
                 <div className={`${headerGradient} p-6 text-white pt-12`}>
@@ -39,8 +39,8 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigate 
                     </button>
 
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-16 h-16 bg-white rounded-full p-1 shadow-lg">
-                            <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-bold text-xl overflow-hidden">
+                        <div className="w-16 h-16 bg-white/10 rounded-full p-1 shadow-lg border border-white/10">
+                            <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center text-gray-400 font-bold text-xl overflow-hidden">
                                 {user?.profileImage ? (
                                     <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -105,12 +105,12 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, onNavigate 
 const MenuItem = ({ icon, label, onClick, hoverClass }: { icon: React.ReactNode, label: string, onClick: () => void, hoverClass: string }) => (
     <button
         onClick={onClick}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition group"
+        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition group"
     >
-        <div className={`flex items-center gap-4 text-gray-600 ${hoverClass}`}>
+        <div className={`flex items-center gap-4 text-gray-400 ${hoverClass}`}>
             {icon}
-            <span className="font-bold text-sm">{label}</span>
+            <span className="font-bold text-sm text-gray-300 group-hover:text-white transition-colors">{label}</span>
         </div>
-        <ChevronRight size={16} className={`text-gray-300 ${hoverClass}`} />
+        <ChevronRight size={16} className={`text-gray-700 ${hoverClass}`} />
     </button>
 );

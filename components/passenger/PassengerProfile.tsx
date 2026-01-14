@@ -34,7 +34,7 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
     /* Top Up Modal Removed */
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-24 relative">
+        <div className="bg-[var(--pass-bg)] min-h-screen pb-24 relative text-white">
             <input
                 type="file"
                 ref={fileInputRef}
@@ -44,36 +44,36 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
             />
 
             {/* Hero Background - Passenger Theme Abstract */}
-            <div className={`transition-all duration-500 ease-in-out h-[45vh] rounded-b-[40px] relative overflow-hidden shadow-lg group bg-[var(--pass-primary)]`}>
-                {/* Abstract geometric shapes similar to login screen */}
-                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/20 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 w-full h-24 bg-white/10 skew-y-3 origin-bottom-left"></div>
-                <div className="absolute bottom-10 right-0 w-full h-24 bg-white/10 -skew-y-3 origin-bottom-right"></div>
+            <div className={`transition-all duration-500 ease-in-out h-[45vh] rounded-b-[40px] relative overflow-hidden shadow-2xl group bg-[var(--pass-primary)]`}>
+                {/* Abstract geometric shapes */}
+                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 w-full h-24 bg-black/10 skew-y-3 origin-bottom-left"></div>
+                <div className="absolute bottom-10 right-0 w-full h-24 bg-white/5 -skew-y-3 origin-bottom-right"></div>
 
                 {/* Subtle Texture */}
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
 
                 <div className="p-6 pt-10 relative z-10 text-white">
                     <div className="flex justify-between items-start mb-6">
-                        <button onClick={onBack} className="bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-md transition border border-white/10">
+                        <button onClick={onBack} className="bg-black/20 hover:bg-black/40 p-2 rounded-full backdrop-blur-md transition border border-white/10">
                             <ChevronDown className="rotate-90 text-white" />
                         </button>
                     </div>
 
                     <div className="flex flex-row items-center gap-6 mt-6 px-2">
-                        <div className="w-24 h-24 bg-white p-1 rounded-full shadow-2xl relative flex-shrink-0">
-                            <div className="w-full h-full bg-gray-100 rounded-full overflow-hidden flex items-center justify-center relative shadow-inner">
+                        <div className="w-24 h-24 bg-white/10 p-1 rounded-full shadow-2xl relative flex-shrink-0 backdrop-blur-sm border border-white/20">
+                            <div className="w-full h-full bg-gray-900 rounded-full overflow-hidden flex items-center justify-center relative shadow-inner">
                                 {user?.profileImage ? (
                                     <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-pass-primary text-3xl font-black">
+                                    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-pass-primary text-3xl font-black">
                                         {user?.name.charAt(0)}
                                     </div>
                                 )}
                             </div>
                             <button
                                 onClick={triggerImageUpload}
-                                className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white border-2 border-white rounded-full flex items-center justify-center hover:bg-gray-800 transition shadow-lg"
+                                className="absolute bottom-0 right-0 w-8 h-8 bg-[var(--pass-primary)] text-white border-2 border-gray-900 rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg"
                             >
                                 <Camera size={14} />
                             </button>
@@ -82,11 +82,11 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
                         <div className="text-left flex-1">
                             <h1 className="text-2xl font-black leading-tight tracking-tight drop-shadow-md mb-2">{user?.name}</h1>
                             <div className="flex flex-col items-start gap-1.5 opacity-90">
-                                <p className="text-white text-sm flex items-center gap-2 font-bold bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
-                                    <Phone size={14} /> +91 {user?.mobile}
+                                <p className="text-white text-sm flex items-center gap-2 font-bold bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/5">
+                                    <Phone size={14} className="text-[var(--pass-primary)]" /> +91 {user?.mobile}
                                 </p>
-                                <p className="text-white text-xs flex items-center gap-2 font-medium bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
-                                    <Mail size={12} /> {user?.email || 'user@example.com'}
+                                <p className="text-white text-xs flex items-center gap-2 font-medium bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/5">
+                                    <Mail size={12} className="text-[var(--pass-primary)]" /> {user?.email || 'user@example.com'}
                                 </p>
                             </div>
                         </div>
@@ -106,71 +106,65 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
                         const total = completed + cancelled;
                         const honestyScore = total === 0 ? 100 : Math.round((completed / total) * 100);
 
-                        let scoreColor = 'text-green-500';
-                        if (honestyScore < 70) scoreColor = 'text-red-500';
-                        else if (honestyScore < 90) scoreColor = 'text-yellow-500';
+                        let scoreColor = 'text-green-400';
+                        if (honestyScore < 70) scoreColor = 'text-red-400';
+                        else if (honestyScore < 90) scoreColor = 'text-yellow-400';
 
                         return (
                             <>
-                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <div className="bg-[var(--pass-card)] p-3 rounded-2xl shadow-xl border border-white/5 text-center">
                                     <p className="text-xl font-black text-[var(--pass-primary)]">{completed}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Completed</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase">Completed</p>
                                 </div>
-                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <div className="bg-[var(--pass-card)] p-3 rounded-2xl shadow-xl border border-white/5 text-center">
                                     <p className="text-xl font-black text-red-500">{cancelled}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Cancelled</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase">Cancelled</p>
                                 </div>
-                                <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <div className="bg-[var(--pass-card)] p-3 rounded-2xl shadow-xl border border-white/5 text-center">
                                     <p className={`text-xl font-black ${scoreColor}`}>{honestyScore}%</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Honesty Score</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase">Honesty Score</p>
                                 </div>
                             </>
                         );
                     })()}
                 </div>
 
-                {/* Wallet Card - HIDDEN */}
-                {/* <div className="bg-white p-2 rounded-3xl shadow-card"> ... </div> */}
-
-                {/* Transaction List - HIDDEN */}
-                {/* <div> ... </div> */}
-
                 {/* Simplified Menu Grid */}
                 <div>
-                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 ml-2 tracking-wider">My Toolkit</h4>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-4 ml-2 tracking-wider">My Toolkit</h4>
                     <div className="grid grid-cols-1 gap-4">
 
 
                         {/* Edit Profile */}
                         <button
                             onClick={() => onNavigate('edit-profile')}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 p-5 rounded-3xl shadow-lg hover:shadow-xl transition flex items-center gap-4 text-left group relative overflow-hidden text-white"
+                            className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 p-5 rounded-3xl shadow-lg hover:shadow-xl transition flex items-center gap-4 text-left group relative overflow-hidden text-white border border-green-500/20"
                         >
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition relative z-10 backdrop-blur-sm">
+                            <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center text-green-400 group-hover:scale-110 transition relative z-10 backdrop-blur-sm border border-green-500/20">
                                 <Edit3 size={22} />
                             </div>
                             <div className="relative z-10 flex-1">
                                 <h4 className="font-bold text-lg">Edit Profile</h4>
-                                <p className="text-xs text-white/80 font-medium">Update your details</p>
+                                <p className="text-xs text-gray-400 font-medium">Update your details</p>
                             </div>
-                            <ChevronRight className="text-white/50" />
+                            <ChevronRight className="text-gray-600" />
                         </button>
 
                         {/* Ask Me (Gemini) */}
                         <button
                             onClick={() => onNavigate('gemini-chat')}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 p-5 rounded-3xl shadow-lg hover:shadow-xl transition flex items-center gap-4 text-left group relative overflow-hidden text-white"
+                            className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-5 rounded-3xl shadow-lg hover:shadow-xl transition flex items-center gap-4 text-left group relative overflow-hidden text-white border border-blue-500/20"
                         >
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition relative z-10 backdrop-blur-sm">
+                            <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 group-hover:scale-110 transition relative z-10 backdrop-blur-sm border border-blue-500/20">
                                 <Bot size={24} />
                             </div>
                             <div className="relative z-10 flex-1">
                                 <h4 className="font-bold text-lg">Ask Me</h4>
-                                <p className="text-xs text-white/80 font-medium">AI Support Assistant</p>
+                                <p className="text-xs text-gray-400 font-medium">AI Support Assistant</p>
                             </div>
-                            <ChevronRight className="text-white/50" />
+                            <ChevronRight className="text-gray-600" />
                         </button>
                     </div>
                 </div>
@@ -178,7 +172,7 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
                 <div className="pt-6 pb-8">
                     <button
                         onClick={logout}
-                        className="w-full bg-[#E02E49] text-black py-5 rounded-2xl font-bold text-lg shadow-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
+                        className="w-full bg-[var(--pass-cta)] text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-red-900/20 hover:opacity-90 transition flex items-center justify-center gap-2 uppercase tracking-widest"
                     >
                         <LogOut size={22} /> LOGOUT
                     </button>
@@ -189,12 +183,12 @@ export const PassengerProfile: React.FC<PassengerProfileProps> = ({ onBack, onNa
                                 deleteAccount();
                             }
                         }}
-                        className="w-full mt-4 text-red-500 py-3 rounded-2xl font-bold text-sm hover:bg-red-50 transition flex items-center justify-center gap-2"
+                        className="w-full mt-4 text-red-500/70 py-3 rounded-2xl font-bold text-sm hover:bg-red-500/5 transition flex items-center justify-center gap-2"
                     >
                         <Trash2 size={18} /> Delete Account
                     </button>
 
-                    <p className="text-xs font-bold text-gray-300 uppercase tracking-widest text-center mt-6">Taxi Booking Ladakh v2.2</p>
+                    <p className="text-xs font-bold text-gray-600 uppercase tracking-widest text-center mt-6">Taxi Booking Ladakh v2.2</p>
                 </div>
             </div>
         </div>
