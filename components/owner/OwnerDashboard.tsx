@@ -632,10 +632,10 @@ export default function OwnerDashboard() {
                         </p>
                       </div>
 
-                      {/* Quick Action Button */}
+                      {/* Quick Action Button for Trip Status */}
                       <div className="flex flex-col gap-2 relative z-10">
-                        {!isEnRoute && !isArrived && passengers.length > 0 && (
-                          <button onClick={() => { if (confirm("Start Ride?")) passengers.forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
+                        {!isEnRoute && !isArrived && passengers.some(p => p.status === 'CONFIRMED' || p.status === 'BOOKED') && (
+                          <button onClick={() => { if (confirm("Start Ride?")) passengers.filter(p => p.status === 'CONFIRMED' || p.status === 'BOOKED').forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
                         )}
                         {isEnRoute && (
                           <button onClick={() => { if (confirm("Finish Ride?")) passengers.forEach(p => completeRide(p.id)); }} className="px-4 py-2 bg-[var(--driver-primary)] text-black rounded-lg font-bold text-xs shadow hover:scale-105 transition">Finish Ride</button>
@@ -645,6 +645,43 @@ export default function OwnerDashboard() {
                         )}
                       </div>
                     </div>
+
+                    {/* Pending Requests Section */}
+                    {passengers.some(t => t.status === 'WAITING_CONFIRMATION') && (
+                      <div className="mb-4 bg-gray-800/40 rounded-xl p-3 border border-yellow-500/30">
+                        <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <AlertCircle size={10} /> Pending Requests ({passengers.filter(t => t.status === 'WAITING_CONFIRMATION').length})
+                        </p>
+                        <div className="space-y-2">
+                          {passengers.filter(t => t.status === 'WAITING_CONFIRMATION').map(request => (
+                            <div key={request.id} className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-gray-700">
+                              <div>
+                                <p className="text-xs font-bold text-white uppercase">{request.passengerName || 'Unknown'}</p>
+                                <p className="text-[10px] text-gray-400 font-mono">{request.passengerMobile || 'No Mobile'}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    if (confirm("Reject this booking?")) updateTripStatus(request.id, 'CANCELLED');
+                                  }}
+                                  className="p-2 bg-red-900/20 text-red-500 rounded-lg border border-red-900/30 hover:bg-red-900/40 transition"
+                                  title="Reject"
+                                >
+                                  <X size={14} strokeWidth={3} />
+                                </button>
+                                <button
+                                  onClick={() => updateTripStatus(request.id, 'CONFIRMED')}
+                                  className="p-2 bg-green-900/20 text-green-500 rounded-lg border border-green-900/30 hover:bg-green-900/40 transition"
+                                  title="Confirm"
+                                >
+                                  <Check size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Mini Seat Map Info */}
                     <div className="bg-black/20 p-3 rounded-xl flex justify-between items-center text-xs">
