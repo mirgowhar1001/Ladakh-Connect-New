@@ -618,12 +618,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await updateDoc(offerRef, data);
   }, []);
 
+  const finalizeRide = useCallback(async (offerId: string) => {
+    try {
+      const { writeBatch, collection, query, where, getDocs, doc } = await import('firebase/firestore');
+      const batch = writeBatch(db);
+
+      // 1. Mark Ride Offer as COMPLETED
+      const offerRef = doc(db, 'rideOffers', offerId);
+      batch.update(offerRef, { status: 'COMPLETED' });
+
+      // 2. Mark all associated Trips as COMPLETED
+      // We need to fetch them first to get their refs
+      const tripsQ = query(collection(db, 'trips'), where('offerId', '==', offerId));
+      const tripsSnap = await getDocs(tripsQ);
+
+      tripsSnap.forEach(tDoc => {
+        // Only update active trips, though updating all is safer for "locking" everything
+        batch.update(tDoc.ref, {
+          status: 'COMPLETED',
+          completedAt: Date.now(),
+          paymentRequested: false
+        });
+      });
+
+      await batch.commit();
+      alert("Ride Started & Completed. Moved to History.");
+
+    } catch (error: any) {
+      console.error("Error finalizing ride:", error);
+      alert("Failed to complete ride: " + error.message);
+    }
+  }, []);
+
   return (
     <AppContext.Provider value={{
       user, login, updateUser, logout,
       trips, rideOffers, bookTrip, publishRide, updateTripStatus,
       sendMessage, rateTrip, requestPayment, cancelRideOffer, updateRideOfferPrice, updateRideOffer,
-      completeRide, confirmRideCompletion,
+      completeRide, confirmRideCompletion, finalizeRide,
       loginWithPassword, setupPassword, resetPassword,
       deleteAccount
     }}>

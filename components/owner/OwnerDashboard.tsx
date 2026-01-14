@@ -17,7 +17,7 @@ import { VEHICLE_WHITELIST } from '../../constants';
 type OwnerView = 'marketplace' | 'my-rides' | 'bookings' | 'profile' | 'history' | 'wallet';
 
 export default function OwnerDashboard() {
-  const { user, updateUser, logout, deleteAccount, rideOffers, publishRide, trips, updateTripStatus, updateRideOffer, cancelRideOffer, completeRide, withdrawFromWallet, driverBalance } = useApp();
+  const { user, updateUser, logout, deleteAccount, rideOffers, publishRide, trips, updateTripStatus, updateRideOffer, cancelRideOffer, completeRide, withdrawFromWallet, driverBalance, finalizeRide } = useApp();
 
   const [showAddRide, setShowAddRide] = useState(false);
   const [showEditRide, setShowEditRide] = useState(false);
@@ -634,12 +634,10 @@ export default function OwnerDashboard() {
 
                       {/* Quick Action Button for Trip Status */}
                       <div className="flex flex-col gap-2 relative z-10">
-                        {!isEnRoute && !isArrived && passengers.some(p => p.status === 'CONFIRMED' || p.status === 'BOOKED') && (
-                          <button onClick={() => { if (confirm("Start Ride?")) passengers.filter(p => p.status === 'CONFIRMED' || p.status === 'BOOKED').forEach(p => updateTripStatus(p.id, 'EN_ROUTE')); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
+                        {passengers.some(p => p.status === 'CONFIRMED' || p.status === 'BOOKED') && (
+                          <button onClick={() => { if (confirm("Start & Complete Ride? This will close the ride and move it to history.")) finalizeRide(offer.id); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
                         )}
-                        {isEnRoute && (
-                          <button onClick={() => { if (confirm("Finish Ride?")) passengers.forEach(p => completeRide(p.id)); }} className="px-4 py-2 bg-[var(--driver-primary)] text-black rounded-lg font-bold text-xs shadow hover:scale-105 transition">Finish Ride</button>
-                        )}
+
                         {passengers.length === 0 && (
                           <button onClick={() => { if (confirm("Delete Offer?")) cancelRideOffer(offer.id); }} className="px-4 py-2 bg-red-900/20 text-red-500 rounded-lg font-bold text-xs border border-red-900/30 hover:bg-red-900/40">Delete</button>
                         )}
