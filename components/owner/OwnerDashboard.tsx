@@ -1128,7 +1128,7 @@ export default function OwnerDashboard() {
       )}
       {/* DEBUG PANEL - RE-ADDED FOR USER VERIFICATION */}
       <div className="fixed bottom-0 right-0 m-4 p-4 bg-black/80 text-white text-[10px] font-mono rounded-lg z-50 pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
-        <p className="font-bold text-yellow-400 border-b border-gray-600 mb-1">DEBUG v1.2</p>
+        <p className="font-bold text-yellow-400 border-b border-gray-600 mb-1">DEBUG v1.4</p>
         <p>User: {user?.name} ({user?.role})</p>
         <p>UID: {user?.uid?.slice(0, 6)}...</p>
         <p>Total Offers Fetched: {rideOffers.length}</p>
