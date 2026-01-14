@@ -1,10 +1,15 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { storage, db } from '../../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, getDocs, deleteDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { RealSeat } from '../common/RealSeat';
-import { Navigation, User, LogOut, MapPin, ShieldCheck, Wallet, ChevronRight, MessageCircle, Plus, Calendar, Clock, IndianRupee, X, ArrowRight, History, Home, Phone, Star, Menu, CheckCircle, Search, Users, Edit, Trash2, FileText, Loader2, Check, AlertCircle, Lock } from 'lucide-react';
+import {
+  Navigation, User, LogOut, MapPin, ShieldCheck, Wallet, ChevronRight, MessageCircle,
+  Plus, Calendar, Clock, IndianRupee, X, ArrowRight, History, Home, Phone, Star,
+  Settings, Edit, AlertCircle, Menu, CheckCircle, Camera, FileText, Loader2, Check, Trash2
+} from 'lucide-react';
 import { ChatScreen } from '../common/ChatScreen';
 import { DatePicker } from '../common/DatePicker';
 import { VEHICLE_WHITELIST } from '../../constants';
@@ -100,7 +105,7 @@ export default function OwnerDashboard() {
 
     setUploading(prev => ({ ...prev, [docType]: true }));
     try {
-      const storageRef = ref(storage, `drivers/${user.uid}/documents/${docType}.jpg`);
+      const storageRef = ref(storage, `drivers / ${user.uid} /documents/${docType}.jpg`);
       const metadata = { contentType: file.type };
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("Upload timed out.")), 15000);
@@ -130,7 +135,7 @@ export default function OwnerDashboard() {
       const file = e.target.files[0];
       setUploading(prev => ({ ...prev, profile: true })); // Set loading
       try {
-        const storageRef = ref(storage, `users/${user?.uid}/profile.jpg`);
+        const storageRef = ref(storage, `users / ${user?.uid}/profile.jpg`);
         const snapshot = await uploadBytes(storageRef, file);
         const url = await getDownloadURL(snapshot.ref);
         await updateUser({ profileImage: url });
@@ -1069,6 +1074,31 @@ export default function OwnerDashboard() {
                 {editFormData.mobile !== user?.mobile && (
                   <p className="text-[10px] text-orange-500 mt-1 font-bold flex items-center gap-1"><AlertCircle size={10} /> Verification required</p>
                 )}
+              </div>
+
+              {/* NEW: Vehicle Photo Edit */}
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Vehicle Photo</label>
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden border border-gray-300 relative group cursor-pointer" onClick={() => document.getElementById('vehicle-upload-edit')?.click()}>
+                    <img src={user?.documents?.vehicleSide || "https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg"} alt="Vehicle" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera size={16} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] text-gray-400">Tap image to change vehicle photo.</p>
+                  </div>
+                  <input
+                    type="file"
+                    id="vehicle-upload-edit"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) handleFileUpload(e, 'vehicleSide');
+                    }}
+                  />
+                </div>
               </div>
 
               {otpSent && (
