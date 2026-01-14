@@ -92,10 +92,14 @@ export default function OwnerDashboard() {
   const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
   const [uploadedDocs, setUploadedDocs] = useState<{ [key: string]: string }>({});
 
-  const handleFileUpload = async (file: File, docType: string) => {
-    if (!user?.uid) return;
-    if (!['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'].includes(file.type)) {
-      alert("Only JPG/JPEG/PNG files are allowed.");
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, docType: string) => {
+    if (!user || !user.uid) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      alert("Only JPEG, PNG, or WEBP images allowed.");
       return;
     }
     if (file.size > 500 * 1024) {
@@ -105,7 +109,9 @@ export default function OwnerDashboard() {
 
     setUploading(prev => ({ ...prev, [docType]: true }));
     try {
-      const storageRef = ref(storage, `drivers / ${user.uid} /documents/${docType}.jpg`);
+      // CACHE BUSTING: Add timestamp to filename
+      const timestamp = Date.now();
+      const storageRef = ref(storage, `drivers/${user.uid}/documents/${docType}_${timestamp}.jpg`);
       const metadata = { contentType: file.type };
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("Upload timed out.")), 15000);
@@ -118,8 +124,12 @@ export default function OwnerDashboard() {
 
       const url = await getDownloadURL(storageRef);
       setUploadedDocs(prev => ({ ...prev, [docType]: url }));
+
+      // For vehicleSide, specifically update the document
       const newDocs = { ...user?.documents, ...uploadedDocs, [docType]: url };
       await updateUser({ documents: newDocs });
+
+      if (docType === 'vehicleSide') alert("Vehicle Photo Updated!");
 
     } catch (error: any) {
       console.error("Upload failed:", error);
@@ -129,13 +139,14 @@ export default function OwnerDashboard() {
     }
   };
 
-  /* Updated Profile Upload Handler with Loading State */
+  /* Updated Profile Upload Handler with Loading State + Cache Busting */
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setUploading(prev => ({ ...prev, profile: true })); // Set loading
       try {
-        const storageRef = ref(storage, `users / ${user?.uid}/profile.jpg`);
+        const timestamp = Date.now();
+        const storageRef = ref(storage, `users/${user?.uid}/profile_${timestamp}.jpg`);
         const snapshot = await uploadBytes(storageRef, file);
         const url = await getDownloadURL(snapshot.ref);
         await updateUser({ profileImage: url });
