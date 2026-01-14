@@ -355,11 +355,13 @@ export default function OwnerDashboard() {
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-x-10 -translate-y-10 blur-xl"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -translate-x-5 translate-y-5 blur-lg"></div>
 
-      <div className="relative z-10 flex justify-between items-center mb-6">
+      <div className="relative z-10 flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
           <button onClick={() => setIsMenuOpen(true)} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
             <Menu className="text-white" size={24} />
           </button>
+
+          {/* Driver Profile Section (Left) */}
           <div className="flex items-center gap-3">
             <div className="relative group cursor-pointer" onClick={() => document.getElementById('profile-upload')?.click()}>
               <div className={`w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md ${uploading['profile'] ? 'animate-pulse opacity-50' : ''}`}>
@@ -371,33 +373,33 @@ export default function OwnerDashboard() {
               <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={handleProfileImageUpload} />
             </div>
 
-            {/* NEW: Vehicle Photo in Header */}
-            <div className="relative group cursor-pointer ml-2" onClick={() => document.getElementById('vehicle-upload-header')?.click()}>
-              <div className={`w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md ${uploading['vehicleSide'] ? 'animate-pulse opacity-50' : ''}`}>
-                <img src={user?.documents?.vehicleSide || "https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg"} alt="Vehicle" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={16} className="text-white" />
-              </div>
-              <input
-                type="file"
-                id="vehicle-upload-header"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, 'vehicleSide')}
-              />
-            </div>
-
             <div>
-              <div className="flex items-baseline gap-2">
-                <h1 className="font-bold text-xl drop-shadow-md leading-none text-white">{user?.name}</h1>
-                <p className="text-sm text-gray-300 font-medium">{user?.vehicleNo}</p>
-              </div>
+              <h1 className="font-bold text-xl drop-shadow-md leading-none text-white">{user?.name}</h1>
               <div className="mt-1 bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full inline-block border border-yellow-500/50">
                 v2.1 TAXI Optimized
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Vehicle Section (Right) */}
+        <div className="flex flex-col items-end gap-1">
+          <div className="relative group cursor-pointer" onClick={() => document.getElementById('vehicle-upload-header')?.click()}>
+            <div className={`w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md ${uploading['vehicleSide'] ? 'animate-pulse opacity-50' : ''}`}>
+              <img src={user?.documents?.vehicleSide || "https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg"} alt="Vehicle" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera size={16} className="text-white" />
+            </div>
+            <input
+              type="file"
+              id="vehicle-upload-header"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'vehicleSide')}
+            />
+          </div>
+          <p className="text-sm text-white font-bold bg-white/10 px-2 py-0.5 rounded border border-white/10 backdrop-blur-sm shadow-sm">{user?.vehicleNo}</p>
         </div>
       </div>
       <button
