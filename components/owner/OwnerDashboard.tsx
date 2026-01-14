@@ -370,6 +370,24 @@ export default function OwnerDashboard() {
               </div>
               <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={handleProfileImageUpload} />
             </div>
+
+            {/* NEW: Vehicle Photo in Header */}
+            <div className="relative group cursor-pointer ml-2" onClick={() => document.getElementById('vehicle-upload-header')?.click()}>
+              <div className={`w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md ${uploading['vehicleSide'] ? 'animate-pulse opacity-50' : ''}`}>
+                <img src={user?.documents?.vehicleSide || "https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg"} alt="Vehicle" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera size={16} className="text-white" />
+              </div>
+              <input
+                type="file"
+                id="vehicle-upload-header"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => handleFileUpload(e, 'vehicleSide')}
+              />
+            </div>
+
             <div>
               <div className="flex items-baseline gap-2">
                 <h1 className="font-bold text-xl drop-shadow-md leading-none text-white">{user?.name}</h1>
@@ -395,7 +413,7 @@ export default function OwnerDashboard() {
       >
         <Plus size={18} /> New Ride
       </button>
-    </div>
+    </div >
   );
 
   // New Flight-Style Marketplace View
@@ -1128,7 +1146,7 @@ export default function OwnerDashboard() {
       )}
       {/* DEBUG PANEL - RE-ADDED FOR USER VERIFICATION */}
       <div className="fixed bottom-0 right-0 m-4 p-4 bg-black/80 text-white text-[10px] font-mono rounded-lg z-50 pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
-        <p className="font-bold text-yellow-400 border-b border-gray-600 mb-1">DEBUG v1.4</p>
+        <p className="font-bold text-yellow-400 border-b border-gray-600 mb-1">DEBUG v1.5</p>
         <p>User: {user?.name} ({user?.role})</p>
         <p>UID: {user?.uid?.slice(0, 6)}...</p>
         <p>Total Offers Fetched: {rideOffers.length}</p>
