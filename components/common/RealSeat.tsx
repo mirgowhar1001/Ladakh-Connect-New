@@ -8,11 +8,29 @@ export const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | '
     const isInactive = status === 'inactive';
     const isUnavailable = status === 'unavailable';
 
-    // Colors for Black Leather Look
-    // Colors for Black Leather Look - MATCHING DRIVER SEAT
-    const baseColor = isDriver ? '#4a4a4a' : isBooked ? '#374151' : isSelected ? '#22c55e' : isInactive ? '#4a4a4a' : '#4a4a4a'; // All unselected = Driver Color
-    const strokeColor = isDriver ? '#2d2d2d' : isBooked ? '#4b5563' : isSelected ? '#16a34a' : '#2d2d2d'; // Match driver stroke
-    const textColor = isSelected ? 'white' : isBooked ? '#9ca3af' : isInactive ? '#666666' : '#8B735B';
+    // Colors - MATCHING UI LEGEND
+    // Available: Beige (Matches Legend #E8DCCA)
+    // Booked: Light Gray (Matches Legend bg-gray-300)
+    // Selected: Green (Matches Legend bg-green-500)
+
+    // Base Fill
+    const baseColor = isDriver ? '#4a4a4a' :
+        isSelected ? '#22c55e' :
+            isBooked ? '#D1D5DB' :
+                isUnavailable ? '#D1D5DB' :
+                    '#E8DCCA'; // DEFAULT AVAILABLE = BEIGE
+
+    // Stroke/Border
+    const strokeColor = isDriver ? '#2d2d2d' :
+        isSelected ? '#16a34a' :
+            isBooked ? '#9CA3AF' :
+                '#C7B299'; // Beige Border
+
+    // Text Color
+    const textColor = isDriver ? 'text-gray-500' :
+        isSelected ? 'text-white' :
+            isBooked ? 'text-gray-500' :
+                'text-[#8B735B]'; // Dark Beige Text
 
     return (
         <div
@@ -20,7 +38,8 @@ export const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | '
             className={`relative w-10 h-12 flex flex-col items-center justify-center transition-transform duration-200 
         ${!isDriver && !isBooked && !isInactive && !isUnavailable ? 'cursor-pointer active:scale-95' : ''} 
         ${isSelected ? 'scale-105' : ''}
-        ${isBooked || isUnavailable ? 'opacity-40 cursor-not-allowed grayscale' : ''}
+        ${isUnavailable ? 'opacity-40 cursor-not-allowed grayscale' : ''}
+        ${isBooked ? 'cursor-not-allowed' : ''}
         ${isInactive ? 'opacity-100 cursor-pointer hover:opacity-80' : ''} 
       `}
         >

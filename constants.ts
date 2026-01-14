@@ -19,28 +19,35 @@ export const VEHICLES: VehicleDef[] = [
     rateMultiplier: 1.0,
     seats: 7,
     layout: [1, 3, 3],
-    image: 'https://imgd.aeplcdn.com/1056x594/cw/ec/26659/Mahindra-Xylo-Exterior-121541.jpg?wm=0'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Mahindra_Xylo_E8_2009_%2814886518331%29.jpg'
   },
   {
     type: 'Toyota Innova',
     rateMultiplier: 1.2,
     seats: 7,
     layout: [1, 3, 3],
-    image: 'https://upload.wikimedia.org/wikipedia/commons/2/23/2012_Toyota_Innova_2.5_G_Review.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg'
   },
   {
     type: 'Toyota Innova Crysta',
     rateMultiplier: 1.4,
     seats: 6,
-    layout: [1, 2, 3], // Captain seats in middle
-    image: 'https://imgd.aeplcdn.com/1056x594/n/cw/ec/140809/innova-crysta-exterior-right-front-three-quarter.jpeg?isig=0&q=80'
+    layout: [1, 2, 3],
+    image: 'https://upload.wikimedia.org/wikipedia/commons/e/e6/2016_Toyota_Kijang_Innova_2.4_V_wagon_%28GUN142R%3B_12-25-2019%29%2C_South_Tangerang.jpg'
+  },
+  {
+    type: 'Innova Crysta', // Added alias for direct matching
+    rateMultiplier: 1.4,
+    seats: 6,
+    layout: [1, 2, 3],
+    image: 'https://upload.wikimedia.org/wikipedia/commons/e/e6/2016_Toyota_Kijang_Innova_2.4_V_wagon_%28GUN142R%3B_12-25-2019%29%2C_South_Tangerang.jpg'
   },
   {
     type: 'Tempo Traveler',
     rateMultiplier: 1.5,
     seats: 12,
     layout: [1, 3, 4, 4],
-    image: 'https://5.imimg.com/data5/SELLER/Default/2022/9/MZ/QO/HG/3895315/tempo-traveller-hire-service-500x500.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Force_Motors_Traveller_minibus_in_Pune_01.jpg'
   }
 ];
 

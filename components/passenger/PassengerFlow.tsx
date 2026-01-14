@@ -509,7 +509,14 @@ export const PassengerFlow: React.FC = () => {
                 <div className="p-4 flex gap-4">
                   {/* Car Image */}
                   <div className="w-24 h-20 rounded-lg bg-gray-50 flex-shrink-0 overflow-hidden relative">
-                    <img src={offer.vehicleImage || vehicleInfo.image} alt={offer.vehicleType} className="w-full h-full object-cover" />
+                    <img
+                      src={offer.vehicleImage || vehicleInfo.image}
+                      alt={offer.vehicleType}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://upload.wikimedia.org/wikipedia/commons/6/6d/2005_Toyota_Innova_2.5_G_%282006-11-28%29.jpg"; // Reliable fallback
+                      }}
+                    />
                     <div className={`absolute bottom-0 w-full text-white text-[9px] text-center py-0.5 font-bold
                       ${availableSeatsCount > 1 ? 'bg-green-600' : availableSeatsCount === 1 ? 'bg-yellow-500' : 'bg-red-600'}
                     `}>
@@ -524,9 +531,11 @@ export const PassengerFlow: React.FC = () => {
                           {offer.vehicleType} <span className="font-black text-black uppercase">{offer.vehicleNo}</span>
                         </h3>
                         <p className="text-xs text-gray-500">{offer.driverName} • <span className="text-green-600 font-bold">★ {offer.rating}</span></p>
-                        <p className="text-xs text-gray-500 font-mono mt-0.5"><span className="font-bold">Mob:</span> {offer.driverMobile || offer.driverId}</p>
+                        <p className="text-xs text-gray-500 font-mono mt-0.5 flex items-center gap-1">
+                          <span className="font-bold">Mob:</span>
+                          <span className="text-black font-bold">{offer.driverMobile || 'N/A'}</span>
+                        </p>
                       </div>
-                      {/* <h3 className="font-bold text-xl text-black">₹{offer.pricePerSeat.toLocaleString()}</h3> */}
                     </div>
 
                     <div className="mt-3 flex items-center justify-between text-xs text-gray-600">

@@ -124,9 +124,11 @@ export default function OwnerDashboard() {
     }
   };
 
+  /* Updated Profile Upload Handler with Loading State */
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setUploading(prev => ({ ...prev, profile: true })); // Set loading
       try {
         const storageRef = ref(storage, `users/${user?.uid}/profile.jpg`);
         const snapshot = await uploadBytes(storageRef, file);
@@ -136,6 +138,8 @@ export default function OwnerDashboard() {
       } catch (error) {
         console.error("Upload failed", error);
         alert("Failed to upload profile picture.");
+      } finally {
+        setUploading(prev => ({ ...prev, profile: false })); // Clear loading
       }
     }
   };
@@ -342,7 +346,7 @@ export default function OwnerDashboard() {
           </button>
           <div className="flex items-center gap-3">
             <div className="relative group cursor-pointer" onClick={() => document.getElementById('profile-upload')?.click()}>
-              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md">
+              <div className={`w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-md ${uploading['profile'] ? 'animate-pulse opacity-50' : ''}`}>
                 <img src={user?.profileImage || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt="Driver" className="w-full h-full object-cover" />
               </div>
               <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

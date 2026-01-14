@@ -109,7 +109,14 @@ export const BookingHistory: React.FC<BookingHistoryProps> = ({ trips, onChat })
                                     </div>
                                     <div>
                                         <p className="text-lg font-black text-gray-800">{trip.driverName || 'Assigned Driver'}</p>
-                                        <p className="text-xs text-gray-600 font-bold mt-0.5">{trip.vehicleNo} • {trip.driverMobile || 'No Mobile'}</p>
+                                        <p className="text-xs text-gray-600 font-bold mt-0.5 flex items-center gap-1">
+                                            {trip.vehicleNo}
+                                            {trip.driverMobile ? (
+                                                <> • <span className="text-blue-600">{trip.driverMobile}</span></>
+                                            ) : (
+                                                <> • <span className="text-gray-400">No Mobile</span></>
+                                            )}
+                                        </p>
                                     </div>
                                 </div>
 
