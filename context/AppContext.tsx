@@ -395,6 +395,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       driverId: auth.currentUser?.uid || user.uid, // Force consistent UID
       driverMobile: user.mobile, // Save mobile directly
       vehicleImage: user.documents?.vehicleSide || null, // Include vehicle image from profile
+      driverProfileImage: user.profileImage || null, // ADDED: Save driver profile image
       bookedSeats: [],
       rating: 5.0,
       createdAt: Date.now(),

@@ -523,15 +523,24 @@ export default function OwnerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="md:w-auto flex items-center gap-3 bg-gray-800/30 px-3 py-2 rounded-lg border border-gray-700/50 flex-1 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 shrink-0">
-                      <User size={14} />
+                  <div className="md:w-auto flex items-center gap-4 bg-gradient-to-r from-gray-800 to-gray-900 px-4 py-3 rounded-xl border border-gray-700/50 flex-1 min-w-0 shadow-inner group-hover:border-gray-600 transition">
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 shrink-0 overflow-hidden border border-gray-600 shadow-sm relative">
+                      {offer.driverProfileImage ? (
+                        <img src={offer.driverProfileImage} alt="Driver" className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={20} />
+                      )}
+
                     </div>
-                    <div className="flex flex-row items-center gap-3 overflow-hidden whitespace-nowrap">
-                      <p className="text-xs font-bold text-white uppercase truncate">{offer.driverName}</p>
-                      <p className="text-xs font-bold text-white uppercase">{offer.vehicleNo}</p>
-                      <p className="text-xs font-bold text-white">{offer.driverMobile}</p>
-                      <p className="text-xs font-bold text-gray-400 capitalize">{offer.vehicleType}</p>
+                    <div className="flex flex-col justify-center overflow-hidden whitespace-nowrap gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-white uppercase truncate tracking-wide">{offer.driverName}</p>
+                        <span className="text-[10px] text-gray-500 bg-black/30 px-1.5 rounded">{offer.vehicleType}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="text-lg font-black text-yellow-500 uppercase tracking-wider drop-shadow-sm" style={{ fontFamily: 'monospace' }}>{offer.vehicleNo}</p>
+                        <p className="text-xs font-bold text-gray-400">{offer.driverMobile}</p>
+                      </div>
                     </div>
                   </div>
                   <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 shrink-0">
