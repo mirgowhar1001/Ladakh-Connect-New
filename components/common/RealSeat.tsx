@@ -1,7 +1,13 @@
 import React from 'react';
 
 // 1. Realistic Seat Component (SVG)
-export const RealSeat = ({ status, seatNum, onClick }: { status: 'available' | 'selected' | 'driver' | 'booked' | 'unavailable' | 'inactive', seatNum?: number, onClick?: () => void }) => {
+interface RealSeatProps {
+    status: 'available' | 'selected' | 'driver' | 'booked' | 'unavailable' | 'inactive';
+    seatNum?: number;
+    onClick?: () => void;
+}
+
+export const RealSeat: React.FC<RealSeatProps> = ({ status, seatNum, onClick }) => {
     const isDriver = status === 'driver';
     const isBooked = status === 'booked';
     const isSelected = status === 'selected';

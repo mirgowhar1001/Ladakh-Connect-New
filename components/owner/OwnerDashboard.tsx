@@ -576,8 +576,10 @@ export default function OwnerDashboard() {
     return (
       <div className="px-6 animate-in slide-in-from-right duration-300 pb-24">
         <h2 className="font-bold text-[var(--driver-text)] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-          <Calendar size={18} className="text-[var(--driver-primary)]" /> My Rides
+          <Calendar size={18} className="text-[var(--driver-primary)]" /> My Rides  {/* DEBUG: {allMyActiveRides.length} active */}
         </h2>
+        {/* DEBUG LOG */}
+        {console.log("My Active Rides DEBUG:", allMyActiveRides.map(r => ({ id: r.id, status: r.status, seats: r.bookedSeats?.length })))}
 
         <div className="flex p-1 bg-black/20 rounded-xl mb-6 overflow-x-auto no-scrollbar">
           {['posted', 'completed'].map((tab) => (
@@ -634,8 +636,16 @@ export default function OwnerDashboard() {
 
                       {/* Quick Action Button for Trip Status */}
                       <div className="flex flex-col gap-2 relative z-10">
-                        {passengers.some(p => p.status === 'CONFIRMED' || p.status === 'BOOKED') && (
-                          <button onClick={() => { if (confirm("Start & Complete Ride? This will close the ride and move it to history.")) finalizeRide(offer.id); }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700">Start Ride</button>
+                        {/* Show button if there are confirmed bookings OR if the ride is already en-route (legacy/stuck) */}
+                        {passengers.some(p => ['CONFIRMED', 'BOOKED', 'EN_ROUTE'].includes(p.status)) && (
+                          <button
+                            onClick={() => {
+                              if (confirm("Complete Ride? This will close the ride and move it to history.")) finalizeRide(offer.id);
+                            }}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-xs shadow hover:bg-green-700"
+                          >
+                            {passengers.some(p => p.status === 'EN_ROUTE') ? "Complete Ride" : "Start & Complete Ride"}
+                          </button>
                         )}
 
                         {passengers.length === 0 && (

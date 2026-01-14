@@ -343,6 +343,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         passengerName: user.name,
         passengerMobile: user.mobile,
         driverName: tripDetails.driverName || 'Unknown', // Fallback
+        driverMobile: tripDetails.driverMobile || 'N/A', // ADDED: Save Driver Mobile
         vehicleNo: tripDetails.vehicleNo || 'Unknown',
         from: tripDetails.from,
         to: tripDetails.to,
@@ -643,6 +644,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       await batch.commit();
       alert("Ride Started & Completed. Moved to History.");
+      window.location.reload(); // Force reload to ensure UI clears active rides perfectly
 
     } catch (error: any) {
       console.error("Error finalizing ride:", error);

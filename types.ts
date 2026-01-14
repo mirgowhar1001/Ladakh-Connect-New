@@ -61,7 +61,7 @@ export interface RideOffer {
   rating: number;
   seatPrices?: { [seatIndex: number]: number }; // Custom price per seat
   createdAt?: number; // Timestamp for sorting
-  status?: 'OPEN' | 'EN_ROUTE' | 'COMPLETED'; // Lifecycle status
+  status?: 'OPEN' | 'EN_ROUTE' | 'COMPLETED' | 'CANCELLED'; // Lifecycle status
 }
 
 export interface Trip {
