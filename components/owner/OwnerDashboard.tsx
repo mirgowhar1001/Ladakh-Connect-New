@@ -125,11 +125,17 @@ export default function OwnerDashboard() {
       const url = await getDownloadURL(storageRef);
       setUploadedDocs(prev => ({ ...prev, [docType]: url }));
 
-      // For vehicleSide, specifically update the document
+      // For vehicleSide, specifically update the document AND auto-verify
       const newDocs = { ...user?.documents, ...uploadedDocs, [docType]: url };
-      await updateUser({ documents: newDocs });
 
-      if (docType === 'vehicleSide') alert("Vehicle Photo Updated!");
+      const updateData: any = { documents: newDocs };
+      if (docType === 'vehicleSide') {
+        updateData.verificationStatus = 'verified';
+      }
+
+      await updateUser(updateData);
+
+      if (docType === 'vehicleSide') alert("Vehicle Photo Updated & Account Verified!");
 
     } catch (error: any) {
       console.error("Upload failed:", error);
@@ -357,9 +363,6 @@ export default function OwnerDashboard() {
 
       <div className="relative z-10 flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <button onClick={() => setIsMenuOpen(true)} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
-            <Menu className="text-white" size={24} />
-          </button>
 
           {/* Driver Profile Section (Left) */}
           <div className="flex items-center gap-3">
